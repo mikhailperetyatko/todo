@@ -11,7 +11,9 @@
             </div>
         @endif
         <form method="post" action="/posts">
+          
           {{ csrf_field() }}
+          
           <div class="form-group">
             <label for="inputLink">Символьный код</label>
             <input type="text" class="form-control" id="inputTitle" placeholder="Введите символьный код" name="slug" value="{{ old('slug') ?? '' }}" required>

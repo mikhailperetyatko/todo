@@ -10,16 +10,16 @@ class PostsController extends Controller
     const AMOUNT_LIMIT = 3;
     const PREFIX = 'posts';
     
-    public function list()
+    public function index()
     {
         $data = Post::latest()->simplePaginate(self::AMOUNT_LIMIT);
         $prefix = self::PREFIX;
         return view('posts', compact('data', 'prefix'));
     }
     
-    public function show(Post $slug)
+    public function show(Post $data)
     {
-        return view('posts.view', compact('slug'));
+        return view('posts.show', compact('data'));
     }
     
     public function create()
@@ -29,14 +29,41 @@ class PostsController extends Controller
     
     public function store()
     {
-        $this->validate(request(), [
-            'title' => 'required|min:5|max:100',
+        $attr = request()->validate([
+             'title' => 'required|min:5|max:100',
             'description' => 'required|max:255',
             'body' => 'required',
             'published' => 'regex:/on/',
             'slug' => 'required|regex:/^[0-9A-z_-]+$/|unique:posts'
         ]);
-        Post::create(request()->all());
+        
+        Post::create($attr);
+        return redirect('/');
+    }
+    
+    public function edit(Post $data)
+    {
+        return view('posts.edit', compact('data'));
+    }
+    
+    public function update(Post $data)
+    {
+        $data->published = request()->has('published');
+        $attr = request()->validate([
+            'title' => 'required|min:5|max:100',
+            'description' => 'required|max:255',
+            'body' => 'required',
+            'published' => 'regex:/on/',
+            'slug' => 'required|regex:/^[0-9A-z_-]+$/|unique:posts,slug,' . $data->id 
+        ]);
+        
+        $data->update($attr);
+        return redirect('/posts/' . $data->slug);
+    }
+    
+    public function destroy(Post $data)
+    {
+        $data->delete();
         return redirect('/');
     }
 }
