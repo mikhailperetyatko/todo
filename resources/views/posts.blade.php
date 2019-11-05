@@ -6,7 +6,7 @@
             Статьи 
         </h3>
         @foreach ($data as $post)
-            @include('posts.preview')
+            @include('posts.item')
         @endforeach
         {{ $data->render() }}
     </div>
