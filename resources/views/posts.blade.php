@@ -5,9 +5,9 @@
         <h3 class="pb-3 mb-4 font-italic border-bottom">
             Статьи 
         </h3>
-        @foreach ($data as $post)
+        @foreach ($posts as $post)
             @include('posts.item')
         @endforeach
-        {{ $data->render() }}
+        {{ $posts->render() }}
     </div>
 @endsection

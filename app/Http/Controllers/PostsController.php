@@ -8,18 +8,16 @@ use App\Post;
 class PostsController extends Controller
 {
     const AMOUNT_LIMIT = 3;
-    const PREFIX = 'posts';
     
     public function index()
     {
-        $data = Post::latest()->simplePaginate(self::AMOUNT_LIMIT);
-        $prefix = self::PREFIX;
-        return view('posts', compact('data', 'prefix'));
+        $posts = Post::latest()->simplePaginate(self::AMOUNT_LIMIT);
+        return view('posts', compact('posts'));
     }
     
-    public function show(Post $data)
+    public function show(Post $post)
     {
-        return view('posts.show', compact('data'));
+        return view('posts.show', compact('post'));
     }
     
     public function create()
@@ -41,29 +39,29 @@ class PostsController extends Controller
         return redirect('/');
     }
     
-    public function edit(Post $data)
+    public function edit(Post $post)
     {
-        return view('posts.edit', compact('data'));
+        return view('posts.edit', compact('post'));
     }
     
-    public function update(Post $data)
+    public function update(Post $post)
     {
-        $data->published = request()->has('published');
+        $post->published = request()->has('published');
         $attr = request()->validate([
             'title' => 'required|min:5|max:100',
             'description' => 'required|max:255',
             'body' => 'required',
             'published' => 'regex:/on/',
-            'slug' => 'required|regex:/^[0-9A-z_-]+$/|unique:posts,slug,' . $data->id 
+            'slug' => 'required|regex:/^[0-9A-z_-]+$/|unique:posts,slug,' . $post->id 
         ]);
         
-        $data->update($attr);
-        return redirect('/posts/' . $data->slug);
+        $post->update($attr);
+        return redirect('/posts/' . $post->slug);
     }
     
-    public function destroy(Post $data)
+    public function destroy(Post $post)
     {
-        $data->delete();
+        $post->delete();
         return redirect('/');
     }
 }
