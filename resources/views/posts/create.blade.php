@@ -34,6 +34,15 @@
             <input type="checkbox" class="custom-control-input" id="inputSwitch" name="published" {{old('published') ? 'checked' : ''}}>
             <label class="custom-control-label" for="inputSwitch">Опубликовать</label>
           </div>
+          <div class="form-group">
+            <label for="inputTitle">Тэги</label>
+            <input type="text" 
+                class="form-control" 
+                id="inputTags" 
+                placeholder="Введите название" 
+                name="tags" 
+            >
+          </div>
           <button type="submit" class="btn btn-primary">Добавить</button>
         </form>
     </div>

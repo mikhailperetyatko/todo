@@ -8,8 +8,10 @@ Route::get('/posts/{data}/edit', 'PostsController@edit');
 Route::patch('/posts/{data}', 'PostsController@update');
 Route::delete('/posts/{data}', 'PostsController@destroy');
 */
+Route::get('/posts/tags/{tag}', 'TagsController@index');
 Route::resource('/posts', 'PostsController');
 Route::get('/', 'PostsController@index');
+
 
 Route::view('/contacts', 'contacts');
 Route::view('/about', 'about');

@@ -1,8 +1,10 @@
 <?php
+
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
-class CreateFeedbacksTable extends Migration
+
+class CreateTagsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -11,13 +13,13 @@ class CreateFeedbacksTable extends Migration
      */
     public function up()
     {
-        Schema::create('feedbacks', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table) {
             $table->increments('id');
-            $table->char('email', 255);
-            $table->text('body');
+            $table->char('name', 100)->unique();
             $table->timestamps();
         });
     }
+
     /**
      * Reverse the migrations.
      *
@@ -25,6 +27,6 @@ class CreateFeedbacksTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('feedback');
+        Schema::dropIfExists('tags');
     }
 }

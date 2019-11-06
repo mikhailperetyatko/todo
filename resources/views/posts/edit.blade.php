@@ -33,20 +33,20 @@
           </div>
           <div class="custom-control custom-switch">
             <input type="checkbox" class="custom-control-input" id="inputSwitch" name="published" {{old('published', $post->published) ? 'checked' : ''}}>
-            <label class="custom-control-label" for="inputSwitch">Изменить</label>
+            <label class="custom-control-label" for="inputSwitch">Опубликовать</label>
+          </div>
+          <div class="form-group">
+            <label for="inputTitle">Тэги</label>
+            <input type="text" 
+                class="form-control" 
+                id="inputTags" 
+                placeholder="Введите название" 
+                name="tags" 
+                value="{{ old('tags', $post->tags->pluck('name')->implode(',')) ?? '' }}"
+            >
           </div>
           <button type="submit" class="btn btn-primary">Изменить</button>
         </form>
-        
-        <form class="mt-2" method="post" action="/posts/{{$post->slug}}">
-          
-          {{ csrf_field() }}
-          {{ method_field('DELETE') }}
-          
-          <button type="submit" class="btn btn-danger">Удалить</button>
-        </form>
-
-        
     </div>
 
 @endsection

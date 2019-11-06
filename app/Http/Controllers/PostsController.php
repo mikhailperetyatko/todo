@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Post;
+use App\Tag;
 
 class PostsController extends Controller
 {
@@ -11,7 +12,7 @@ class PostsController extends Controller
     
     public function index()
     {
-        $posts = Post::latest()->simplePaginate(self::AMOUNT_LIMIT);
+        $posts = Post::with('tags')->latest()->simplePaginate(self::AMOUNT_LIMIT);
         return view('posts', compact('posts'));
     }
     
@@ -28,14 +29,13 @@ class PostsController extends Controller
     public function store()
     {
         $attr = request()->validate([
-             'title' => 'required|min:5|max:100',
+            'title' => 'required|min:5|max:100',
             'description' => 'required|max:255',
             'body' => 'required',
-            'published' => 'regex:/on/',
             'slug' => 'required|regex:/^[0-9A-z_-]+$/|unique:posts'
         ]);
-        
-        Post::create($attr);
+        $attr['published'] = request()->has('published');
+        $this->getSyncTags(Post::create($attr));
         return redirect('/');
     }
     
@@ -51,12 +51,30 @@ class PostsController extends Controller
             'title' => 'required|min:5|max:100',
             'description' => 'required|max:255',
             'body' => 'required',
-            'published' => 'regex:/on/',
             'slug' => 'required|regex:/^[0-9A-z_-]+$/|unique:posts,slug,' . $post->id 
         ]);
-        
         $post->update($attr);
+        $this->getSyncTags($post);
         return redirect('/posts/' . $post->slug);
+    }
+    
+    public function getSyncTags(Post $post)
+    {
+        $postTags = $post->tags->keyBy('name');
+        $tags = collect(explode(',', request('tags')))->keyBy(function ($item) {
+            return $item;
+        });
+        
+        $syncIds = $postTags->intersectByKeys($tags)->pluck('id')->toArray();
+        $tagsToAttach = $tags->diffKeys($postTags);
+        foreach ($tagsToAttach as $tag) {
+            if (!empty($tag)) {
+                $tag = Tag::firstOrCreate(['name' => $tag]);
+                $syncIds[] = $tag->id;
+            }
+        }
+        
+        $post->tags()->sync($syncIds);
     }
     
     public function destroy(Post $post)
