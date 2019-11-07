@@ -1,4 +1,4 @@
-@extends('layout.master')
+@extends('layout.without_sidebar')
 @section('content')
     <div class="col-md-8 blog-main">
         @if($errors->count())
