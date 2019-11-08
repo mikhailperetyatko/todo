@@ -10,6 +10,11 @@ class PostsController extends Controller
 {
     const AMOUNT_LIMIT = 3;
     
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['show', 'index']);
+    }
+    
     protected function getValidateRulesForCreate() : array
     {
         return [
