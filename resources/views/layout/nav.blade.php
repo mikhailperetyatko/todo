@@ -7,6 +7,28 @@
             <a class="blog-header-logo text-dark" href="/">MyBlog</a>
           </div>
           <div class="col-4 d-flex justify-content-end align-items-center">
+            @guest
+                <a class="btn btn-outline-secondary mr-1 btn-sm" href="{{ route('login') }}">Войти</a> 
+                <a class="btn btn-outline-secondary btn-sm" href="{{ route('register') }}">Зарегистрироваться</a>
+            @else
+                <div class="dropdown">
+                    <a href="#" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" v-pre>
+                        {{ Auth::user()->name }} <span class="caret"></span>
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <a class="dropdown-item btn btn-sm" href="{{ route('logout') }}"
+                            onclick="event.preventDefault();
+                                     document.getElementById('logout-form').submit();">
+                            Выйти
+                        </a>
+
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            {{ csrf_field() }}
+                        </form>
+                    </div>
+                </div>
+            @endguest
           </div>
         </div>
     </header>

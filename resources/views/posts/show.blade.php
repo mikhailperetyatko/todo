@@ -4,12 +4,14 @@
     <div class="col-md-8 blog-main">
         <a href="/"><-Вернуться назад</a>
         <br />
-        <a class="btn btn-secondary" href="/posts/{{ $post->slug }}/edit">Изменить</a>
-        <form class="mt-2 d-inline" method="post" action="/posts/{{$post->slug}}">
-          {{ csrf_field() }}
-          {{ method_field('DELETE') }}
-          <button type="submit" class="btn btn-danger">Удалить</button>
-        </form>
+            @can('update', $post)
+            <a class="btn btn-outline-secondary btn-sm" href="/posts/{{ $post->slug }}/edit">Изменить</a>
+            <form class="mt-2 d-inline" method="post" action="/posts/{{$post->slug}}">
+              {{ csrf_field() }}
+              {{ method_field('DELETE') }}
+              <button type="submit" class="btn btn-outline-danger btn-sm">Удалить</button>
+            </form>
+        @endcan
         <div class="blog-post">
             <h2 class="blog-post-title">
                 {{ $post->title }}

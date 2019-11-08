@@ -10,6 +10,23 @@ class PostsController extends Controller
 {
     const AMOUNT_LIMIT = 3;
     
+    protected function getValidateRulesForCreate() : array
+    {
+        return [
+            'title' => 'required|min:5|max:100',
+            'description' => 'required|max:255',
+            'body' => 'required',
+            'slug' => 'required|regex:/^[0-9A-z_-]+$/|unique:posts'
+        ];
+    }
+    
+    protected function getValidateRulesForUpdate(Post $post) : array
+    {
+        $rules = $this->getValidateRulesForCreate();
+        $rules['slug'] .= ',slug,' . $post->id;
+        return $rules;
+    }
+    
     public function index()
     {
         $posts = Post::with('tags')->latest()->simplePaginate(self::AMOUNT_LIMIT);
@@ -23,39 +40,41 @@ class PostsController extends Controller
     
     public function create()
     {
+        abort_unless(auth()->check(), 403);
         return view('posts.create');
     }
     
     public function store()
     {
-        $attr = request()->validate([
-            'title' => 'required|min:5|max:100',
-            'description' => 'required|max:255',
-            'body' => 'required',
-            'slug' => 'required|regex:/^[0-9A-z_-]+$/|unique:posts'
-        ]);
+        abort_unless(auth()->check(), 403);
+        $attr = request()->validate($this->getValidateRulesForCreate());
         $attr['published'] = request()->has('published');
+        $attr['owner_id'] = auth()->id();
         $this->getSyncTags(Post::create($attr));
         return redirect('/');
     }
     
     public function edit(Post $post)
     {
+        $this->authorize($post);
         return view('posts.edit', compact('post'));
     }
     
     public function update(Post $post)
     {
-        $post->published = request()->has('published');
-        $attr = request()->validate([
-            'title' => 'required|min:5|max:100',
-            'description' => 'required|max:255',
-            'body' => 'required',
-            'slug' => 'required|regex:/^[0-9A-z_-]+$/|unique:posts,slug,' . $post->id 
-        ]);
+        $this->authorize($post);
+        $attr = request()->validate($this->getValidateRulesForUpdate($post));
+        $attr['published'] = request()->has('published');
         $post->update($attr);
         $this->getSyncTags($post);
         return redirect('/posts/' . $post->slug);
+    }
+    
+    public function destroy(Post $post)
+    {
+        $this->authorize($post);
+        $post->delete();
+        return redirect('/');
     }
     
     public function getSyncTags(Post $post)
@@ -75,11 +94,5 @@ class PostsController extends Controller
         }
         
         $post->tags()->sync($syncIds);
-    }
-    
-    public function destroy(Post $post)
-    {
-        $post->delete();
-        return redirect('/');
     }
 }
