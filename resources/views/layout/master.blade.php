@@ -19,9 +19,13 @@
     
     @include('layout.nav')
     
-    <main role="main" class="mb-2"> 
+    <main role="main" class="mb-2">
+        <div class="container">
+            @include('layout.notification') 
+        </div>
         <div class="container">
             <div class="row">
+                
                 @yield('content')
                 
                 @section('sidebar')

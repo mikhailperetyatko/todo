@@ -52,10 +52,13 @@ class PostsController extends Controller
     public function store()
     {
         abort_unless(auth()->check(), 403);
+        
         $attr = request()->validate($this->getValidateRulesForCreate());
         $attr['published'] = request()->has('published');
         $attr['owner_id'] = auth()->id();
         $this->getSyncTags(Post::create($attr));
+        
+        flash('success');
         return redirect('/');
     }
     
@@ -68,17 +71,23 @@ class PostsController extends Controller
     public function update(Post $post)
     {
         $this->authorize($post);
+        
         $attr = request()->validate($this->getValidateRulesForUpdate($post));
         $attr['published'] = request()->has('published');
         $post->update($attr);
         $this->getSyncTags($post);
+        
+        flash('success');
         return redirect('/posts/' . $post->slug);
     }
     
     public function destroy(Post $post)
     {
         $this->authorize($post);
+        
         $post->delete();
+        
+        flash('warning', 'Статья удалена');
         return redirect('/');
     }
     
