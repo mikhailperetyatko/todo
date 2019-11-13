@@ -10,11 +10,6 @@ class PostsController extends Controller
 {
     const AMOUNT_LIMIT = 3;
     
-    public function __construct()
-    {
-        $this->middleware('auth')->except(['show', 'index']);
-    }
-    
     protected function getValidateRulesForCreate() : array
     {
         return [
@@ -45,13 +40,12 @@ class PostsController extends Controller
     
     public function create()
     {
-        abort_unless(auth()->check(), 403);
-        return view('posts.create');
+        return auth()->check() ? view('posts.create') : redirect('/login');
     }
     
     public function store()
     {
-        abort_unless(auth()->check(), 403);
+        $this->authorize(new Post);
         
         $attr = request()->validate($this->getValidateRulesForCreate());
         $attr['published'] = request()->has('published');

@@ -229,6 +229,6 @@ return [
 
     ],
     
-    'adminEmail' => env('MAIL_ADMIN'),
+    'adminEmail' => 'admin@mail.ru',
 
 ];

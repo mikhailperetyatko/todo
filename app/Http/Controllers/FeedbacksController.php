@@ -18,12 +18,12 @@ class FeedbacksController extends Controller
     
     public function store()
     {
-        request()->validate([
+        $attr = request()->validate([
             'email' => 'required|email|max:255',
             'body' => 'required'
         ]);
         
-        Feedback::create(request()->all());
+        Feedback::create($attr);
         return redirect('/');
     }
     
