@@ -16,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
         view()->composer('layout.sidebar', function($view) {
             $view->with('tagsCloud', \App\Tag::has('posts')->get());
         });
+        \App\Post::observe(\App\Observers\PostObserver::class);
     }
 
     /**
