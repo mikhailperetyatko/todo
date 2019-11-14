@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Carbon\Carbon;
 
 class Kernel extends ConsoleKernel
 {
@@ -22,10 +23,14 @@ class Kernel extends ConsoleKernel
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
+     
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
+        $schedule
+            ->command(
+                'app:notify "' . Carbon::yesterday()->startOfWeek()->format('d.m.Y') . '" "' . Carbon::yesterday()->endOfWeek()->format('d.m.Y') . '"'
+            )
+            ->weekly()->mondays()->at('09:00');
     }
 
     /**
