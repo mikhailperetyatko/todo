@@ -20,18 +20,14 @@ class PostsTableSeeder extends Seeder
     
     public function run()
     {
-        app()->singleton('tags', function() {
-            return factory(Tag::class, rand(self::TAGS_COUNT_MIN, self::TAGS_COUNT_MAX))->make();
-        });
-        
-        app()->singleton('users', function() {
-            return factory(User::class, self::USERS_COUNT)->create();
-        });
+        $users = factory(User::class, self::USERS_COUNT)->create();
+        $tags = factory(Tag::class, rand(self::TAGS_COUNT_MIN, self::TAGS_COUNT_MAX))->create();
         
         factory(Post::class, self::POSTS_COUNT)
-            ->create()
-            ->each(function($post) { 
-                    $post->tags()->saveMany(app('tags')->random(rand(1, self::TAGS_COUNT_MIN)));
+            ->create(['owner_id' => $users->first()])
+            ->each(function($post) use ($users, $tags) { 
+                    $post->update(['owner_id' => $users->random()->id]);
+                    $post->tags()->saveMany($tags->random(rand(1, self::TAGS_COUNT_MIN)));
                 }
             )
         ;

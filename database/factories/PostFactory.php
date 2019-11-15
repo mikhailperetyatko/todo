@@ -7,11 +7,11 @@ use Faker\Generator as Faker;
 
 $factory->define(Post::class, function (Faker $faker) {
     return [
-        'owner_id' => app('users')->random(),
+        'owner_id' => factory(\App\User::class)->create()->id,
         'slug' => $faker->unique()->words(1, true),
         'title' => $faker->words(5, true),
-        'description' => $faker->words(15, true),
-        'body' => $faker->words(30, true),
+        'description' => $faker->sentence,
+        'body' => $faker->sentence,
         'published' => (bool) rand(0, 1)
     ];
 });
