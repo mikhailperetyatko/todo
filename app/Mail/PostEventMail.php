@@ -37,7 +37,6 @@ class PostEventMail extends Mailable
 
     public function build()
     {
-        dd($this);
         return $this->markdown($this->mailTemplate);
     }
 }
