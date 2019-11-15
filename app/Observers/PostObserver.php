@@ -9,41 +9,41 @@ class PostObserver
 {
     public function created(Post $post)
     {
-        $values = (new PostObserverValues)->withEvent('Создание')->withLink();
-        $this->sendMailToAdminAboutPostEvent($post, $values);
+        $mail = (new PostEventMail($post))->withEvent('Создание')->withLink();
+        $this->sendMailToAdminAboutPostEvent($post, $mail);
     }
 
     public function updated(Post $post)
     {
-        $values = (new PostObserverValues)->withEvent('Обновление')->withLink();
-        $this->sendMailToAdminAboutPostEvent($post, $values);
+        $mail = (new PostEventMail($post))->withEvent('Обновление')->withLink();
+        $this->sendMailToAdminAboutPostEvent($post, $mail);
     }
 
     public function deleted(Post $post)
     {
-        $values = (new PostObserverValues)->withEvent('Удаление');
-        $this->sendMailToAdminAboutPostEvent($post, $values);
+        $mail = (new PostEventMail($post))->withEvent('Удаление');
+        $this->sendMailToAdminAboutPostEvent($post, $mail);
     }
 
     public function restored(Post $post)
     {
-        $values = (new PostObserverValues)->withEvent('Восстановление')->withLink();
-        $this->sendMailToAdminAboutPostEvent($post, $values);
+        $mail = (new PostEventMail($post))->withEvent('Восстановление')->withLink();
+        $this->sendMailToAdminAboutPostEvent($post, $mail);
     }
 
     public function forceDeleted(Post $post)
     {
-        $values = (new PostObserverValues)->withEvent('Фактическое удаление');
-        $this->sendMailToAdminAboutPostEvent($post, $values);
+        $mail = (new PostEventMail($post))->withEvent('Фактическое удаление');
+        $this->sendMailToAdminAboutPostEvent($post, $mail);
     }
     
-    public function sendMailToAdminAboutPostEvent(Post $post, PostObserverValues $values)
+    public function sendMailToAdminAboutPostEvent(Post $post, PostEventMail $mail)
     {
-        $this->sendMail(config('app.adminEmail'), new PostEventMail($post, $values));
+        $this->sendMail(config('app.adminEmail'), $mail);
     }
     
     public function sendMail(string $email, PostEventMail $mail)
     {
-        \Mail::to($email)->queue($mail);
+        \Mail::to($email)->send($mail);
     }
 }
