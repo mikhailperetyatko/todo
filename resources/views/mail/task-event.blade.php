@@ -1,7 +1,7 @@
 @component('mail::message')
-    Событие: {{ $values->event }} <br />
+    Событие: {{ $event }} <br />
     Заголовок статьи: {{ $post->title }} <br />   
-    @if($values->showLink)
+    @if($showLink)
         @component('mail::button', ['url' => config('app.url') . '/posts/' . $post->slug])
             Перейти к статье
         @endcomponent

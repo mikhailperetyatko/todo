@@ -12,16 +12,32 @@ class PostEventMail extends Mailable
     use Queueable, SerializesModels;
 
     public $post;
-    public $values;
+    public $event = '';
+    public $showLink;
+    public $mailTemplate = '';
     
-    public function __construct(\App\Post $post, \App\Observers\PostObserverValues $values)
+    public function __construct(\App\Post $post, string $template = 'mail.task-event')
     {
-        $this->values = $values;
         $this->post = $post;
+        $this->mailTemplate = $template;
+        $this->showLink = false;
+    }
+    
+    public function withEvent(string $event)
+    {
+        $this->event = $event;
+        return $this;
+    }
+    
+    public function withLink()
+    {
+        $this->showLink = true;
+        return $this;
     }
 
     public function build()
     {
-        return $this->markdown($this->values->mailTemplate);
+        dd($this);
+        return $this->markdown($this->mailTemplate);
     }
 }
