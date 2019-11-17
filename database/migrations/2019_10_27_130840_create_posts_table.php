@@ -25,12 +25,6 @@ class CreatePostsTable extends Migration
 
             $table->foreign('owner_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
         });
-        
-        \App\User::create([
-            'name' => 'Михаил Перетятько',
-            'email' => 'admin@mail.ru',
-            'password' => \Hash::make('Password1!')
-        ]);
     }
 
     /**

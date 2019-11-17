@@ -32,4 +32,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Post::class, 'owner_id');
     }
+    
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
+    }
+    
+    public function isAdmin()
+    {
+        return $this->roles->pluck('name')->contains(config('auth.admins.super.alias'));
+    }
 }

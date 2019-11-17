@@ -98,5 +98,11 @@ return [
             'expire' => 60,
         ],
     ],
+    
+    'admins' => [
+        'super' => [
+            'alias' => env('SUPER_USER_ALIAS'),
+        ],
+    ],
 
 ];

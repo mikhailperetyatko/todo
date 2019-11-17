@@ -10,4 +10,6 @@ Route::view('/about', 'about');
 Route::post('/feedbacks', 'FeedbacksController@store');
 Route::get('/admin/feedbacks', 'FeedbacksController@list');
 
+Route::get('/admin/posts', 'AdminPostsController@index');
+
 Auth::routes();
