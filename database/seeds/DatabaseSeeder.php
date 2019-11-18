@@ -18,7 +18,13 @@ class DatabaseSeeder extends Seeder
                 'password' => \Hash::make('Password1!')
             ])
             ->roles()
-            ->save(factory(\App\Role::class)->create(['name' => config('auth.admins.super.alias')]))
+            ->save(factory(\App\Role::class)->create([
+                'name' => config('auth.admins.super.alias'),
+                'posts_right' => 'm',
+                'feedbacks_right' => 'm',
+                'tags_right' => 'm',
+                'users_right' => 'm',
+            ]))
         ;
 
     }

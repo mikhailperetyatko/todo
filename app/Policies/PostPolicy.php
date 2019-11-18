@@ -9,7 +9,14 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 class PostPolicy
 {
     use HandlesAuthorization;
-
+    
+    public function before($user, $ability)
+    {
+        if ($user->hasRight('posts_right', 'm')) {
+        return true;
+        }
+    } 
+    
     /**
      * Determine whether the user can view the post.
      *
@@ -20,7 +27,7 @@ class PostPolicy
     
     public function create()
     {
-        return auth()->check();
+        return auth()->check() && auth()->user()->hasRight('posts_right', 'w');
     }
 
     /**
@@ -32,7 +39,7 @@ class PostPolicy
      */
     public function update(User $user, Post $post)
     {
-        return $user->id === $post->owner_id;
+        return  $user->id === $post->owner_id;
     }
 
     /**

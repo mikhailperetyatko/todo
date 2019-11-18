@@ -8,8 +8,11 @@ Route::view('/contacts', 'contacts');
 Route::view('/about', 'about');
 
 Route::post('/feedbacks', 'FeedbacksController@store');
+
+Route::view('/admin', 'admin')->middleware('can:administrate');
+
 Route::get('/admin/feedbacks', 'FeedbacksController@list');
 
-Route::get('/admin/posts', 'AdminPostsController@index');
+Route::resource('/admin/posts', 'AdminPostsController');
 
 Auth::routes();

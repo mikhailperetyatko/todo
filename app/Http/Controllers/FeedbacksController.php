@@ -10,6 +10,12 @@ class FeedbacksController extends Controller
     const AMOUNT_LIMIT = 3;
     const PREFIX = 'admin/feedbacks';
     
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('can:administrateFeedbacks');
+    }
+    
     public function list()
     {
         $data = Feedback::latest()->simplePaginate(self::AMOUNT_LIMIT);

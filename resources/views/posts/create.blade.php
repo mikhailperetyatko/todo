@@ -10,7 +10,7 @@
                 </ul>
             </div>
         @endif
-        <form method="post" action="/posts">
+        <form method="post" action="@prefix/posts">
           
           {{ csrf_field() }}
           

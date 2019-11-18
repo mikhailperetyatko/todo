@@ -10,7 +10,7 @@
                 </ul>
             </div>
         @endif
-        <form method="post" action="/posts/{{$post->slug}}">
+        <form method="post" action="@prefix/posts/{{$post->slug}}" class="d-inline">
           
           {{ csrf_field() }}
           {{ method_field('PATCH') }}
@@ -46,6 +46,11 @@
             >
           </div>
           <button type="submit" class="btn btn-primary">Изменить</button>
+        </form>
+        <form class="mt-2 d-inline" method="post" action="../{{$post->slug}}">
+          {{ csrf_field() }}
+          {{ method_field('DELETE') }}
+          <button type="submit" class="btn btn-danger">Удалить</button>
         </form>
     </div>
 

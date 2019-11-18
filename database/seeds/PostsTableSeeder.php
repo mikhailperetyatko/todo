@@ -20,7 +20,14 @@ class PostsTableSeeder extends Seeder
     
     public function run()
     {
-        $users = factory(User::class, self::USERS_COUNT)->create();
+        $role = factory(\App\Role::class)->create();
+            
+        $users = factory(User::class, self::USERS_COUNT)
+            ->create()
+            ->each(function ($user) use ($role) {
+                $user->roles()->save($role);
+            })
+        ;
         $tags = factory(Tag::class, rand(self::TAGS_COUNT_MIN, self::TAGS_COUNT_MAX))->create();
         
         factory(Post::class, self::POSTS_COUNT)
