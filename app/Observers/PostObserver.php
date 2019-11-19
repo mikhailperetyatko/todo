@@ -4,6 +4,8 @@ namespace App\Observers;
 
 use App\Post;
 use App\Mail\PostEventMail;
+use App\Services\Pushall;
+use App\Notifications\PushallNotification;
 
 class PostObserver
 {
@@ -11,6 +13,8 @@ class PostObserver
     {
         $mail = (new PostEventMail($post))->withEvent('Создание')->withLink();
         $this->sendMailToAdminAboutPostEvent($post, $mail);
+
+        $this->sendPushToAdminAboutPostEvent(new PushallNotification('Новая статья', $post));
     }
 
     public function updated(Post $post)
@@ -45,5 +49,10 @@ class PostObserver
     public function sendMail(string $email, PostEventMail $mail)
     {
         //\Mail::to($email)->send($mail);
+    }
+    
+    public function sendPushToAdminAboutPostEvent(PushallNotification $push)
+    {
+        pushall($push);
     }
 }

@@ -30,7 +30,8 @@ class Kernel extends ConsoleKernel
             ->command(
                 'app:notify "' . Carbon::yesterday()->startOfWeek()->format('d.m.Y') . '" "' . Carbon::yesterday()->endOfWeek()->format('d.m.Y') . '"'
             )
-            ->weekly()->mondays()->at('09:00');
+            //->mondays()->everyMinute();
+            ->mondays()->at('09:00');
     }
 
     /**

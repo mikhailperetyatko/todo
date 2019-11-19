@@ -1,4 +1,7 @@
 <?php
+
+use App\Services\Pushall;
+use App\Notifications\PushallNotification;
     
 if (! function_exists('flash')) {
     function flash(string $type, string $message = 'Операция прошла успешно')
@@ -20,6 +23,17 @@ if (! function_exists('conversionRightToNumber')) {
                 return 3;
             default : 
                 return 0;
+        }
+    }    
+}
+
+if (! function_exists('pushall')) {
+    function pushall(PushallNotification $push = null)
+    {
+        if (is_null($push)) {
+            return app(Pushall::class);
+        } else {
+            return app(Pushall::class)->send($push);
         }
     }    
 }

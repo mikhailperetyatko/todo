@@ -177,6 +177,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\TelescopeServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        App\Providers\PushallServiceProvider::class,
 
     ],
 
@@ -230,5 +231,12 @@ return [
     ],
     
     'adminEmail' => env('MAIL_ADMIN'),
+    'pushall' => [
+        'api' => [
+            'id' => env('PUSHALL_APP_ID'),
+            'key' => env('PUSHALL_APP_KEY'),
+            'uri' => 'https://pushall.ru/api.php',
+        ],
+    ],
 
 ];
