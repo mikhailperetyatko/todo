@@ -92,7 +92,7 @@ class PostsController extends Controller
     }
     
     public function getSyncTags(Post $post)
-    {
+    {   
         $postTags = $post->tags->keyBy('name');
         $tags = collect(explode(',', request('tags')))->keyBy(function ($item) {
             return $item;

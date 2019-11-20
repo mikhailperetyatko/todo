@@ -48,7 +48,7 @@ class PostObserver
     
     public function sendMail(string $email, PostEventMail $mail)
     {
-        //\Mail::to($email)->send($mail);
+        \Mail::to($email)->send($mail);
     }
     
     public function sendPushToAdminAboutPostEvent(PushallNotification $push)

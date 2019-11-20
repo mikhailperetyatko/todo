@@ -29,7 +29,6 @@ class PostsTableSeeder extends Seeder
             })
         ;
         $tags = factory(Tag::class, rand(self::TAGS_COUNT_MIN, self::TAGS_COUNT_MAX))->create();
-        
         factory(Post::class, self::POSTS_COUNT)
             ->create(['owner_id' => $users->first()])
             ->each(function($post) use ($users, $tags) { 

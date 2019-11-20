@@ -10,7 +10,6 @@ class Pushall
     private $key;
     protected $uri;
     protected $type;
-    protected $push;
     
     public function __construct($id, $key, $uri, string $type = 'self')
     {
@@ -20,16 +19,21 @@ class Pushall
         $this->type = $type;
     }
     
-    public function send(PushallNotification $push)
+    public function getPostPushData(PushallNotification $push)
     {
-        $data = [
+        return [
             'type' => $this->type,
             'id' => $this->id,
             'key' => $this->key,
             'text' => $push->compile(),
-            'title' => $push->title
+            'title' => $push->title,
+            'url' => $push->getUrlForRedirect(),
         ];
+    }
         
+    public function send(PushallNotification $push, $method = 'getPostPushData')
+    {
+        $data = $this->$method($push);
         $client = new \GuzzleHttp\Client([
             'baze_uri' => $this->uri    
         ]);

@@ -36,5 +36,19 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('administrate', function (\App\User $user) {
             return $user->hasRight('feedbacks_right', 'm') || $user->hasRight('posts_right', 'm');
         });
+        
+/*
+        Gate::define('writeToFeedbacks', function (\App\User $user) {
+            return $user->hasRight('feedbacks_right', 'w');
+        });
+        
+        Gate::define('writeToPosts', function (\App\User $user) {
+            return $user->hasRight('posts_right', 'w');
+        });
+        
+        Gate::define('writeToTags', function (\App\User $user) {
+            return $user->hasRight('tags_right', 'w');
+        });
+*/
     }
 }

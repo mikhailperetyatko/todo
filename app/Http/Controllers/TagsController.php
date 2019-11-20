@@ -7,7 +7,7 @@ use App\Tag;
 use App\Http\Controllers\PostsController;
 
 class TagsController extends Controller
-{
+{   
     public function index(Tag $tag)
     {
         $posts = $tag->posts()->with('tags')->latest()->simplePaginate(PostsController::AMOUNT_LIMIT);
