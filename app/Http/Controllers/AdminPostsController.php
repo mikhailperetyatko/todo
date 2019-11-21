@@ -14,7 +14,7 @@ class AdminPostsController extends PostsController
     {
         $this->middleware('auth');
         $this->middleware('can:administratePosts');
-        $this->prefix = '/admin/';
+        $this->prefix = 'admin/';
     }
     
     public function index()

@@ -5,9 +5,6 @@
         <h3 class="pb-3 mb-4 font-italic border-bottom">
             Административный раздел 
         </h3>
-        <ul>
-            <li><a href="/admin/feedbacks">Обращения</a></li>
-            <li><a href="/admin/posts">Статьи</a></li>
-        </ul>
+        @include('layout.nav_auth')
     </div>
 @endsection

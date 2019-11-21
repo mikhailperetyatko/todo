@@ -9,7 +9,7 @@ Route::view('/about', 'about');
 
 Route::post('/feedbacks', 'FeedbacksController@store');
 
-Route::view('/admin', 'admin')->middleware('can:administrate');
+Route::view('/admin', 'admin')->middleware('auth', 'can:administrate');
 
 Route::get('/admin/feedbacks', 'FeedbacksController@list');
 

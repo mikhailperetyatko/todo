@@ -13,7 +13,7 @@ class PostsController extends Controller
     
     public function __construct()
     {
-        $this->prefix = '/';
+        $this->prefix = '';
     }
     
     protected function getValidateRulesForCreate() : array
@@ -41,7 +41,7 @@ class PostsController extends Controller
     
     public function show(Post $post)
     {
-        return view('posts.show', compact('post', 'prefix'));
+        return view('posts.show', compact('post'));
     }
     
     public function create()
@@ -59,7 +59,7 @@ class PostsController extends Controller
         $this->getSyncTags(Post::create($attr));
         
         flash('success');
-        return redirect($this->prefix . 'posts');
+        return redirect('/' . $this->prefix . 'posts');
     }
     
     public function edit(Post $post)
@@ -78,7 +78,7 @@ class PostsController extends Controller
         $this->getSyncTags($post);
         
         flash('success');
-        return redirect($this->prefix . 'posts/' . $post->slug);
+        return redirect('/' . $this->prefix . 'posts/' . $post->slug);
     }
     
     public function destroy(Post $post)
@@ -88,7 +88,7 @@ class PostsController extends Controller
         $post->delete();
         
         flash('warning', 'Статья удалена');
-        return redirect($this->prefix . 'posts');
+        return redirect('/' . $this->prefix . 'posts');
     }
     
     public function getSyncTags(Post $post)

@@ -2,7 +2,6 @@
 
 @section('content')
     <div class="col-md-8 blog-main">
-        <a href="/"><-Вернуться назад</a>
         <br />
         @can('update', $post)
             <a href="@prefix()/posts/{{ $post->slug }}/edit" class="btn btn-outline-secondary btn-sm">Изменить</a>

@@ -64,7 +64,7 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate()
     {
         Gate::define('viewTelescope', function ($user) {
-            return $user->id == 1;
+            return $user->hasRight('posts_right', 'm');
         });
     }
 }
