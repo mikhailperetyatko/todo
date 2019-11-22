@@ -1,7 +1,7 @@
 <?php
 
 use App\Services\Pushall;
-use App\Notifications\PushallNotification;
+use App\Services\PushallNotification;
     
 if (! function_exists('flash')) {
     function flash(string $type, string $message = 'Операция прошла успешно')

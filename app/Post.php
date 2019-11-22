@@ -23,4 +23,8 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
     
+    public function scopePublishedAndLatest($query)
+    {
+        return $query->where('published', 1)->latest();
+    }
 }

@@ -12,7 +12,7 @@ class PostPolicy
     
     public function before($user, $ability)
     {
-        if ($user->hasRight('posts_right', 'm')) {
+        if ($user->isAdmin()) {
         return true;
         }
     } 
@@ -27,7 +27,7 @@ class PostPolicy
     
     public function create()
     {
-        return auth()->check() && auth()->user()->hasRight('posts_right', 'w');
+        return auth()->check();
     }
 
     /**

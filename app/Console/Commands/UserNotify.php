@@ -29,10 +29,7 @@ class UserNotify extends Command
      *
      * @return void
      */
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    
 
     /**
      * Execute the console command.
@@ -52,7 +49,7 @@ class UserNotify extends Command
                 $this->getDate($this->argument('dateStart')),
                 $this->getDate($this->argument('dateEnd')),
                 ])
-            ->where('published', true)
+            ->publishedAndLatest()
             ->get()
         ;
     }

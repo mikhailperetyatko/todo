@@ -10,7 +10,7 @@
                 </ul>
             </div>
         @endif
-        <form method="post" action="@prefix/posts/{{$post->slug}}" class="d-inline">
+        <form method="post" action="@getLinkForManagePost($post)" class="d-inline">
           
           {{ csrf_field() }}
           {{ method_field('PATCH') }}

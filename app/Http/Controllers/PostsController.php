@@ -35,7 +35,7 @@ class PostsController extends Controller
     
     public function index()
     {
-        $posts = Post::with('tags')->where('published', 1)->latest()->simplePaginate(self::AMOUNT_LIMIT);
+        $posts = Post::with('tags')->publishedAndLatest()->simplePaginate(self::AMOUNT_LIMIT);
         return view('posts', compact('posts'));
     }
     

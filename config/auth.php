@@ -99,10 +99,8 @@ return [
         ],
     ],
     
-    'admins' => [
-        'super' => [
-            'alias' => env('SUPER_USER_ALIAS'),
-        ],
+    'admin' => [
+        'alias' => 'super-user',
     ],
 
 ];

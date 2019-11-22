@@ -13,7 +13,7 @@ class AdminPostsController extends PostsController
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('can:administratePosts');
+        $this->middleware('can:administrate');
         $this->prefix = 'admin/';
     }
     

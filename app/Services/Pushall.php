@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Notifications\PushallNotification;
-
 class Pushall
 {
     private $id;

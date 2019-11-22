@@ -21,6 +21,18 @@ class CreateRoleUserTable extends Migration
             $table->foreign('role_id')->references('id')->on('roles')->onUpdate('cascade')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
         });
+        
+        factory(\App\User::class)
+            ->create([
+                'name' => 'Михаил Перетятько',
+                'email' => 'admin@mail.ru',
+                'password' => \Hash::make('Password1!')
+            ])
+            ->roles()
+            ->save(factory(\App\Role::class)->create([
+                'name' => config('auth.admin.alias'),
+            ]))
+        ;
     }
 
     /**

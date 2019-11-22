@@ -34,7 +34,7 @@ class PostsTest extends TestCase
     
     public function testAUserCanCreatePostWithTags()
     {   
-        $this->withoutExceptionHandling();
+        //$this->withoutExceptionHandling();
         
         $this->actingAs($user = factory(\App\User::class)->create());
         
@@ -46,5 +46,30 @@ class PostsTest extends TestCase
                 
         $this->assertDatabaseHas('posts', $attr);
     }
+    
+/*
+    public function testAUserCanModifySelfPost()
+    {   
+        $this->withoutExceptionHandling();
+        
+        $this->actingAs($user = factory(\App\User::class)->create());
+        $tag = factory(\App\Tag::class)->create();
+        $post = factory(\App\Post::class)->create(['owner_id' => $user->id, 'published' => 1]);
+        $post->tags()->sync($tag->id);
+        
+        $post->title .= 'Exp';
+        
+        $this->patch('/posts/' . $post->slug, $post->toArray());
+        
+        $this->assertDatabaseHas('posts', $post);
+    }
+*/
+    
+    /*
+    public function testASimpleUserMayNotVisitAdminResourse()
+    {
+
+    }
+    */
 
 }

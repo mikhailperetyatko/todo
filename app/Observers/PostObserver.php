@@ -5,7 +5,7 @@ namespace App\Observers;
 use App\Post;
 use App\Mail\PostEventMail;
 use App\Services\Pushall;
-use App\Notifications\PushallNotification;
+use App\Services\PushallNotification;
 
 class PostObserver
 {

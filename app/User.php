@@ -38,10 +38,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class);
     }
     
-    public function hasRight(string $rightName, string $needAccess)
+    public function isAdmin()
     {
-        return  $this->roles->pluck($rightName)->contains(function ($userAccess) use ($needAccess) {
-            return conversionRightToNumber($userAccess) >= conversionRightToNumber($needAccess);
-        });    
+        return $this->roles->pluck('name')->contains(function ($permissionRole) {
+            return $permissionRole == config('auth.admin.alias');
+        });
     }
 }

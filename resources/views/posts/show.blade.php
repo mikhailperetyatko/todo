@@ -4,7 +4,7 @@
     <div class="col-md-8 blog-main">
         <br />
         @can('update', $post)
-            <a href="@prefix()/posts/{{ $post->slug }}/edit" class="btn btn-outline-secondary btn-sm">Изменить</a>
+            <a href="@getLinkForManagePost($post)/edit" class="btn btn-outline-secondary btn-sm">Изменить</a>
         @endcan
         
         <div class="blog-post">
