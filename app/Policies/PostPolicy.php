@@ -37,7 +37,7 @@ class PostPolicy
      */
     public function update(User $user, Post $post)
     {
-        return auth()->user()->id === $post->owner_id;
+        return $user->id === $post->owner_id;
     }
 
     /**
