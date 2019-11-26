@@ -8,14 +8,14 @@ use App\Post;
 use Carbon\Carbon;
 use App\Notifications\UserNotification;
 
-class UserNotify extends Command
+class NotifyUsersAboutNewPosts extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:notify {dateStart} {dateEnd}';
+    protected $signature = 'users-notify:new-posts {dateStart} {dateEnd}';
 
     /**
      * The console command description.
@@ -24,19 +24,6 @@ class UserNotify extends Command
      */
     protected $description = 'Послать уведомление по email об опубликованных статьях';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    
     public function getDate(string $date)
     {
         return Carbon::parse($date);
@@ -49,11 +36,12 @@ class UserNotify extends Command
                 $this->getDate($this->argument('dateStart')),
                 $this->getDate($this->argument('dateEnd')),
                 ])
-            ->publishedAndLatest()
+            ->published()
+            ->latest()
             ->get()
         ;
     }
-     
+    
     public function handle()
     {
         $users = User::select('email')->get();

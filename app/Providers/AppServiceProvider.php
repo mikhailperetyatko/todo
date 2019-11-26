@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
         \App\Post::observe(\App\Observers\PostObserver::class);
         
         \Blade::directive('getLinkForManagePost', function ($exp) {
-            return "<?php echo (auth()->check() && auth()->user()->isAdmin() ? '/admin/posts/' : '/posts/') . {$exp}->slug; ?>";            
+            return "<?php echo url((auth()->check() && auth()->user()->isAdmin() ? '/admin' : '') . '/posts/' . {$exp}->slug); ?>";
         });
         
     }

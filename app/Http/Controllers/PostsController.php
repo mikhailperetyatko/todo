@@ -9,12 +9,6 @@ use App\Tag;
 class PostsController extends Controller
 {
     const AMOUNT_LIMIT = 3;
-    public $prefix;
-    
-    public function __construct()
-    {
-        $this->prefix = '';
-    }
     
     protected function getValidateRulesForCreate() : array
     {
@@ -35,7 +29,7 @@ class PostsController extends Controller
     
     public function index()
     {
-        $posts = Post::with('tags')->publishedAndLatest()->simplePaginate(self::AMOUNT_LIMIT);
+        $posts = Post::with('tags')->published()->latest()->simplePaginate(self::AMOUNT_LIMIT);
         return view('posts', compact('posts'));
     }
     
@@ -59,12 +53,13 @@ class PostsController extends Controller
         $this->getSyncTags(Post::create($attr));
         
         flash('success');
-        return redirect('/' . $this->prefix . 'posts');
+        return redirect('/');
     }
     
     public function edit(Post $post)
     {
         $this->authorize($post);
+        
         return view('posts.edit', compact('post'));
     }
     
@@ -78,7 +73,7 @@ class PostsController extends Controller
         $this->getSyncTags($post);
         
         flash('success');
-        return redirect('/' . $this->prefix . 'posts/' . $post->slug);
+        return redirect(getUrlForRedirect($this, 'show', $post));
     }
     
     public function destroy(Post $post)
@@ -88,7 +83,7 @@ class PostsController extends Controller
         $post->delete();
         
         flash('warning', 'Статья удалена');
-        return redirect('/' . $this->prefix . 'posts');
+        return redirect(getUrlForRedirect($this, 'index'));
     }
     
     public function getSyncTags(Post $post)

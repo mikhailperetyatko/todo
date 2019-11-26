@@ -12,9 +12,7 @@ class PostPolicy
     
     public function before($user, $ability)
     {
-        if ($user->isAdmin()) {
-        return true;
-        }
+        if ($user->isAdmin()) return true;
     } 
     
     /**
@@ -39,7 +37,7 @@ class PostPolicy
      */
     public function update(User $user, Post $post)
     {
-        return  $user->id === $post->owner_id;
+        return auth()->user()->id === $post->owner_id;
     }
 
     /**

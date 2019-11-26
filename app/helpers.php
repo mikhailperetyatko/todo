@@ -11,22 +11,6 @@ if (! function_exists('flash')) {
     }    
 }
 
-if (! function_exists('conversionRightToNumber')) {
-    function conversionRightToNumber(string $rightAccess)
-    {
-        switch ($rightAccess) {
-            case 'r' :
-                return 1;
-            case 'w' :
-                return 2;
-            case 'm' : 
-                return 3;
-            default : 
-                return 0;
-        }
-    }    
-}
-
 if (! function_exists('pushall')) {
     function pushall(PushallNotification $push = null)
     {
@@ -35,5 +19,12 @@ if (! function_exists('pushall')) {
         } else {
             return app(Pushall::class)->send($push);
         }
+    }    
+}
+
+if (! function_exists('getUrlForRedirect')) {
+    function getUrlForRedirect(\App\Http\Controllers\Controller $controller, string $method, $value = null)
+    {
+        return action(class_basename($controller) . '@' . $method, $value);
     }    
 }

@@ -28,7 +28,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule
             ->command(
-                'app:notify "' . Carbon::yesterday()->startOfWeek()->format('d.m.Y') . '" "' . Carbon::yesterday()->endOfWeek()->format('d.m.Y') . '"'
+                'users-notify:new-posts "' . Carbon::yesterday()->startOfWeek()->format('d.m.Y') . '" "' . Carbon::yesterday()->endOfWeek()->format('d.m.Y') . '"'
             )
             //->mondays()->everyMinute();
             ->mondays()->at('09:00');

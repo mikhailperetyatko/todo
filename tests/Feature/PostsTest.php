@@ -19,57 +19,45 @@ class PostsTest extends TestCase
     {
         //$this->withoutExceptionHandling();
         
-        $this->actingAs(factory(\App\User::class)->create());
+        $this->actingAs($user = factory(\App\User::class)->create());
         
-        $this->post('/posts', $attr = [
-            'slug' => $this->faker->unique()->words(1, true),
-            'title' => $this->faker->words(5, true),
-            'description' => $this->faker->words(15, true),
-            'body' => $this->faker->sentence,
-            'published' => 1
-        ]);
+        $this->post('/posts', $attr = factory(\App\Post::class)->raw(['published' => 1, 'owner_id' => $user->id]));
         
         $this->assertDatabaseHas('posts', $attr);
     }
     
     public function testAUserCanCreatePostWithTags()
-    {   
+    {
         //$this->withoutExceptionHandling();
         
         $this->actingAs($user = factory(\App\User::class)->create());
+        $tag_attr = factory(\App\Tag::class)->raw();
         
-        $attr = factory(\App\Post::class)->raw(['owner_id' => $user, 'published' => 1]);
+        $this->post('/posts', 
+            array_merge(
+                $post_attr = factory(\App\Post::class)->raw([
+                    'published' => 1, 
+                    'owner_id' => $user->id,
+                ]),
+                ['tags' => $tag_attr['name']],
+            )
+        );
         
-        $tag = factory(\App\Tag::class)->create();
+        $this->assertDatabaseHas('posts', $post_attr)->assertDatabaseHas('tags', $tag_attr);
+    }
+    
+    public function testAUserCanUpdatePost()
+    {
+        //$this->withoutExceptionHandling();
+        $this->actingAs($user = factory(\App\User::class)->create());
         
-        $this->post('/posts', array_merge($attr, ['tags' => $tag->name]));
-                
+        $post = factory(\App\Post::class)->create(['published' => 1, 'owner_id' => $user->id]);
+        
+        $attr = $post->toArray();
+        $attr['title'] .= '_new';
+        
+        $this->patch('/posts/' . $post->slug, $attr);
+
         $this->assertDatabaseHas('posts', $attr);
     }
-    
-/*
-    public function testAUserCanModifySelfPost()
-    {   
-        $this->withoutExceptionHandling();
-        
-        $this->actingAs($user = factory(\App\User::class)->create());
-        $tag = factory(\App\Tag::class)->create();
-        $post = factory(\App\Post::class)->create(['owner_id' => $user->id, 'published' => 1]);
-        $post->tags()->sync($tag->id);
-        
-        $post->title .= 'Exp';
-        
-        $this->patch('/posts/' . $post->slug, $post->toArray());
-        
-        $this->assertDatabaseHas('posts', $post);
-    }
-*/
-    
-    /*
-    public function testASimpleUserMayNotVisitAdminResourse()
-    {
-
-    }
-    */
-
 }

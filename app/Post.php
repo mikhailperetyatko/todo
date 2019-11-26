@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Post extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
-
+    protected $casts = [
+        'owner_id' => 'integer',
+    ];
+    
     public function getRouteKeyName()
     {
         return 'slug';
@@ -23,8 +26,8 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
     
-    public function scopePublishedAndLatest($query)
+    public function scopePublished($query)
     {
-        return $query->where('published', 1)->latest();
+        return $query->where('published', 1);
     }
 }

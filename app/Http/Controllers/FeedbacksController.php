@@ -13,7 +13,7 @@ class FeedbacksController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('can:administrateFeedbacks');
+        $this->middleware('can:administrate');
     }
     
     public function list()

@@ -230,7 +230,7 @@ return [
 
     ],
     
-    'adminEmail' => env('MAIL_ADMIN'),
+    'adminEmail' => env('MAIL_ADMIN', 'admin@test.com'),
     'pushall' => [
         'api' => [
             'id' => env('PUSHALL_APP_ID'),

@@ -10,7 +10,7 @@ class TagsController extends Controller
 {   
     public function index(Tag $tag)
     {
-        $posts = $tag->posts()->with('tags')->latest()->simplePaginate(PostsController::AMOUNT_LIMIT);
+        $posts = $tag->posts()->published()->with('tags')->latest()->simplePaginate(PostsController::AMOUNT_LIMIT);
         return view('posts', compact('posts'));
     }
 }
