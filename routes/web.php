@@ -1,6 +1,6 @@
 <?php
 
-Route::get('/posts/tags/{tag}', 'TagsController@index');
+Route::get('/tags/{tag}', 'TagsController@index');
 Route::resource('/posts', 'PostsController');
 Route::get('/', 'PostsController@index');
 
@@ -14,5 +14,9 @@ Route::view('/admin', 'admin')->middleware('auth', 'can:administrate');
 Route::get('/admin/feedbacks', 'FeedbacksController@list');
 
 Route::resource('/admin/posts', 'AdminPostsController');
+
+Route::resource('/admin/informations', 'AdminInformationsController');
+Route::get('/informations', 'InformationsController@index');
+Route::get('/informations/{information}', 'InformationsController@show');
 
 Auth::routes();

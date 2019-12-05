@@ -3,8 +3,11 @@
 @section('content')
     <div class="col-md-8 blog-main">
         <h3 class="pb-3 mb-4 font-italic border-bottom">
-            Административный раздел 
+            Новости 
         </h3>
-        @include('layout.nav_auth')
+        @foreach ($informations as $information)
+            @include('informations.item')
+        @endforeach
+        {{ $informations->render() }}
     </div>
 @endsection

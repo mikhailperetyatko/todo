@@ -1,4 +1,4 @@
-@extends('layout.without_sidebar')
+@extends('layout.master')
     
 @section('content')
     <div class="col-md-8 blog-main">

@@ -13,7 +13,7 @@
             </h2>
             <p class="blog-post-meta">Статья добавлена на сайт: {{ $post->created_at->toDayDateTimeString() }}</p>
             <p>{{ $post->body }} </p>
-            @include('posts.tags', ['tags' => $post->tags])
+            @include('tags', ['tags' => $post->tags])
         </div>
     </div>
 @endsection
