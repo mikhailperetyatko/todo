@@ -21,6 +21,11 @@ class Post extends Model
         return $this->morphToMany(Tag::class, 'taggable');
     }
     
+    public function comments()
+    {
+        return $this->morphToMany(Comment::class, 'commentable')->with('owner');
+    }
+    
     public function owner()
     {
         return $this->belongsTo(User::class);

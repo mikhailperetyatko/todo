@@ -10,8 +10,8 @@ class TagsController extends Controller
 {   
     public function index(Tag $tag)
     {
-        $items['informations'] = $tag->informations()->with('tags')->latest()->simplePaginate(PostsController::AMOUNT_LIMIT);
-        $items['posts'] = $tag->posts()->published()->with('tags')->latest()->simplePaginate(PostsController::AMOUNT_LIMIT);
+        $items['informations'] = $tag->informations()->with('tags')->latest()->simplePaginate(config('database.amountLimit'));
+        $items['posts'] = $tag->posts()->published()->with('tags')->latest()->simplePaginate(config('database.amountLimit'));
         return view('news_posts', compact('items'));
     }
 }

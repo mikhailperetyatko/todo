@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use App\Tag;
 
 class AdminInformationsController extends Controller
-{
-    const AMOUNT_LIMIT = 3;
+{   
+    use InformationsTrait;
     
     public function __construct()
     {
@@ -51,12 +51,7 @@ class AdminInformationsController extends Controller
         $information->tags()->sync($syncIds);
     }
     
-    public function index()
-    {
-        $informations = Information::with('tags')->latest()->simplePaginate(self::AMOUNT_LIMIT);
-        return view('informations', compact('informations'));
-    }
-
+    
     public function create()
     {
         return view('informations.create');
@@ -70,11 +65,6 @@ class AdminInformationsController extends Controller
         
         flash('success');
         return redirect(getUrlForRedirect($this, 'show', $information));
-    }
-
-    public function show(Information $information)
-    {
-        return view('informations.show', compact('information'));
     }
 
     public function edit(Information $information)
@@ -94,6 +84,7 @@ class AdminInformationsController extends Controller
 
     public function destroy(Information $information)
     {
+        $information->comments()->delete();
         $information->delete();
         
         flash('warning', 'Новость удалена');

@@ -1,6 +1,9 @@
 <?php
 
 Route::get('/tags/{tag}', 'TagsController@index');
+Route::post('/posts/{post}/comments', 'CommentsController@toPost');
+Route::post('/informations/{information}/comments', 'CommentsController@toInformation');
+
 Route::resource('/posts', 'PostsController');
 Route::get('/', 'PostsController@index');
 

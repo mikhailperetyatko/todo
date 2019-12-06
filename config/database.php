@@ -116,5 +116,7 @@ return [
         ],
 
     ],
+    
+    'amountLimit' => 3,
 
 ];

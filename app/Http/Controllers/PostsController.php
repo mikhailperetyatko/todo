@@ -7,9 +7,7 @@ use App\Post;
 use App\Tag;
 
 class PostsController extends Controller
-{
-    const AMOUNT_LIMIT = 3;
-    
+{   
     protected function getValidateRulesForCreate() : array
     {
         return [
@@ -29,13 +27,14 @@ class PostsController extends Controller
     
     public function index()
     {
-        $posts = Post::with('tags')->published()->latest()->simplePaginate(self::AMOUNT_LIMIT);
+        $posts = Post::with('tags')->published()->latest()->simplePaginate(config('database.amountLimit'));
         return view('posts', compact('posts'));
     }
     
     public function show(Post $post)
     {
-        return view('posts.show', compact('post'));
+        $comments = $post->comments()->latest()->simplePaginate(config('database.amountLimit'));
+        return view('posts.show', compact('post', 'comments'));
     }
     
     public function create()
@@ -80,6 +79,7 @@ class PostsController extends Controller
     {
         $this->authorize($post);
         
+        $post->comments()->delete();
         $post->delete();
         
         flash('warning', 'Статья удалена');
