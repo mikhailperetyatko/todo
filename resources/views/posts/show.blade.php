@@ -15,6 +15,34 @@
             <p>{{ $post->body }} </p>
             @include('tags', ['tags' => $post->tags])
             <hr />
+            <h5>История изменений</h5>
+            @if($post->history->isNotEmpty())
+                <table class="table">
+                  <thead class="thead-light">
+                    <tr>
+                      <th scope="col">Пользователь</th>
+                      <th scope="col">Дата изменения</th>
+                      <th scope="col">Было</th>
+                      <th scope="col">Стало</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @foreach($post->history as $item)
+                        <tr>
+                            <td>{{ $item->name }}</td>
+                            <td>{{ $item->pivot->created_at->diffForHumans() }}</td>
+                            <td>{{ $item->pivot->before }}</td>
+                            <td>{{ $item->pivot->after }}</td>
+                        </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+            @else
+                <p>Истории нет</p>
+            
+            @endif
+                        
+            <hr />
             @if(auth()->check())
                 <form method="post" action="/posts/{{ $post->slug }}/comments">
                   {{ csrf_field() }}
