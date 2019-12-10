@@ -22,4 +22,6 @@ Route::resource('/admin/informations', 'AdminInformationsController');
 Route::get('/informations', 'InformationsController@index');
 Route::get('/informations/{information}', 'InformationsController@show');
 
+Route::get('/statistics', 'StatisticsController@show');
+
 Auth::routes();

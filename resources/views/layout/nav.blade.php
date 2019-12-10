@@ -39,6 +39,7 @@
           <a class="p-2 text-muted" href="/contacts">Контакты</a>
           <a class="p-2 text-muted" href="/posts/create">Создать статью</a>
           <a class="p-2 text-muted" href="/informations">Новости</a>
+          <a class="p-2 text-muted" href="/statistics">Статистика</a>
           @can('administrate')
             <a class="p-2 text-muted" href="/admin">Административный раздел</a>
           @endcan

@@ -52,6 +52,6 @@ class Post extends Model
     
     public function history()
     {
-        return $this->belongsToMany(User::class, 'post_histories')->withPivot(['before', 'after'])->withTimestamps();
+        return $this->belongsToMany(User::class, 'post_histories')->withPivot(['before', 'after'])->using('App\PostHistory')->withTimestamps();
     }
 }

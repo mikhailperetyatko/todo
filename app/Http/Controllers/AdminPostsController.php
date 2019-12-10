@@ -18,7 +18,7 @@ class AdminPostsController extends PostsController
     
     public function index()
     {
-        $posts = Post::with('tags')->latest()->simplePaginate(self::AMOUNT_LIMIT);
+        $posts = Post::with('tags')->latest()->simplePaginate(config('database.amountLimit'));
         return view('posts', compact('posts'));
     }
 }

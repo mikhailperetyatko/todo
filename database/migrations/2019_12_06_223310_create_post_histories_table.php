@@ -17,8 +17,8 @@ class CreatePostHistoriesTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned();
             $table->integer('post_id')->unsigned();
-            $table->text('before')->nullable();
-            $table->text('after')->nullable();
+            $table->json('before')->nullable();
+            $table->json('after')->nullable();
             $table->timestamps();
 
             $table->foreign('post_id')->references('id')->on('posts')->onUpdate('cascade')->onDelete('cascade');

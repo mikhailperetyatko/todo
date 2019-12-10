@@ -22,8 +22,7 @@
                     <tr>
                       <th scope="col">Пользователь</th>
                       <th scope="col">Дата изменения</th>
-                      <th scope="col">Было</th>
-                      <th scope="col">Стало</th>
+                      <th scope="col">Изменения</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -31,8 +30,23 @@
                         <tr>
                             <td>{{ $item->name }}</td>
                             <td>{{ $item->pivot->created_at->diffForHumans() }}</td>
-                            <td>{{ $item->pivot->before }}</td>
-                            <td>{{ $item->pivot->after }}</td>
+                            <td>
+                                <table>
+                                    <tr>
+                                        <th>Поле</th>
+                                        <th>Было</th>
+                                        <th>Стало</th>
+                                    </tr>
+                                    @foreach($item->pivot->before as $key => $change)  
+                                        <tr>
+                                            <td>@getNameOfPostAttributeInRussian($key)</td>
+                                            <td>{{ $change }}</td>
+                                            <td>{{ $item->pivot->after->$key }}</td>
+                                        </tr>
+                                        <p></p>
+                                    @endforeach
+                                </table>
+                            </td>
                         </tr>
                     @endforeach
                   </tbody>
