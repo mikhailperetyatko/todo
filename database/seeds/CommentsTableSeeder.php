@@ -5,6 +5,7 @@ use App\Post;
 use App\Information;
 use App\Comment;
 use App\User;
+use Illuminate\Database\Eloquent\Model;
 
 class CommentsTableSeeder extends Seeder
 {
@@ -22,24 +23,19 @@ class CommentsTableSeeder extends Seeder
         return factory(Comment::class, rand(self::COMMENTS_COUNT_MIN, self::COMMENTS_COUNT_MAX))->create(['owner_id' => User::all()->random()->id]);
     }
     
-    private function saveToPost(Post $post)
+    private function saveThroughModel(Model $model)
     {
-        $post->comments()->saveMany($this->getComments());
-    }
-    
-    private function saveToInformation(Information $information)
-    {
-        $information->comments()->saveMany($this->getComments());
+        $model->comments()->saveMany($this->getComments());
     }
     
     public function run()
     {
         $posts = Post::all()->each(function ($post) {
-            $this->saveToPost($post);
+            $this->saveThroughModel($post);
         });
         
         $informations = Information::all()->each(function ($information) {
-            $this->saveToInformation($information);
+            $this->saveThroughModel($information);
         });
     }
 }
