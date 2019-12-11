@@ -78,8 +78,7 @@ class PostsController extends Controller
     public function destroy(Post $post)
     {
         $this->authorize($post);
-        
-        $post->comments()->delete();
+
         $post->delete();
         
         flash('warning', 'Статья удалена');

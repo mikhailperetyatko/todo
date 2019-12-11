@@ -37,9 +37,9 @@
                                         <th>Было</th>
                                         <th>Стало</th>
                                     </tr>
-                                    @foreach($item->pivot->before as $key => $change)  
+                                    @foreach($item->pivot->before as $key => $change)
                                         <tr>
-                                            <td>@getNameOfPostAttributeInRussian($key)</td>
+                                            <td>@lang('messages.tables.posts.fields.' . $key)</td>
                                             <td>{{ $change }}</td>
                                             <td>{{ $item->pivot->after->$key }}</td>
                                         </tr>

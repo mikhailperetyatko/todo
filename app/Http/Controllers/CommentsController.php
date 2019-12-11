@@ -14,15 +14,14 @@ class CommentsController extends Controller
         $this->middleware('auth');
     }
     
-    public function store()
+    private function store()
     {
         $attr = request()->validate([
             'body' => 'required'
         ]);
         $attr['owner_id'] = auth()->id();
-        $comment = Comment::create($attr);
         
-        return $comment; 
+        return Comment::create($attr);
     }    
     
     public function toPost(Request $request, Post $post)

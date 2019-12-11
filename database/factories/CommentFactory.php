@@ -8,5 +8,6 @@ use Faker\Generator as Faker;
 $factory->define(Comment::class, function (Faker $faker) {
     return [
         'body' => $faker->sentence,
+        'owner_id' => factory(\App\User::class),
     ];
 });

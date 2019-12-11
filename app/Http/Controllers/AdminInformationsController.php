@@ -84,7 +84,6 @@ class AdminInformationsController extends Controller
 
     public function destroy(Information $information)
     {
-        $information->comments()->delete();
         $information->delete();
         
         flash('warning', 'Новость удалена');

@@ -15,26 +15,12 @@ class PostHistory extends Pivot
     
     public function getBeforeAttribute($value)
     {
-        return $this->convertAllBooleanToCharInJson($value);
+        return json_decode($value);
     }
     
     public function getAfterAttribute($value)
     {
-        return $this->convertAllBooleanToCharInJson($value);
-    }
-    
-    public function boolToChar(bool $value)
-    {
-        return $value ? 'on' : 'off';
-    }
-    
-    public function convertAllBooleanToCharInJson(string $value)
-    {
-        $value = json_decode($value);
-        foreach ($value as $key => $item) {
-            if (gettype($item) == 'boolean') $value->$key = $this->boolToChar($item);
-        }
-        return $value;
+        return json_decode($value);
     }
     
     public function user()

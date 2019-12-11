@@ -23,6 +23,9 @@ class Post extends Model
                 'after' => json_encode($after),
             ]);
         });
+        static::deleting(function(Post $post) {
+            $post->comments()->delete();
+        });
     }
     
     public function getRouteKeyName()

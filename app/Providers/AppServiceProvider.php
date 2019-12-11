@@ -28,30 +28,6 @@ class AppServiceProvider extends ServiceProvider
             return "<?php echo url((auth()->check() && auth()->user()->isAdmin() ? '/admin' : '') . '/informations/' . {$exp}->slug); ?>";
         });
         
-        \Blade::directive('getNameOfPostAttributeInRussian', function ($exp) {
-            return "<?php
-                switch(($exp)) {
-                    case 'slug' :
-                        echo 'Символьный код';
-                        break;
-                    case 'title' :
-                        echo 'Название статьи';
-                        break;
-                    case 'description' :
-                        echo 'Краткое описание';
-                        break;
-                    case 'body' :
-                        echo 'Текст статьи';
-                        break;
-                    case 'published' :
-                        echo 'Опубликован';
-                        break;
-                    default : 
-                        echo '';
-                }
-            ?>";
-        });
-        
         Relation::morphMap([
             'posts' => 'Post',
             'informations' => 'Information',

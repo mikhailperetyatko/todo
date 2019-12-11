@@ -47,7 +47,7 @@
           </div>
           <button type="submit" class="btn btn-primary">Изменить</button>
         </form>
-        <form class="mt-2 d-inline" method="post" action="../{{$post->slug}}">
+        <form class="mt-2 d-inline" method="post" action="@getLinkForManagePost($post)">
           {{ csrf_field() }}
           {{ method_field('DELETE') }}
           <button type="submit" class="btn btn-danger">Удалить</button>

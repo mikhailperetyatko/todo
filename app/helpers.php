@@ -2,6 +2,7 @@
 
 use App\Services\Pushall;
 use App\Services\PushallNotification;
+use App\Services\Statistics;
     
 if (! function_exists('flash')) {
     function flash(string $type, string $message = 'Операция прошла успешно')
@@ -19,6 +20,22 @@ if (! function_exists('pushall')) {
         } else {
             return app(Pushall::class)->send($push);
         }
+    }    
+}
+
+if (! function_exists('getStatistics')) {
+    function getStatistics() : array
+    {
+        return (new Statistics)->withMethods([
+            'getAmountPosts',
+            'getAmountInformations',
+            'getUserWhoHasTheMostPosts',
+            'getBiggestPost',
+            'getSmallerPost',
+            'getAveragePostsOfActiveUsers',
+            'getMostCommentable',
+            'getMostChangeable',
+        ])->get();
     }    
 }
 

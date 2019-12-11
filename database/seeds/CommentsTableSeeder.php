@@ -8,7 +8,7 @@ use App\User;
 
 class CommentsTableSeeder extends Seeder
 {
-    const COMMENTS_COUNT_MIN = 5;
+    const COMMENTS_COUNT_MIN = 2;
     const COMMENTS_COUNT_MAX = 10;
     
     /**
@@ -17,22 +17,29 @@ class CommentsTableSeeder extends Seeder
      * @return void
      */
     
+    private function getComments()
+    {
+        return factory(Comment::class, rand(self::COMMENTS_COUNT_MIN, self::COMMENTS_COUNT_MAX))->create(['owner_id' => User::all()->random()->id]);
+    }
+    
+    private function saveToPost(Post $post)
+    {
+        $post->comments()->saveMany($this->getComments());
+    }
+    
+    private function saveToInformation(Information $information)
+    {
+        $information->comments()->saveMany($this->getComments());
+    }
+    
     public function run()
     {
-        $posts = Post::all();
-        $informations = Information::all();
-        factory(Comment::class, rand(self::COMMENTS_COUNT_MIN, self::COMMENTS_COUNT_MAX))
-            ->create(['owner_id' => User::first()])
-            ->each(function($comment) use ($posts, $informations) { 
-                    $comment->owner_id = User::orderBy(DB::raw('RAND()'))->take(1)->first()->id;
-                    if (rand(0, 1)) {
-                        $comment->posts()->saveMany($posts->random(1));
-                    } else {
-                        $comment->informations()->saveMany($informations->random(1));
-                    }
-                    $comment->save();
-                }
-            )
-        ;
+        $posts = Post::all()->each(function ($post) {
+            $this->saveToPost($post);
+        });
+        
+        $informations = Information::all()->each(function ($information) {
+            $this->saveToInformation($information);
+        });
     }
 }

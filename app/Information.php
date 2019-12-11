@@ -12,6 +12,14 @@ class Information extends Model
         'owner_id' => 'integer',
     ];
     
+    protected static function boot()
+    {
+        parent::boot();
+        static::deleting(function(Information $information) {
+            $information->comments()->delete();
+        });
+    }
+    
     public function getRouteKeyName()
     {
         return 'slug';
