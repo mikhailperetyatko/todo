@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use App\Services\Statistics;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,6 +33,10 @@ class AppServiceProvider extends ServiceProvider
             'posts' => 'Post',
             'informations' => 'Information',
         ]);
+        
+        app()->singleton(Statistics::class, function() {
+            return new Statistics;
+        });
         
     }
 

@@ -4,19 +4,17 @@ namespace App\Services;
 
 class Statistics
 {
-    protected $statistics = [];
-    
-    protected function getAmountPosts()
+    public function getAmountPosts()
     {
         return \DB::table('posts')->count();
     }
     
-    protected function getAmountInformations()
+    public function getAmountInformations()
     {
         return \DB::table('informations')->count();
     }
     
-    protected function getUserWhoHasTheMostPosts()
+    public function getUserWhoHasTheMostPosts()
     {
         return \DB::table('posts')
                     ->select('users.name', \DB::raw('count(*) as amount_post, owner_id'))
@@ -36,17 +34,17 @@ class Statistics
         ;
     }
     
-    protected function getBiggestPost()
+    public function getBiggestPost()
     {
         return $this->getPostByLengthProperty('desc');
     }
     
-    protected function getSmallerPost()
+    public function getSmallerPost()
     {
         return $this->getPostByLengthProperty('asc');
     }
     
-    protected function getAveragePostsOfActiveUsers()
+    public function getAveragePostsOfActiveUsers()
     {
         $subquery = \DB::table('posts')
                     ->select(\DB::raw('count(*) as amount_post'))
@@ -61,7 +59,7 @@ class Statistics
         //->select(\DB::raw('avg(agr.amount_post) as average'))->first()
     }
     
-    protected function getMostCommentable()
+    public function getMostCommentable()
     {
         return \DB::table('commentables')
                     ->join('posts', 'posts.id', 'commentable_id')
@@ -73,7 +71,7 @@ class Statistics
         ;
     }
     
-    protected function getMostChangeable()
+    public function getMostChangeable()
     {
         return \DB::table('post_histories')
                     ->join('posts', 'posts.id', 'post_id')
@@ -82,29 +80,5 @@ class Statistics
                     ->orderBy('amount_changes', 'desc')
                     ->first() ?? null
         ;
-    }
-    
-    public function prepareKey(string $key)
-    {
-        return lcfirst(str_replace('get', '', $key));
-    }
-    
-    public function withMethod(string $method)
-    {   
-        if (method_exists($this, $method)) $this->statistics[$this->prepareKey($method)] = $this->$method();
-        return $this;
-    }
-    
-    public function withMethods(array $methods)
-    {
-        foreach ($methods as $method) {
-            $this->withMethod($method);
-        }
-        return $this;
-    }
-    
-    public function get()
-    {
-        return $this->statistics;
-    }
+    }   
 }

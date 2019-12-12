@@ -3,11 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\Statistics;
 
 class StatisticsController extends Controller
 {    
-    public function show()
+    public function show(Statistics $statistics)
     {
-        return view('statistics', getStatistics());
+        return view('statistics', [
+            'amountPosts' => $statistics->getAmountPosts(),
+            'amountInformations' => $statistics->getAmountInformations(),
+            'userWhoHasTheMostPosts' => $statistics->getUserWhoHasTheMostPosts(),
+            'biggestPost' => $statistics->getBiggestPost(),
+            'smallerPost' => $statistics->getSmallerPost(),
+            'averagePostsOfActiveUsers' => $statistics->getAveragePostsOfActiveUsers(),
+            'mostCommentable' => $statistics->getMostCommentable(),
+            'mostChangeable' => $statistics->getMostChangeable(),
+        ]);
     }
 }

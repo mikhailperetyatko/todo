@@ -23,22 +23,6 @@ if (! function_exists('pushall')) {
     }    
 }
 
-if (! function_exists('getStatistics')) {
-    function getStatistics() : array
-    {
-        return (new Statistics)->withMethods([
-            'getAmountPosts',
-            'getAmountInformations',
-            'getUserWhoHasTheMostPosts',
-            'getBiggestPost',
-            'getSmallerPost',
-            'getAveragePostsOfActiveUsers',
-            'getMostCommentable',
-            'getMostChangeable',
-        ])->get();
-    }    
-}
-
 if (! function_exists('getUrlForRedirect')) {
     function getUrlForRedirect(\App\Http\Controllers\Controller $controller, string $method, $value = null)
     {

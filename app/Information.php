@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Information extends Model
 {
+    use CommentableAndTaggableTrait;
     protected $guarded = ['id', 'created_at', 'updated_at'];
     protected $table = 'informations';
     protected $casts = [
@@ -15,23 +16,11 @@ class Information extends Model
     protected static function boot()
     {
         parent::boot();
-        static::deleting(function(Information $information) {
-            $information->comments()->delete();
-        });
+        static::deleting(static::deletingComments());
     }
     
     public function getRouteKeyName()
     {
         return 'slug';
-    }
-    
-    public function tags()
-    {
-        return $this->morphToMany(Tag::class, 'taggable');
-    }
-    
-    public function comments()
-    {
-        return $this->morphToMany(Comment::class, 'commentable');
     }
 }
