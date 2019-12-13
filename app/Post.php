@@ -24,7 +24,6 @@ class Post extends Model
                 'after' => json_encode($after),
             ]);
         });
-        static::deleting(static::deletingComments());
     }
     
     public function getRouteKeyName()

@@ -16,10 +16,10 @@ trait CommentableAndTaggableTrait
         return $this->morphToMany(Comment::class, 'commentable')->with('owner');
     }
     
-    public static function deletingComments()
+    public static function bootCommentableAndTaggableTrait()
     {
-        return function(self $model) {
+        static::deleting(function ($model){
             $model->comments()->delete();
-        };
+        });
     }
 }
