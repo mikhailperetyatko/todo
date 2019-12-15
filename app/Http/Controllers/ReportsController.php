@@ -14,6 +14,7 @@ class ReportsController extends Controller
     
     public function job()
     {
-        StatisticsReport::dispatchNow()->onQueue('reports');
+        StatisticsReport::dispatchNow(['posts', 'informations', 'tags', 'comments', 'users', 'commentables']);
+        //StatisticsReport::dispatchNow()->onQueue('reports');
     }
 }

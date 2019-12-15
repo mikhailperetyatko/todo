@@ -7,30 +7,28 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use App\Services\Statistics;
 use App\User;
+use App\Mail\ReportMail;
 
 class StatisticsReport implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $models = [];
-    /**
-     * Create a new job instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    protected $mail;
+    
+    public function __construct(array $allowedTables)
     {
-        dd(request()->input());
+        $this->mail = new ReportMail();
+        
+        foreach ($allowedTables as $table) {
+            if (request()->input($table)) {
+                $methodName = 'with' . ucfirst($table);
+                $this->mail->$methodName();
+            }
+        }
     }
-
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
-    public function handle(Statistics $statistics, User $user)
+ 
+    public function handle()
     {
-        //\Mail::to($user->email)->send($mail);
+        if(! empty($this->mail->tables)) \Mail::to(auth()->user()->email)->send($this->mail);
     }
 }

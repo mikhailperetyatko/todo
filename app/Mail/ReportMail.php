@@ -6,37 +6,47 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Services\Statistics;
 
-class PostEventMail extends Mailable
+class ReportMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $post;
-    public $event = '';
-    public $showLink;
-    public $mailTemplate = '';
+    public $tables = [];
+    protected $mailTemplate;
+    protected $attachment;
     
-    public function __construct(\App\Post $post, string $template = 'mail.task-event')
+    public function __construct(string $template = 'mail.report')
     {
-        $this->post = $post;
         $this->mailTemplate = $template;
-        $this->showLink = false;
     }
     
-    public function withEvent(string $event)
+    public function __call($method, $parameters)
     {
-        $this->event = $event;
+        $table = snake_case(str_replace('with', '', $method));
+        $this->tables[$table] = $this->getItemsAmount($table);
         return $this;
     }
     
-    public function withLink()
+    protected function getItemsAmount(string $table)
     {
-        $this->showLink = true;
-        return $this;
+        return app(Statistics::class)->getTableCount($table);
     }
-
+    
     public function build()
     {
-        return $this->markdown($this->mailTemplate);
+        $generator = new \App\Services\GeneratorExcel();
+        $generator->putTitle('Отчет')->putHeader(['Таблица', 'Количество записей']);
+        
+        foreach ($this->tables as $table => $value)
+        {
+            $generator->putRowWithStandartStyle([trans("messages.tables.$table.name"), $value]);
+        }
+        $file = time() . '.xls';
+        $generator->save($file);
+        
+        return $this->markdown($this->mailTemplate)->attachData($file, $file, [
+                'mime' => 'application/xls',
+              ]);
     }
 }

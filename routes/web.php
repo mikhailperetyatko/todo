@@ -24,7 +24,7 @@ Route::get('/informations/{information}', 'InformationsController@show');
 
 Route::get('/statistics', 'StatisticsController@show');
 
-Route::get('/admin/reports', 'ReportsController@show');
-Route::post('/admin/reports', 'ReportsController@job');
+Route::get('/admin/reports', 'ReportsController@show')->middleware('auth', 'can:administrate');
+Route::post('/admin/reports', 'ReportsController@job')->middleware('auth', 'can:administrate');
 
 Auth::routes();
