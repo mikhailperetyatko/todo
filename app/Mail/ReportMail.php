@@ -11,42 +11,24 @@ use App\Services\Statistics;
 class ReportMail extends Mailable
 {
     use Queueable, SerializesModels;
-
-    public $tables = [];
-    protected $mailTemplate;
-    protected $attachment;
+    use \App\ReportableTrait;
     
-    public function __construct(string $template = 'mail.report')
+    protected $mailTemplate;
+    
+    public function withTemplate(string $template)
     {
         $this->mailTemplate = $template;
-    }
-    
-    public function __call($method, $parameters)
-    {
-        $table = snake_case(str_replace('with', '', $method));
-        $this->tables[$table] = $this->getItemsAmount($table);
         return $this;
     }
     
-    protected function getItemsAmount(string $table)
+    public function withDefaultTemplate()
     {
-        return app(Statistics::class)->getTableCount($table);
+        $this->withTemplate('mail.report');
+        return $this;
     }
-    
+        
     public function build()
     {
-        $generator = new \App\Services\GeneratorExcel();
-        $generator->putTitle('Отчет')->putHeader(['Таблица', 'Количество записей']);
-        
-        foreach ($this->tables as $table => $value)
-        {
-            $generator->putRowWithStandartStyle([trans("messages.tables.$table.name"), $value]);
-        }
-        $file = time() . '.xls';
-        $generator->save($file);
-        
-        return $this->markdown($this->mailTemplate)->attachData($file, $file, [
-                'mime' => 'application/xls',
-              ]);
+        return $this->markdown($this->mailTemplate);
     }
 }

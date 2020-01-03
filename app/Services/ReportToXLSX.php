@@ -2,8 +2,9 @@
 
 namespace App\Services;
 use PHPExcel;
+use Illuminate\Support\Facades\Storage;
 
-class GeneratorExcel
+class ReportToXLSX
 {
     protected $document;
     protected $sheet;
@@ -177,7 +178,8 @@ class GeneratorExcel
     
     public function save($file)
     {
-        $objWriter = \PHPExcel_IOFactory::createWriter($this->document, 'Excel5');
-        $objWriter->save($file);
+        $objWriter = \PHPExcel_IOFactory::createWriter($this->document, 'Excel2007');
+        if (! in_array(config('filesystems.disks.reportsStorage.dirname'), Storage::directories())) Storage::makeDirectory(config('filesystems.filesystems.disks.reportsStorage.dirname'));
+        $objWriter->save(config('filesystems.disks.reportsStorage.root') . '/' . $file);
     }
 }

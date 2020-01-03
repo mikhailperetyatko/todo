@@ -32,6 +32,12 @@ class Kernel extends ConsoleKernel
             )
             //->mondays()->everyMinute();
             ->mondays()->at('09:00');
+            
+        $schedule
+            ->command(
+                'horizon:snapshot'
+            )
+            ->everyFiveMinutes();
     }
 
     /**

@@ -2,6 +2,15 @@
     
 @section('content')
     <div class="col-md-8 blog-main">
+        @if($errors->count())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <h3 class="pb-3 mb-4 font-italic border-bottom">
             Сформировать отчет 
         </h3>

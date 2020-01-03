@@ -47,6 +47,12 @@ return [
             'driver' => 'local',
             'root' => storage_path('app'),
         ],
+        
+        'reportsStorage' => [
+            'driver' => 'local',
+            'root' => storage_path('app') . '/reports',
+            'dirname' => 'reports',
+        ],
 
         'public' => [
             'driver' => 'local',
@@ -64,5 +70,4 @@ return [
         ],
 
     ],
-
 ];
