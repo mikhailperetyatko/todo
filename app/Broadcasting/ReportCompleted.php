@@ -24,6 +24,6 @@ class ReportCompleted
      */
     public function join(User $user, User $initUser)
     {
-        return $user->id == $initUser->id;
+        return $user->isAdmin() && $user->id == $initUser->id;
     }
 }
