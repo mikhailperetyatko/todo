@@ -40,8 +40,10 @@
         <div style="position: absolute; top: 0; right: 0;">
             <div class="container focus">
                 <post-update></post-update>
-                @if($_SERVER['REQUEST_URI'] == '/admin/reports')
-                    <report-generated user="{{ auth()->user()->id }}"></report-generated>
+                @if(! empty($vues))
+                    @foreach($vues as $vue)
+                        <{{ $vue['component'] }} {{! empty($vue['key']) ? ($vue['key'] . '=' . $vue['value']) : ''}}></{{ $vue['component'] }}>
+                    @endforeach
                 @endif     
             </div>            
         </div>

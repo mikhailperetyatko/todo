@@ -19,51 +19,52 @@ use App\Events\GenerateReport;
 class StatisticsReport implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    protected $reportFile;
     protected $dataHandler;
-    protected $filename;
     protected $user;
-    protected $needTables = [];
+    protected $models = [];
     
-    public function __construct(array $allowedTables, \App\User $user)
+    public function __construct(array $models, \App\User $user)
     {
         $this->user = $user;
-        $this->filename = $this->generateFileName();
-        $this->reportFile = new ReportToXLSX();
-        $this->dataHandler = new ReportableDataHandler($this->filename);
-        foreach ($allowedTables as $table) {
-            if (request()->input($table)) $this->needTables[] = $table;
-        }
+        $this->models = $models;
+        $this->dataHandler = app(ReportableDataHandler::class);
     }
-    
-    protected function generateFileName()
-    {
-        return $this->user->id . '_' . md5(microtime()) . '.xlsx';
-    }
-    
+        
     protected function addStatistics($name, $data)
     {
         $this->dataHandler->addStatistics([
             'name' => trans("messages.tables.$name.name"),  'data' => $data
         ]);
-        $this->reportFile->putRowWithStandartStyle([
-            trans("messages.tables.$name.name"), $data
-        ]);
     }
  
     public function handle()
     {
-        if (! empty($this->needTables)) {
-        $this->reportFile->putTitle('Отчет')->putHeader(['Таблица', 'Количество записей']);
-        foreach ($this->needTables as $table) {
-            $this->addStatistics($table, app(Statistics::class)->getTableCount($table));
-        }
-        $this->reportFile->save($this->filename);
-        $reportMail = (new ReportMail($this->dataHandler))->withDefaultTemplate();   
-        
-        \Mail::to($this->user->email)->send($reportMail);
-        event((new GenerateReport($this->dataHandler))->forUser($this->user));
-        ReportDelete::dispatch($this->filename)->onQueue('reports')->delay(now()->addHours(config('app.delayBeforeDeleteReportInHours')));
+        if (! empty($this->models)) {
+            foreach ($this->models as $model) {
+                $this->addStatistics($model, app(Statistics::class)->getTableCount($model));
+            }
+            
+            app(ReportToXLSX::class)
+                ->putTitle('Отчет')->putHeader(['Таблица', 'Количество записей'])
+                ->putRowsFromReportableDataHandlerWithStandartStyle($this->dataHandler)
+                ->save($this->dataHandler->getFilename())
+            ;
+            
+            \Mail::to($this->user->email)
+                ->send(
+                    app(ReportMail::class)
+                        ->setDataFromReportableDataHandler($this->dataHandler)
+                        ->withDefaultTemplate()
+                )
+            ;
+            
+            event(
+                app(GenerateReport::class)
+                    ->setDataFromReportableDataHandler($this->dataHandler)
+                    ->forUser($this->user)
+            );
+            
+            ReportDelete::dispatch($this->dataHandler->getFilename())->onQueue('reports')->delay(now()->addHours(config('app.delayBeforeDeleteReportInHours')));
         }
     }
 }

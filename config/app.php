@@ -240,6 +240,6 @@ return [
         ],
     ],
     'delayBeforeDeleteReportInHours' => 3,
-    'reportableTables' => ['posts', 'informations', 'tags', 'comments', 'users', 'commentables'],
+    'reportableTables' => ['posts', 'informations', 'tags', 'comments', 'users'],
 
 ];

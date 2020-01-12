@@ -60807,11 +60807,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 
-var toastsArr = [];
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
         return {
-            toasts: new Array()
+            toasts: []
         };
     },
     mounted: function mounted() {
@@ -60819,7 +60818,7 @@ var toastsArr = [];
 
         Echo.private('PostUpdate').listen('PostUpdate', function (data) {
             var date = new Date();
-            toastsArr.unshift({
+            _this.toasts.unshift({
                 postId: data.postId,
                 modifedFields: data.modifedFields,
                 url: '/posts/' + data.slug,
@@ -60827,19 +60826,20 @@ var toastsArr = [];
                 id: 'toast' + data.postId + '_' + date.getTime(),
                 time: date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()
             });
-            _this.toasts = toastsArr;
             console.log(_this.toasts);
         });
         $('#container_toasts').bind("DOMSubtreeModified", function () {
             $('.toast').toast('show');
-            $('.toast').on('hidden.bs.toast', function () {
-                for (var toast in toastsArr) {
-                    if (toastsArr[toast].id == $(this).attr('id')) {
-                        toastsArr.splice(toast, 1);
-                    }
-                }
-            });
         });
+    },
+
+
+    methods: {
+        del: function del(id) {
+            for (var key in this.toasts) {
+                if (this.toasts[key].id == id) this.toasts.splice(key, 1);
+            }
+        }
     }
 });
 
@@ -60876,7 +60876,28 @@ var render = function() {
               _vm._v(" "),
               _c("small", [_vm._v(_vm._s(toast.time))]),
               _vm._v(" "),
-              _vm._m(0, true)
+              _c(
+                "button",
+                {
+                  staticClass: "ml-2 mb-1 close",
+                  attrs: {
+                    type: "button",
+                    "data-dismiss": toast.id,
+                    "aria-label": "Close"
+                  },
+                  on: {
+                    click: function($event) {
+                      $event.preventDefault()
+                      return _vm.del(toast.id)
+                    }
+                  }
+                },
+                [
+                  _c("span", { attrs: { "aria-hidden": "true" } }, [
+                    _vm._v("×")
+                  ])
+                ]
+              )
             ]),
             _vm._v(" "),
             _c("div", { staticClass: "toast-body" }, [
@@ -60901,25 +60922,7 @@ var render = function() {
     0
   )
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "button",
-      {
-        staticClass: "ml-2 mb-1 close",
-        attrs: {
-          type: "button",
-          "data-dismiss": "toast",
-          "aria-label": "Close"
-        }
-      },
-      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
-    )
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
@@ -61006,12 +61009,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 
-var toastsReport = [];
 /* harmony default export */ __webpack_exports__["default"] = ({
     props: ['user'],
     data: function data() {
         return {
-            toasts: new Array()
+            toasts: []
         };
     },
     mounted: function mounted() {
@@ -61019,26 +61021,27 @@ var toastsReport = [];
 
         Echo.private('ReportCompleted.' + this.user).listen('GenerateReport', function (data) {
             var date = new Date();
-            toastsReport.unshift({
+            _this.toasts.unshift({
                 tables: data.tables,
                 url: '/admin/reports/' + data.attach,
                 timeBeforeDelete: data.timeBeforeDelete,
                 id: 'toast' + '_' + date.getTime(),
                 time: date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()
             });
-            _this.toasts = toastsReport;
             console.log(_this.toasts);
         });
         $('#report_toasts').bind("DOMSubtreeModified", function () {
             $('.toast').toast('show');
-            $('.toast').on('hidden.bs.toast', function () {
-                for (var toast in toastsReport) {
-                    if (toastsReport[toast].id == $(this).attr('id')) {
-                        toastsReport.splice(toast, 1);
-                    }
-                }
-            });
         });
+    },
+
+
+    methods: {
+        del: function del(id) {
+            for (var key in this.toasts) {
+                if (this.toasts[key].id == id) this.toasts.splice(key, 1);
+            }
+        }
     }
 });
 
@@ -61075,7 +61078,28 @@ var render = function() {
               _vm._v(" "),
               _c("small", [_vm._v(_vm._s(toast.time))]),
               _vm._v(" "),
-              _vm._m(0, true)
+              _c(
+                "button",
+                {
+                  staticClass: "ml-2 mb-1 close",
+                  attrs: {
+                    type: "button",
+                    "data-dismiss": toast.id,
+                    "aria-label": "Close"
+                  },
+                  on: {
+                    click: function($event) {
+                      $event.preventDefault()
+                      return _vm.del(toast.id)
+                    }
+                  }
+                },
+                [
+                  _c("span", { attrs: { "aria-hidden": "true" } }, [
+                    _vm._v("×")
+                  ])
+                ]
+              )
             ]),
             _vm._v(" "),
             _c(
@@ -61110,25 +61134,7 @@ var render = function() {
     0
   )
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "button",
-      {
-        staticClass: "ml-2 mb-1 close",
-        attrs: {
-          type: "button",
-          "data-dismiss": "toast",
-          "aria-label": "Close"
-        }
-      },
-      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
-    )
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {

@@ -3,6 +3,7 @@
 namespace App\Services;
 use PHPExcel;
 use Illuminate\Support\Facades\Storage;
+use App\ReportableDataHandler;
 
 class ReportToXLSX
 {
@@ -156,6 +157,14 @@ class ReportToXLSX
             ->withAllBorder()
             ->putRow($columns)
         ;
+    }
+    
+    public function putRowsFromReportableDataHandlerWithStandartStyle(ReportableDataHandler $dataHandler)
+    {
+        foreach($dataHandler->getData() as $data) {
+            $this->putRowWithStandartStyle(array_values($data));
+        }
+        return $this;
     }
     
     public function putRow(array $columns)

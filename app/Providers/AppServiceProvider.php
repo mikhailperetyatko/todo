@@ -5,6 +5,10 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Services\Statistics;
+use App\Services\ReportToXLSX;
+use App\ReportableDataHandler;
+use App\Mail\ReportMail;
+use App\Events\GenerateReport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
         \Blade::directive('getLinkForManageNews', function ($exp) {
             return "<?php echo url((auth()->check() && auth()->user()->isAdmin() ? '/admin' : '') . '/informations/' . {$exp}->slug); ?>";
         });
-        
+                
         Relation::morphMap([
             'posts' => 'Post',
             'informations' => 'Information',
@@ -37,6 +41,23 @@ class AppServiceProvider extends ServiceProvider
         app()->singleton(Statistics::class, function() {
             return new Statistics;
         });
+        
+        app()->bind(ReportToXLSX::class, function() {
+            return new ReportToXLSX;
+        });
+        
+        app()->bind(ReportableDataHandler::class, function() {
+            return new ReportableDataHandler;
+        });
+        
+        app()->bind(ReportMail::class, function() {
+            return new ReportMail();
+        });
+        
+        app()->bind(GenerateReport::class, function() {
+            return new GenerateReport();
+        });
+        
         
     }
 

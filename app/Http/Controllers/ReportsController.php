@@ -12,13 +12,26 @@ class ReportsController extends Controller
 {
     public function show()
     {
-        return view('admin.reports');
+        $vues = [
+            [
+                'component' => 'report-generated',
+                'key' => 'user',
+                'value' => auth()->user()->id,
+            ]
+        ];
+        
+        return view('admin.reports', compact('vues'));
     }
     
     public function job()
     {
+        $needModels = [];
+        
         if (count(request()->input()) > 1) {
-            StatisticsReport::dispatch(config('app.reportableTables'), auth()->user())->onQueue('reports');
+            foreach (config('app.reportableTables') as $model) {
+                if (request()->input($model)) $needModels[] = $model;
+            }
+            StatisticsReport::dispatch($needModels, auth()->user())->onQueue('reports');
             flash('success');
             return back();
         } else {

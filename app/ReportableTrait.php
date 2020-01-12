@@ -1,4 +1,5 @@
 <?php
+
 namespace App;
 
 trait ReportableTrait
@@ -7,7 +8,7 @@ trait ReportableTrait
     public $attach;
     public $timeBeforeDelete;
     
-    public function __construct(\App\ReportableDataHandler $dataHandler)
+    public function setDataFromReportableDataHandler(\App\ReportableDataHandler $dataHandler)
     {
         $this->tables = $dataHandler->tables;
         $this->attach = $dataHandler->attach;

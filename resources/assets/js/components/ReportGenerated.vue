@@ -5,7 +5,7 @@
               <div class="toast-header">
                 <strong class="mr-auto">Сгенерирован новый отчет</strong>
                 <small>{{ toast.time }}</small>
-                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <button type="button" class="ml-2 mb-1 close" :data-dismiss="toast.id" aria-label="Close" @click.prevent="del(toast.id)">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
@@ -22,12 +22,11 @@
 </template>
 
 <script>
-    var toastsReport = [];
     export default {
         props: ['user'],
         data() {
             return {
-                toasts:new Array()
+                toasts:[]
             }
         },
         mounted() {
@@ -35,27 +34,27 @@
                 .private('ReportCompleted.' + this.user)
                 .listen('GenerateReport', (data) => {
                     var date = new Date();
-                    toastsReport.unshift({
+                    this.toasts.unshift({
                         tables: data.tables,
                         url: '/admin/reports/' + data.attach,
                         timeBeforeDelete: data.timeBeforeDelete,
                         id: 'toast' + '_' + date.getTime(),
                         time: date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()
                     });
-                    this.toasts = toastsReport;
                     console.log(this.toasts);
                 }
             );
             $('#report_toasts').bind("DOMSubtreeModified",function(){
                 $('.toast').toast('show');
-                $('.toast').on('hidden.bs.toast', function () {
-                    for(var toast in toastsReport){
-                        if (toastsReport[toast].id == $(this).attr('id')) {
-                            toastsReport.splice(toast, 1);
-                        }
-                    }
-                });
             });
+        },
+        
+        methods:{
+            del(id) {
+                for(var key in this.toasts) {
+                    if (this.toasts[key].id == id) this.toasts.splice(key, 1);
+                }    
+            }
         }
     }
 
