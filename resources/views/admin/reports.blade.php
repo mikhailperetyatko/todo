@@ -1,5 +1,9 @@
 @extends('layout.master')
-    
+
+@section('vueExt')
+<report-generated user="{{ $userId }}"></report-generated>
+@endsection
+
 @section('content')
     <div class="col-md-8 blog-main">
         @if($errors->count())

@@ -12,15 +12,9 @@ class ReportsController extends Controller
 {
     public function show()
     {
-        $vues = [
-            [
-                'component' => 'report-generated',
-                'key' => 'user',
-                'value' => auth()->user()->id,
-            ]
-        ];
+        $userId = auth()->user()->id;
         
-        return view('admin.reports', compact('vues'));
+        return view('admin.reports', compact('userId'));
     }
     
     public function job()

@@ -30,19 +30,21 @@ class StatisticsReport implements ShouldQueue
         $this->dataHandler = app(ReportableDataHandler::class);
     }
         
-    protected function addStatistics($name, $data)
+    protected function addStatistics()
     {
-        $this->dataHandler->addStatistics([
-            'name' => trans("messages.tables.$name.name"),  'data' => $data
-        ]);
+        foreach ($this->models as $model) {
+            $this->dataHandler->addStatistics([
+                'name' => trans("messages.tables.$model.name"),  'data' => app(Statistics::class)->getTableCount($model)
+            ]);
+        }
     }
  
     public function handle()
     {
-        if (! empty($this->models)) {
-            foreach ($this->models as $model) {
-                $this->addStatistics($model, app(Statistics::class)->getTableCount($model));
-            }
+        if (empty($this->models)) {
+            return;
+        } else {
+            $this->addStatistics();
             
             app(ReportToXLSX::class)
                 ->putTitle('Отчет')->putHeader(['Таблица', 'Количество записей'])

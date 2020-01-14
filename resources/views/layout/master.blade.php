@@ -40,11 +40,7 @@
         <div style="position: absolute; top: 0; right: 0;">
             <div class="container focus">
                 <post-update></post-update>
-                @if(! empty($vues))
-                    @foreach($vues as $vue)
-                        <{{ $vue['component'] }} {{! empty($vue['key']) ? ($vue['key'] . '=' . $vue['value']) : ''}}></{{ $vue['component'] }}>
-                    @endforeach
-                @endif     
+                @yield('vueExt') 
             </div>            
         </div>
     </div>
