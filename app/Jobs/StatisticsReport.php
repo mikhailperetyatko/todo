@@ -43,30 +43,30 @@ class StatisticsReport implements ShouldQueue
     {
         if (empty($this->models)) {
             return;
-        } else {
-            $this->addStatistics();
-            
-            app(ReportToXLSX::class)
-                ->putTitle('Отчет')->putHeader(['Таблица', 'Количество записей'])
-                ->putRowsFromReportableDataHandlerWithStandartStyle($this->dataHandler)
-                ->save($this->dataHandler->getFilename())
-            ;
-            
-            \Mail::to($this->user->email)
-                ->send(
-                    app(ReportMail::class)
-                        ->setDataFromReportableDataHandler($this->dataHandler)
-                        ->withDefaultTemplate()
-                )
-            ;
-            
-            event(
-                app(GenerateReport::class)
-                    ->setDataFromReportableDataHandler($this->dataHandler)
-                    ->forUser($this->user)
-            );
-            
-            ReportDelete::dispatch($this->dataHandler->getFilename())->onQueue('reports')->delay(now()->addHours(config('app.delayBeforeDeleteReportInHours')));
         }
+        
+        $this->addStatistics();
+        
+        app(ReportToXLSX::class)
+            ->putTitle('Отчет')->putHeader(['Таблица', 'Количество записей'])
+            ->putRowsFromReportableDataHandlerWithStandartStyle($this->dataHandler)
+            ->save($this->dataHandler->getFilename())
+        ;
+        
+        \Mail::to($this->user->email)
+            ->send(
+                app(ReportMail::class)
+                    ->setDataFromReportableDataHandler($this->dataHandler)
+                    ->withDefaultTemplate()
+            )
+        ;
+        
+        event(
+            app(GenerateReport::class)
+                ->setDataFromReportableDataHandler($this->dataHandler)
+                ->forUser($this->user)
+        );
+        
+        ReportDelete::dispatch($this->dataHandler->getFilename())->onQueue('reports')->delay(now()->addHours(config('app.delayBeforeDeleteReportInHours')));
     }
 }
