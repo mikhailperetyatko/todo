@@ -3,4 +3,5 @@
     <li><a href="/admin/posts">Статьи</a></li>
     <li><a href="/admin/informations">Новости</a></li>
     <li><a href="/admin/informations/create">Добавить новость</a></li>
+    <li><a href="/admin/reports">Отчеты</a></li>
 </ul>

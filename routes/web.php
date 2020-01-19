@@ -24,4 +24,10 @@ Route::get('/informations/{information}', 'InformationsController@show');
 
 Route::get('/statistics', 'StatisticsController@show');
 
+Route::get('/admin/reports', 'ReportsController@show')->middleware('auth', 'can:administrate');
+Route::post('/admin/reports', 'ReportsController@job')->middleware('auth', 'can:administrate');
+Route::get('/admin/reports/{filename}', 'ReportsController@download')->middleware('auth', 'can:administrate');
+
+//Route::get('/test', 'TestController@view')->middleware('auth');
+
 Auth::routes();

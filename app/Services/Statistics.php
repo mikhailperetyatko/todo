@@ -4,14 +4,19 @@ namespace App\Services;
 
 class Statistics
 {
+    public function getTableCount(string $tableName)
+    {
+        return \Schema::hasTable($tableName) ? \DB::table($tableName)->count() : null;
+    }
+    
     public function getAmountPosts()
     {
-        return \DB::table('posts')->count();
+        return $this->getTableCount('posts');
     }
     
     public function getAmountInformations()
     {
-        return \DB::table('informations')->count();
+        return $this->getTableCount('informations');
     }
     
     public function getUserWhoHasTheMostPosts()
