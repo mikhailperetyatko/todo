@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use App\Events\PostUpdate;
 
 class Post extends Model
 {
@@ -23,6 +24,9 @@ class Post extends Model
                 'before' => json_encode(Arr::only($post->fresh()->toArray(), array_keys($after))),
                 'after' => json_encode($after),
             ]);
+        });
+        static::updated(function(Post $post){
+            event(new PostUpdate($post));
         });
     }
     
