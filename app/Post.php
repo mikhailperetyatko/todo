@@ -25,8 +25,18 @@ class Post extends Model
                 'after' => json_encode($after),
             ]);
         });
+        
         static::updated(function(Post $post){
             event(new PostUpdate($post));
+            \Cache::tags(['posts', 'post', 'statistics'])->flush();
+        });
+        
+        static::created(function(){
+            \Cache::tags(['posts', 'tags', 'statistics'])->flush();
+        });
+        
+        static::deleted(function(){
+            \Cache::tags(['posts', 'post', 'comments', 'tags', 'statistics'])->flush();
         });
     }
     

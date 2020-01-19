@@ -10,13 +10,22 @@ trait InformationsTrait
 {
     public function index()
     {
-        $informations = Information::with('tags')->latest()->simplePaginate(config('database.amountLimit'));
+        $informations = rememberChacheWithTags(['informations'], 'informations|page' . (request()->input('page') ?? 1), function() {
+            return Information::with('tags')->latest()->simplePaginate(config('database.amountLimit'));
+        });
         return view('informations', compact('informations'));
     }
     
-    public function show(Information $information)
+    public function show(string $slug)
     {
-        $comments = $information->comments()->latest()->simplePaginate(config('database.amountLimit'));
+        $information = rememberChacheWithTags(['information'], 'information|' . $slug, function() use ($slug){
+            return Information::where('slug', $slug)->firstOrFail();
+        });
+        
+        $comments = rememberChacheWithTags(['comments'], 'information|' . $slug . '|page|' . (request()->input('page') ?? 1), function() use ($information){
+            return $information->comments()->latest()->simplePaginate(config('database.amountLimit'));
+        });
+        
         return view('informations.show', compact('information', 'comments'));
     }
 }

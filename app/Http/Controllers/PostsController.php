@@ -27,13 +27,21 @@ class PostsController extends Controller
     
     public function index()
     {
-        $posts = Post::with('tags')->published()->latest()->simplePaginate(config('database.amountLimit'));
+        $posts = rememberChacheWithTags(['posts'], 'posts|page' . (request()->input('page') ?? 1), function() {
+            return Post::with('tags')->published()->latest()->simplePaginate(config('database.amountLimit'));
+        });
         return view('posts', compact('posts'));
     }
     
-    public function show(Post $post)
+    public function show(string $slug)
     {
-        $comments = $post->comments()->latest()->simplePaginate(config('database.amountLimit'));
+        $post = rememberChacheWithTags(['post'], 'post|' . $slug, function() use ($slug){
+            return Post::where('slug', $slug)->firstOrFail();
+        });
+        
+        $comments = rememberChacheWithTags(['comments'], 'post|' . $slug . '|page|' . (request()->input('page') ?? 1), function() use ($post){
+            return $post->comments()->latest()->simplePaginate(config('database.amountLimit'));
+        });
         return view('posts.show', compact('post', 'comments'));
     }
     
@@ -102,5 +110,6 @@ class PostsController extends Controller
         }
         
         $post->tags()->sync($syncIds);
+        \Cache::tags(['tags'])->flush();
     }
 }

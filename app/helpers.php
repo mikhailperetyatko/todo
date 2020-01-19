@@ -29,3 +29,10 @@ if (! function_exists('getUrlForRedirect')) {
         return action(class_basename($controller) . '@' . $method, $value);
     }    
 }
+
+if (! function_exists('rememberChacheWithTags')) {
+    function rememberChacheWithTags(array $tags, string $key, callable $function)
+    {
+        return \Cache::tags($tags)->remember($key, config('cache.defaultDuration'), $function);
+    }    
+}

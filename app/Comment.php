@@ -29,4 +29,13 @@ class Comment extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    protected static function boot()
+    {
+        parent::boot();      
+          
+        static::created(function(){
+            \Cache::tags(['comments'])->flush();
+        });
+    }
 }

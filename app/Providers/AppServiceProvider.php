@@ -19,10 +19,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        
         view()->composer('layout.sidebar', function($view) {
-            $view->with('tagsCloud', \App\Tag::tagsCloud());
+            $view->with('tagsCloud', 
+                rememberChacheWithTags(['tags'], 'tagsCloud', function() {
+                    return \App\Tag::tagsCloud();
+                })
+            );
         });
+        
         \App\Post::observe(\App\Observers\PostObserver::class);
         
         \Blade::directive('getLinkForManagePost', function ($exp) {

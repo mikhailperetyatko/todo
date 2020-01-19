@@ -49,6 +49,7 @@ class AdminInformationsController extends Controller
         }
         
         $information->tags()->sync($syncIds);
+        \Cache::tags(['tags'])->flush();
     }
     
     
