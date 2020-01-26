@@ -10,7 +10,7 @@ trait InformationsTrait
 {
     public function index()
     {
-        $informations = rememberChacheWithTags(['informations'], 'informations|page' . (request()->input('page') ?? 1), function() {
+        $informations = rememberCacheWithTags([Information::class], 'informations|page' . (request()->input('page') ?? 1), function() {
             return Information::with('tags')->latest()->simplePaginate(config('database.amountLimit'));
         });
         return view('informations', compact('informations'));
@@ -18,11 +18,11 @@ trait InformationsTrait
     
     public function show(string $slug)
     {
-        $information = rememberChacheWithTags(['information'], 'information|' . $slug, function() use ($slug){
+        $information = rememberCacheWithTags([Information::class], 'information|' . $slug, function() use ($slug){
             return Information::where('slug', $slug)->firstOrFail();
         });
         
-        $comments = rememberChacheWithTags(['comments'], 'information|' . $slug . '|page|' . (request()->input('page') ?? 1), function() use ($information){
+        $comments = rememberCacheWithTags([\App\Comment::class, Information::class], 'information|' . $slug . '|page|' . (request()->input('page') ?? 1), function() use ($information){
             return $information->comments()->latest()->simplePaginate(config('database.amountLimit'));
         });
         

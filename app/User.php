@@ -8,19 +8,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class User extends Authenticatable
 {
     use Notifiable;
-
-    protected static function boot()
-    {
-        parent::boot();
-        
-        static::updated(function(){
-            \Cache::tags(['statistics'])->flush();
-        });
-                
-        static::deleted(function(){
-            \Cache::tags(['statistics'])->flush();
-        });
-    }
     
     /**
      * The attributes that are mass assignable.

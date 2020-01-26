@@ -3,20 +3,14 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\CacheFlushableAfterCreatedModelTrait;
 
 class Tag extends Model
 {
+    use CacheFlushableAfterCreatedModelTrait;
+    
     protected $guarded = ['id', 'created_at', 'updated_at'];
-    
-    protected static function boot()
-    {
-        parent::boot();
         
-        static::created(function(){
-            \Cache::tags(['tags'])->flush();
-        });
-    }
-    
     public function getRouteKeyName()
     {
         return 'name';

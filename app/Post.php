@@ -5,10 +5,15 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use App\Events\PostUpdate;
+use App\CacheFlushableAfterDeletedModelTrait;
+use App\CacheFlushableAfterCreatedModelTrait;
 
 class Post extends Model
 {
     use CommentableAndTaggableTrait;
+    use CacheFlushableAfterDeletedModelTrait;
+    use CacheFlushableAfterCreatedModelTrait;
+    
     protected $guarded = ['id', 'created_at', 'updated_at'];
     protected $casts = [
         'owner_id' => 'integer',
@@ -28,15 +33,7 @@ class Post extends Model
         
         static::updated(function(Post $post){
             event(new PostUpdate($post));
-            \Cache::tags(['posts', 'post', 'statistics'])->flush();
-        });
-        
-        static::created(function(){
-            \Cache::tags(['posts', 'tags', 'statistics'])->flush();
-        });
-        
-        static::deleted(function(){
-            \Cache::tags(['posts', 'post', 'comments', 'tags', 'statistics'])->flush();
+            \Cache::tags([self::class])->flush();
         });
     }
     

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Post;
 use App\Tag;
+use App\Comment;
 
 class PostsController extends Controller
 {   
@@ -27,7 +28,7 @@ class PostsController extends Controller
     
     public function index()
     {
-        $posts = rememberChacheWithTags(['posts'], 'posts|page' . (request()->input('page') ?? 1), function() {
+        $posts = rememberCacheWithTags([Post::class], 'posts|page' . (request()->input('page') ?? 1), function() {
             return Post::with('tags')->published()->latest()->simplePaginate(config('database.amountLimit'));
         });
         return view('posts', compact('posts'));
@@ -35,11 +36,11 @@ class PostsController extends Controller
     
     public function show(string $slug)
     {
-        $post = rememberChacheWithTags(['post'], 'post|' . $slug, function() use ($slug){
+        $post = rememberCacheWithTags([Post::class], 'post|' . $slug, function() use ($slug){
             return Post::where('slug', $slug)->firstOrFail();
         });
         
-        $comments = rememberChacheWithTags(['comments'], 'post|' . $slug . '|page|' . (request()->input('page') ?? 1), function() use ($post){
+        $comments = rememberCacheWithTags([Comment::class, Post::class], 'post|' . $slug . '|page|' . (request()->input('page') ?? 1), function() use ($post){
             return $post->comments()->latest()->simplePaginate(config('database.amountLimit'));
         });
         return view('posts.show', compact('post', 'comments'));
@@ -63,8 +64,12 @@ class PostsController extends Controller
         return redirect('/');
     }
     
-    public function edit(Post $post)
-    {
+    public function edit(string $slug)
+    {   
+        $post = rememberCacheWithTags([Post::class], 'post|' . $slug, function() use ($slug){
+            return Post::where('slug', $slug)->firstOrFail();
+        });
+        
         $this->authorize($post);
         
         return view('posts.edit', compact('post'));
@@ -110,6 +115,6 @@ class PostsController extends Controller
         }
         
         $post->tags()->sync($syncIds);
-        \Cache::tags(['tags'])->flush();
+        \Cache::tags([Tag::class])->flush();
     }
 }

@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\CacheFlushableAfterCreatedModelTrait;
 
 class Comment extends Model
 {
+    use CacheFlushableAfterCreatedModelTrait;
+    
     protected $fillable = [
 		'body', 
 		'owner_id',
@@ -28,14 +31,5 @@ class Comment extends Model
     public function owner()
     {
         return $this->belongsTo(User::class);
-    }
-    
-    protected static function boot()
-    {
-        parent::boot();      
-          
-        static::created(function(){
-            \Cache::tags(['comments'])->flush();
-        });
     }
 }

@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         view()->composer('layout.sidebar', function($view) {
             $view->with('tagsCloud', 
-                rememberChacheWithTags(['tags'], 'tagsCloud', function() {
+                rememberCacheWithTags([\App\Tag::class, \App\Information::class, \App\Post::class], 'tagsCloud', function() {
                     return \App\Tag::tagsCloud();
                 })
             );

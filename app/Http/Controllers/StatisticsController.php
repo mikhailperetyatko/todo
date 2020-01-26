@@ -10,7 +10,7 @@ class StatisticsController extends Controller
     public function show(Statistics $statistics)
     {
         return view('statistics', 
-            rememberChacheWithTags(['statistics'], 'statistics', function() use ($statistics) {return [
+            rememberCacheWithTags([Statistics::class, \App\User::class, \App\Information::class, \App\Post::class], 'statistics', function() use ($statistics) {return [
                 'amountPosts' => $statistics->getAmountPosts(),
                 'amountInformations' => $statistics->getAmountInformations(),
                 'userWhoHasTheMostPosts' => $statistics->getUserWhoHasTheMostPosts(),

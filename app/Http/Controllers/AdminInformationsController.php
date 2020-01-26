@@ -49,7 +49,7 @@ class AdminInformationsController extends Controller
         }
         
         $information->tags()->sync($syncIds);
-        \Cache::tags(['tags'])->flush();
+        \Cache::tags([Tag::class])->flush();
     }
     
     
@@ -68,8 +68,12 @@ class AdminInformationsController extends Controller
         return redirect(getUrlForRedirect($this, 'show', $information));
     }
 
-    public function edit(Information $information)
+    public function edit(string $slug)
     {
+        $information = rememberCacheWithTags([Information::class], 'information|' . $slug, function() use ($slug){
+            return Information::where('slug', $slug)->firstOrFail();
+        });
+        
         return view('informations.edit', compact('information'));
     }
 

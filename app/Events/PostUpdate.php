@@ -28,7 +28,7 @@ class PostUpdate implements ShouldBroadcast
         $this->postId = $post->id;
         $this->title = $post->title;
         $this->slug = $post->slug;
-        $this->modifedFields = array_keys((array) $post->history->last()->pivot->after);
+        if (! empty($post->history->last())) $this->modifedFields = array_keys((array) $post->history->last()->pivot->after);
     }
 
     /**

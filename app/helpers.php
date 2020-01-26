@@ -30,9 +30,9 @@ if (! function_exists('getUrlForRedirect')) {
     }    
 }
 
-if (! function_exists('rememberChacheWithTags')) {
-    function rememberChacheWithTags(array $tags, string $key, callable $function)
+if (! function_exists('rememberCacheWithTags')) {
+    function rememberCacheWithTags(array $tags, string $key, callable $function, int $duration = null)
     {
-        return \Cache::tags($tags)->remember($key, config('cache.defaultDuration'), $function);
+        return \Cache::tags($tags)->remember($key, ($duration ?? config('cache.defaultDuration')), $function);
     }    
 }

@@ -18,7 +18,7 @@ class AdminPostsController extends PostsController
     
     public function index()
     {
-        $posts = rememberChacheWithTags(['posts'], 'admin|posts|page' . (request()->input('page') ?? 1), function() {
+        $posts = rememberCacheWithTags([Post::class], 'admin|posts|page' . (request()->input('page') ?? 1), function() {
             return Post::with('tags')->latest()->simplePaginate(config('database.amountLimit'));
         });
         return view('posts', compact('posts'));
