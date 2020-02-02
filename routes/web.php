@@ -28,6 +28,6 @@ Route::get('/admin/reports', 'ReportsController@show')->middleware('auth', 'can:
 Route::post('/admin/reports', 'ReportsController@job')->middleware('auth', 'can:administrate');
 Route::get('/admin/reports/{filename}', 'ReportsController@download')->middleware('auth', 'can:administrate');
 
-//Route::get('/test', 'TestController@view')->middleware('auth');
+Route::get('/test', 'TestController@view')->middleware('auth');
 
 Auth::routes();
