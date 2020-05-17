@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Europe/Moscow',
 
     /*
     |--------------------------------------------------------------------------
@@ -78,7 +78,7 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'ru',
 
     /*
     |--------------------------------------------------------------------------
@@ -230,7 +230,6 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
 
     ],
-    
     'adminEmail' => env('MAIL_ADMIN', 'admin@test.com'),
     'pushall' => [
         'api' => [
@@ -239,7 +238,17 @@ return [
             'uri' => 'https://pushall.ru/api.php',
         ],
     ],
-    'delayBeforeDeleteReportInHours' => 3,
-    'reportableTables' => ['posts', 'informations', 'tags', 'comments', 'users'],
-
+    'paginate_limit' => 10,
+    'robo_email' => env('MAIL_USERNAME', 'admin@test.com'),
+    'delay_before_notify_about_subtask_event' => 1,
+    'storages' => [
+        ['value' => 'YandexDisk', 'name' => 'ЯндексДиск', 'class' => App\Services\FileYandexDisk::class, 'url' => '/home/disks/yandex'],
+    ],
+    'yandexDiskResource' => 'disk:/Приложения/db3b7916112b4e29855ad679cea97f92',
+    'yandexDiskAccount' => env('YANDEX_DISK_ACCOUNT', ''),
+    'yandexDiskPassword' => env('YANDEX_DISK_PASSWORD', ''),
+    'maxFileSize' => 51200,
+    'delayBeforeDeleteFile' => 3600,
+    'localStorageDir' => '/var/www/todo/public/storage',
+    'enablePublicLink' => 3600,
 ];

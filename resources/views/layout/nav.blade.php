@@ -4,7 +4,6 @@
           <div class="col-4 pt-1">
           </div>
           <div class="col-4 text-center">
-            <a class="blog-header-logo text-dark" href="/">MyBlog</a>
           </div>
           <div class="col-4 d-flex justify-content-end align-items-center">
             @guest
@@ -34,15 +33,13 @@
     </header>
     <div class="nav-scroller py-1 mb-2 border-bottom">
         <nav class="nav d-flex justify-content-between">
-          <a class="p-2 text-muted" href="/">Главная</a>
-          <a class="p-2 text-muted" href="/about">О нас</a>
-          <a class="p-2 text-muted" href="/contacts">Контакты</a>
-          <a class="p-2 text-muted" href="/posts/create">Создать статью</a>
-          <a class="p-2 text-muted" href="/informations">Новости</a>
-          <a class="p-2 text-muted" href="/statistics">Статистика</a>
-          @can('administrate')
-            <a class="p-2 text-muted" href="/admin">Административный раздел</a>
-          @endcan
+            <a class="p-2 text-muted" href="/home/schedule">Расписание</a>
+            <a class="p-2 text-muted" href="/home/tasks/create">Создать мероприятие</a>
+            <a class="p-2 text-muted" href="/home/teams">Мои команды</a>
+            <a class="p-2 text-muted" href="/home/projects">Мои проекты</a>
+            <a class="p-2 text-muted" href="/home/storages">Мои хранилища</a>
+            <a class="p-2 text-muted" href="/home/preinstaller_tasks">Предустановленные задачи</a>
+            <a class="p-2 text-muted" href="/home/days">Настройки</a>
         </nav>
     </div>
 </div>

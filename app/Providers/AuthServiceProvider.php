@@ -14,7 +14,17 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         \App\Post::class => \App\Policies\PostPolicy::class,
-        //\App\Information::class => \App\Policies\InformationPolicy::class,
+        \App\Team::class => \App\Policies\TeamPolicy::class,
+        \App\InviteTeam::class => \App\Policies\InvitePolicy::class,
+        \App\Task::class => \App\Policies\TaskPolicy::class,
+        \App\Project::class => \App\Policies\ProjectPolicy::class,
+        \App\Subtask::class => \App\Policies\SubtaskPolicy::class,
+        \App\Comment::class => \App\Policies\CommentPolicy::class,
+        \App\File::class => \App\Policies\FilePolicy::class,
+        \App\Marker::class => \App\Policies\MarkerPolicy::class,
+        \App\Submarker::class => \App\Policies\SubmarkerPolicy::class,
+        \App\PreinstallerTask::class => \App\Policies\PreinstallerTaskPolicy::class,
+        \App\Day::class => \App\Policies\DayPolicy::class,
     ];
 
     /**

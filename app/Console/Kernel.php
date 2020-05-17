@@ -5,6 +5,8 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Carbon\Carbon;
+use App\Jobs\RefreshToken;
+use App\Storage;
 
 class Kernel extends ConsoleKernel
 {
@@ -28,16 +30,18 @@ class Kernel extends ConsoleKernel
     {
         $schedule
             ->command(
-                'users-notify:new-posts "' . Carbon::yesterday()->startOfWeek()->format('d.m.Y') . '" "' . Carbon::yesterday()->endOfWeek()->format('d.m.Y') . '"'
-            )
-            //->mondays()->everyMinute();
-            ->mondays()->at('09:00');
-            
-        $schedule
-            ->command(
                 'horizon:snapshot'
             )
             ->everyFiveMinutes();
+            
+        $schedule
+            ->call(function () {
+                $storages = Storage::all();
+                foreach ($storages as $storage){
+                    \Queue::push(new RefreshToken($storage));
+                }
+        //})->everyMinute();
+        })->monthlyOn(1, '00:00');
     }
 
     /**

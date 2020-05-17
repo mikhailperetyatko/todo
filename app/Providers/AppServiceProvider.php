@@ -19,13 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        view()->composer('layout.sidebar', function($view) {
-            $view->with('tagsCloud', 
-                rememberCacheWithTags([\App\Tag::class, \App\Information::class, \App\Post::class], 'tagsCloud', function() {
-                    return \App\Tag::tagsCloud();
-                })
-            );
-        });
+        date_default_timezone_set('Europe/Moscow');        
         
         \App\Post::observe(\App\Observers\PostObserver::class);
         
@@ -40,28 +34,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::morphMap([
             'posts' => 'Post',
             'informations' => 'Information',
-        ]);
-        
-        app()->singleton(Statistics::class, function() {
-            return new Statistics;
-        });
-        
-        app()->bind(ReportToXLSX::class, function() {
-            return new ReportToXLSX;
-        });
-        
-        app()->bind(ReportableDataHandler::class, function() {
-            return new ReportableDataHandler;
-        });
-        
-        app()->bind(ReportMail::class, function() {
-            return new ReportMail();
-        });
-        
-        app()->bind(GenerateReport::class, function() {
-            return new GenerateReport();
-        });
-        
+        ]);        
         
     }
 

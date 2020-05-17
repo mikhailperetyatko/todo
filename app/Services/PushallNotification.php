@@ -9,7 +9,7 @@ class PushallNotification
     public $template;
     public $actionName;
     
-    public function __construct(string $title, \App\Post $post, string $actionName = 'Посмотреть', string $template = 'pushall.pushall-notify')
+    public function __construct(string $template = 'pushall.pushall-notify')
     {
         $this->title = $title;
         $this->post = $post;

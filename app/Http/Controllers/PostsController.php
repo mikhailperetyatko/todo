@@ -28,10 +28,13 @@ class PostsController extends Controller
     
     public function index()
     {
+/*
         $posts = rememberCacheWithTags([Post::class], 'posts|page' . (request()->input('page') ?? 1), function() {
             return Post::with('tags')->published()->latest()->simplePaginate(config('database.amountLimit'));
         });
-        return view('posts', compact('posts'));
+*/
+        dd(auth()->user());
+        return view('about', []);
     }
     
     public function show(string $slug)

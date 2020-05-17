@@ -12,4 +12,4 @@
 */
 
 Broadcast::channel('PostUpdate', \App\Broadcasting\PostUpdate::class);
-Broadcast::channel('ReportCompleted.{user}', \App\Broadcasting\ReportCompleted::class);
+Broadcast::channel('App.User.{user}', \App\Broadcasting\UserNotification::class);

@@ -70,7 +70,7 @@
 "use strict";
 
 
-var bind = __webpack_require__(15);
+var bind = __webpack_require__(16);
 var isBuffer = __webpack_require__(45);
 
 /*global toString:true*/
@@ -408,6 +408,115 @@ module.exports = {
 /* 1 */
 /***/ (function(module, exports) {
 
+/* globals __VUE_SSR_CONTEXT__ */
+
+// IMPORTANT: Do NOT use ES2015 features in this file.
+// This module is a runtime utility for cleaner component module output and will
+// be included in the final webpack user bundle.
+
+module.exports = function normalizeComponent (
+  rawScriptExports,
+  compiledTemplate,
+  functionalTemplate,
+  injectStyles,
+  scopeId,
+  moduleIdentifier /* server only */
+) {
+  var esModule
+  var scriptExports = rawScriptExports = rawScriptExports || {}
+
+  // ES6 modules interop
+  var type = typeof rawScriptExports.default
+  if (type === 'object' || type === 'function') {
+    esModule = rawScriptExports
+    scriptExports = rawScriptExports.default
+  }
+
+  // Vue.extend constructor export interop
+  var options = typeof scriptExports === 'function'
+    ? scriptExports.options
+    : scriptExports
+
+  // render functions
+  if (compiledTemplate) {
+    options.render = compiledTemplate.render
+    options.staticRenderFns = compiledTemplate.staticRenderFns
+    options._compiled = true
+  }
+
+  // functional template
+  if (functionalTemplate) {
+    options.functional = true
+  }
+
+  // scopedId
+  if (scopeId) {
+    options._scopeId = scopeId
+  }
+
+  var hook
+  if (moduleIdentifier) { // server build
+    hook = function (context) {
+      // 2.3 injection
+      context =
+        context || // cached call
+        (this.$vnode && this.$vnode.ssrContext) || // stateful
+        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
+      // 2.2 with runInNewContext: true
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__
+      }
+      // inject component styles
+      if (injectStyles) {
+        injectStyles.call(this, context)
+      }
+      // register component module identifier for async chunk inferrence
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier)
+      }
+    }
+    // used by ssr in case component is cached and beforeCreate
+    // never gets called
+    options._ssrRegister = hook
+  } else if (injectStyles) {
+    hook = injectStyles
+  }
+
+  if (hook) {
+    var functional = options.functional
+    var existing = functional
+      ? options.render
+      : options.beforeCreate
+
+    if (!functional) {
+      // inject component registration as beforeCreate hook
+      options.beforeCreate = existing
+        ? [].concat(existing, hook)
+        : [hook]
+    } else {
+      // for template-only hot-reload because in that case the render fn doesn't
+      // go through the normalizer
+      options._injectStyles = hook
+      // register for functioal component in vue file
+      options.render = function renderWithStyleInjection (h, context) {
+        hook.call(context)
+        return existing(h, context)
+      }
+    }
+  }
+
+  return {
+    esModule: esModule,
+    exports: scriptExports,
+    options: options
+  }
+}
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
 var g;
 
 // This works in non-strict mode
@@ -432,7 +541,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -440,7 +549,7 @@ module.exports = g;
  */
 
 var keys = __webpack_require__(77);
-var hasBinary = __webpack_require__(29);
+var hasBinary = __webpack_require__(30);
 var sliceBuffer = __webpack_require__(79);
 var after = __webpack_require__(80);
 var utf8 = __webpack_require__(81);
@@ -1043,7 +1152,7 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -1233,7 +1342,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {/* eslint-env browser */
@@ -1501,10 +1610,10 @@ formatters.j = function (v) {
 	}
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 /**
@@ -1547,7 +1656,7 @@ exports.decode = function(qs){
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 
@@ -1559,7 +1668,7 @@ module.exports = function(a, b){
 };
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {/* eslint-env browser */
@@ -1827,10 +1936,10 @@ formatters.j = function (v) {
 	}
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -1841,8 +1950,8 @@ formatters.j = function (v) {
 var debug = __webpack_require__(65)('socket.io-parser');
 var Emitter = __webpack_require__(68);
 var binary = __webpack_require__(69);
-var isArray = __webpack_require__(24);
-var isBuf = __webpack_require__(25);
+var isArray = __webpack_require__(25);
+var isBuf = __webpack_require__(26);
 
 /**
  * Protocol version.
@@ -2251,7 +2360,7 @@ function error(msg) {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4045,10 +4154,10 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // browser shim for xmlhttprequest module
@@ -4091,15 +4200,15 @@ module.exports = function (opts) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * Module dependencies.
  */
 
-var parser = __webpack_require__(2);
-var Emitter = __webpack_require__(12);
+var parser = __webpack_require__(3);
+var Emitter = __webpack_require__(13);
 
 /**
  * Module exports.
@@ -4258,7 +4367,7 @@ Transport.prototype.onClose = function () {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -4427,7 +4536,7 @@ Emitter.prototype.hasListeners = function(event){
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -15032,7 +15141,7 @@ return jQuery;
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17654,10 +17763,10 @@ Popper.Defaults = Defaults;
 /* harmony default export */ __webpack_exports__["default"] = (Popper);
 //# sourceMappingURL=popper.js.map
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(2)))
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17675,7 +17784,7 @@ module.exports = function bind(fn, thisArg) {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17753,7 +17862,7 @@ module.exports = function buildURL(url, params, paramsSerializer) {
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17765,7 +17874,7 @@ module.exports = function isCancel(value) {
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17789,10 +17898,10 @@ function getDefaultAdapter() {
   // Only Node.JS has a process variable that is of [[Class]] process
   if (typeof process !== 'undefined' && Object.prototype.toString.call(process) === '[object process]') {
     // For node use HTTP adapter
-    adapter = __webpack_require__(19);
+    adapter = __webpack_require__(20);
   } else if (typeof XMLHttpRequest !== 'undefined') {
     // For browsers use XHR adapter
-    adapter = __webpack_require__(19);
+    adapter = __webpack_require__(20);
   }
   return adapter;
 }
@@ -17868,10 +17977,10 @@ utils.forEach(['post', 'put', 'patch'], function forEachMethodWithData(method) {
 
 module.exports = defaults;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17879,10 +17988,10 @@ module.exports = defaults;
 
 var utils = __webpack_require__(0);
 var settle = __webpack_require__(51);
-var buildURL = __webpack_require__(16);
+var buildURL = __webpack_require__(17);
 var parseHeaders = __webpack_require__(53);
 var isURLSameOrigin = __webpack_require__(54);
-var createError = __webpack_require__(20);
+var createError = __webpack_require__(21);
 
 module.exports = function xhrAdapter(config) {
   return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -18052,7 +18161,7 @@ module.exports = function xhrAdapter(config) {
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18077,7 +18186,7 @@ module.exports = function createError(message, config, code, request, response) 
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18135,7 +18244,7 @@ module.exports = function mergeConfig(config1, config2) {
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18161,7 +18270,7 @@ module.exports = Cancel;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports) {
 
 /**
@@ -18206,7 +18315,7 @@ module.exports = function parseuri(str) {
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -18217,7 +18326,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {
@@ -18241,10 +18350,10 @@ function isBuf(obj) {
           (withNativeArrayBuffer && (obj instanceof ArrayBuffer || isView(obj)));
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10).Buffer))
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -18253,13 +18362,13 @@ function isBuf(obj) {
  */
 
 var eio = __webpack_require__(73);
-var Socket = __webpack_require__(32);
-var Emitter = __webpack_require__(33);
-var parser = __webpack_require__(8);
-var on = __webpack_require__(34);
-var bind = __webpack_require__(35);
-var debug = __webpack_require__(4)('socket.io-client:manager');
-var indexOf = __webpack_require__(31);
+var Socket = __webpack_require__(33);
+var Emitter = __webpack_require__(34);
+var parser = __webpack_require__(9);
+var on = __webpack_require__(35);
+var bind = __webpack_require__(36);
+var debug = __webpack_require__(5)('socket.io-client:manager');
+var indexOf = __webpack_require__(32);
 var Backoff = __webpack_require__(90);
 
 /**
@@ -18823,14 +18932,14 @@ Manager.prototype.onreconnect = function () {
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * Module dependencies
  */
 
-var XMLHttpRequest = __webpack_require__(10);
+var XMLHttpRequest = __webpack_require__(11);
 var XHR = __webpack_require__(76);
 var JSONP = __webpack_require__(86);
 var websocket = __webpack_require__(87);
@@ -18882,19 +18991,19 @@ function polling (opts) {
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * Module dependencies.
  */
 
-var Transport = __webpack_require__(11);
-var parseqs = __webpack_require__(5);
-var parser = __webpack_require__(2);
-var inherit = __webpack_require__(6);
-var yeast = __webpack_require__(30);
-var debug = __webpack_require__(7)('engine.io-client:polling');
+var Transport = __webpack_require__(12);
+var parseqs = __webpack_require__(6);
+var parser = __webpack_require__(3);
+var inherit = __webpack_require__(7);
+var yeast = __webpack_require__(31);
+var debug = __webpack_require__(8)('engine.io-client:polling');
 
 /**
  * Module exports.
@@ -18907,7 +19016,7 @@ module.exports = Polling;
  */
 
 var hasXHR2 = (function () {
-  var XMLHttpRequest = __webpack_require__(10);
+  var XMLHttpRequest = __webpack_require__(11);
   var xhr = new XMLHttpRequest({ xdomain: false });
   return null != xhr.responseType;
 })();
@@ -19133,7 +19242,7 @@ Polling.prototype.uri = function () {
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {/* global Blob File */
@@ -19201,10 +19310,10 @@ function hasBinary (obj) {
   return false;
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10).Buffer))
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19279,7 +19388,7 @@ module.exports = yeast;
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports) {
 
 
@@ -19294,7 +19403,7 @@ module.exports = function(arr, obj){
 };
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -19302,14 +19411,14 @@ module.exports = function(arr, obj){
  * Module dependencies.
  */
 
-var parser = __webpack_require__(8);
-var Emitter = __webpack_require__(33);
+var parser = __webpack_require__(9);
+var Emitter = __webpack_require__(34);
 var toArray = __webpack_require__(89);
-var on = __webpack_require__(34);
-var bind = __webpack_require__(35);
-var debug = __webpack_require__(4)('socket.io-client:socket');
-var parseqs = __webpack_require__(5);
-var hasBin = __webpack_require__(29);
+var on = __webpack_require__(35);
+var bind = __webpack_require__(36);
+var debug = __webpack_require__(5)('socket.io-client:socket');
+var parseqs = __webpack_require__(6);
+var hasBin = __webpack_require__(30);
 
 /**
  * Module exports.
@@ -19738,7 +19847,7 @@ Socket.prototype.binary = function (binary) {
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -19907,7 +20016,7 @@ Emitter.prototype.hasListeners = function(event){
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports) {
 
 
@@ -19937,7 +20046,7 @@ function on (obj, ev, fn) {
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports) {
 
 /**
@@ -19966,120 +20075,11 @@ module.exports = function(obj, fn){
 
 
 /***/ }),
-/* 36 */
-/***/ (function(module, exports) {
-
-/* globals __VUE_SSR_CONTEXT__ */
-
-// IMPORTANT: Do NOT use ES2015 features in this file.
-// This module is a runtime utility for cleaner component module output and will
-// be included in the final webpack user bundle.
-
-module.exports = function normalizeComponent (
-  rawScriptExports,
-  compiledTemplate,
-  functionalTemplate,
-  injectStyles,
-  scopeId,
-  moduleIdentifier /* server only */
-) {
-  var esModule
-  var scriptExports = rawScriptExports = rawScriptExports || {}
-
-  // ES6 modules interop
-  var type = typeof rawScriptExports.default
-  if (type === 'object' || type === 'function') {
-    esModule = rawScriptExports
-    scriptExports = rawScriptExports.default
-  }
-
-  // Vue.extend constructor export interop
-  var options = typeof scriptExports === 'function'
-    ? scriptExports.options
-    : scriptExports
-
-  // render functions
-  if (compiledTemplate) {
-    options.render = compiledTemplate.render
-    options.staticRenderFns = compiledTemplate.staticRenderFns
-    options._compiled = true
-  }
-
-  // functional template
-  if (functionalTemplate) {
-    options.functional = true
-  }
-
-  // scopedId
-  if (scopeId) {
-    options._scopeId = scopeId
-  }
-
-  var hook
-  if (moduleIdentifier) { // server build
-    hook = function (context) {
-      // 2.3 injection
-      context =
-        context || // cached call
-        (this.$vnode && this.$vnode.ssrContext) || // stateful
-        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
-      // 2.2 with runInNewContext: true
-      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-        context = __VUE_SSR_CONTEXT__
-      }
-      // inject component styles
-      if (injectStyles) {
-        injectStyles.call(this, context)
-      }
-      // register component module identifier for async chunk inferrence
-      if (context && context._registeredComponents) {
-        context._registeredComponents.add(moduleIdentifier)
-      }
-    }
-    // used by ssr in case component is cached and beforeCreate
-    // never gets called
-    options._ssrRegister = hook
-  } else if (injectStyles) {
-    hook = injectStyles
-  }
-
-  if (hook) {
-    var functional = options.functional
-    var existing = functional
-      ? options.render
-      : options.beforeCreate
-
-    if (!functional) {
-      // inject component registration as beforeCreate hook
-      options.beforeCreate = existing
-        ? [].concat(existing, hook)
-        : [hook]
-    } else {
-      // for template-only hot-reload because in that case the render fn doesn't
-      // go through the normalizer
-      options._injectStyles = hook
-      // register for functioal component in vue file
-      options.render = function renderWithStyleInjection (h, context) {
-        hook.call(context)
-        return existing(h, context)
-      }
-    }
-  }
-
-  return {
-    esModule: esModule,
-    exports: scriptExports,
-    options: options
-  }
-}
-
-
-/***/ }),
 /* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(38);
-module.exports = __webpack_require__(101);
+module.exports = __webpack_require__(125);
 
 
 /***/ }),
@@ -20104,7 +20104,16 @@ window.Vue = __webpack_require__(91);
  */
 
 Vue.component('post-update', __webpack_require__(95));
-Vue.component('report-generated', __webpack_require__(98));
+//Vue.component('report-generated', require('./components/ReportGenerated.vue'));
+Vue.component('invite', __webpack_require__(98));
+Vue.component('task-repeatability', __webpack_require__(101));
+Vue.component('attach-subtask', __webpack_require__(104));
+Vue.component('comments', __webpack_require__(107));
+Vue.component('comment', __webpack_require__(110));
+Vue.component('file', __webpack_require__(113));
+Vue.component('my-marker', __webpack_require__(116));
+Vue.component('days', __webpack_require__(119));
+Vue.component('toasts', __webpack_require__(122));
 
 var app = new Vue({
   el: '#app'
@@ -20127,8 +20136,8 @@ window._ = __webpack_require__(40);
  */
 
 try {
-  window.$ = window.jQuery = __webpack_require__(13);
-  window.Popper = __webpack_require__(14).default;
+  window.$ = window.jQuery = __webpack_require__(14);
+  window.Popper = __webpack_require__(15).default;
   __webpack_require__(42);
 } catch (e) {}
 
@@ -37291,7 +37300,7 @@ window.Echo = new __WEBPACK_IMPORTED_MODULE_0_laravel_echo__["a" /* default */](
   }
 }.call(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(41)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(41)(module)))
 
 /***/ }),
 /* 41 */
@@ -37331,7 +37340,7 @@ module.exports = function(module) {
   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
   */
 (function (global, factory) {
-   true ? factory(exports, __webpack_require__(13), __webpack_require__(14)) :
+   true ? factory(exports, __webpack_require__(14), __webpack_require__(15)) :
   typeof define === 'function' && define.amd ? define(['exports', 'jquery', 'popper.js'], factory) :
   (global = global || self, factory(global.bootstrap = {}, global.jQuery, global.Popper));
 }(this, (function (exports, $, Popper) { 'use strict';
@@ -41862,10 +41871,10 @@ module.exports = __webpack_require__(44);
 
 
 var utils = __webpack_require__(0);
-var bind = __webpack_require__(15);
+var bind = __webpack_require__(16);
 var Axios = __webpack_require__(46);
-var mergeConfig = __webpack_require__(21);
-var defaults = __webpack_require__(18);
+var mergeConfig = __webpack_require__(22);
+var defaults = __webpack_require__(19);
 
 /**
  * Create an instance of Axios
@@ -41898,9 +41907,9 @@ axios.create = function create(instanceConfig) {
 };
 
 // Expose Cancel & CancelToken
-axios.Cancel = __webpack_require__(22);
+axios.Cancel = __webpack_require__(23);
 axios.CancelToken = __webpack_require__(58);
-axios.isCancel = __webpack_require__(17);
+axios.isCancel = __webpack_require__(18);
 
 // Expose all/spread
 axios.all = function all(promises) {
@@ -41939,10 +41948,10 @@ module.exports = function isBuffer (obj) {
 
 
 var utils = __webpack_require__(0);
-var buildURL = __webpack_require__(16);
+var buildURL = __webpack_require__(17);
 var InterceptorManager = __webpack_require__(47);
 var dispatchRequest = __webpack_require__(48);
-var mergeConfig = __webpack_require__(21);
+var mergeConfig = __webpack_require__(22);
 
 /**
  * Create a new instance of Axios
@@ -42092,8 +42101,8 @@ module.exports = InterceptorManager;
 
 var utils = __webpack_require__(0);
 var transformData = __webpack_require__(49);
-var isCancel = __webpack_require__(17);
-var defaults = __webpack_require__(18);
+var isCancel = __webpack_require__(18);
+var defaults = __webpack_require__(19);
 var isAbsoluteURL = __webpack_require__(56);
 var combineURLs = __webpack_require__(57);
 
@@ -42229,7 +42238,7 @@ module.exports = function normalizeHeaderName(headers, normalizedName) {
 "use strict";
 
 
-var createError = __webpack_require__(20);
+var createError = __webpack_require__(21);
 
 /**
  * Resolve or reject a Promise based on response status.
@@ -42547,7 +42556,7 @@ module.exports = function combineURLs(baseURL, relativeURL) {
 "use strict";
 
 
-var Cancel = __webpack_require__(22);
+var Cancel = __webpack_require__(23);
 
 /**
  * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -43913,9 +43922,9 @@ var Echo = function () {
  */
 
 var url = __webpack_require__(62);
-var parser = __webpack_require__(8);
-var Manager = __webpack_require__(26);
-var debug = __webpack_require__(4)('socket.io-client');
+var parser = __webpack_require__(9);
+var Manager = __webpack_require__(27);
+var debug = __webpack_require__(5)('socket.io-client');
 
 /**
  * Module exports.
@@ -43999,8 +44008,8 @@ exports.connect = lookup;
  * @api public
  */
 
-exports.Manager = __webpack_require__(26);
-exports.Socket = __webpack_require__(32);
+exports.Manager = __webpack_require__(27);
+exports.Socket = __webpack_require__(33);
 
 
 /***/ }),
@@ -44012,8 +44021,8 @@ exports.Socket = __webpack_require__(32);
  * Module dependencies.
  */
 
-var parseuri = __webpack_require__(23);
-var debug = __webpack_require__(4)('socket.io-client:url');
+var parseuri = __webpack_require__(24);
+var debug = __webpack_require__(5)('socket.io-client:url');
 
 /**
  * Module exports.
@@ -44724,7 +44733,7 @@ function localstorage() {
   } catch (e) {}
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 66 */
@@ -45294,8 +45303,8 @@ Emitter.prototype.hasListeners = function(event){
  * Module requirements
  */
 
-var isArray = __webpack_require__(24);
-var isBuf = __webpack_require__(25);
+var isArray = __webpack_require__(25);
+var isBuf = __webpack_require__(26);
 var toString = Object.prototype.toString;
 var withNativeBlob = typeof Blob === 'function' || (typeof Blob !== 'undefined' && toString.call(Blob) === '[object BlobConstructor]');
 var withNativeFile = typeof File === 'function' || (typeof File !== 'undefined' && toString.call(File) === '[object FileConstructor]');
@@ -45704,7 +45713,7 @@ module.exports = __webpack_require__(74);
  * @api public
  *
  */
-module.exports.parser = __webpack_require__(2);
+module.exports.parser = __webpack_require__(3);
 
 
 /***/ }),
@@ -45715,13 +45724,13 @@ module.exports.parser = __webpack_require__(2);
  * Module dependencies.
  */
 
-var transports = __webpack_require__(27);
-var Emitter = __webpack_require__(12);
-var debug = __webpack_require__(7)('engine.io-client:socket');
-var index = __webpack_require__(31);
-var parser = __webpack_require__(2);
-var parseuri = __webpack_require__(23);
-var parseqs = __webpack_require__(5);
+var transports = __webpack_require__(28);
+var Emitter = __webpack_require__(13);
+var debug = __webpack_require__(8)('engine.io-client:socket');
+var index = __webpack_require__(32);
+var parser = __webpack_require__(3);
+var parseuri = __webpack_require__(24);
+var parseqs = __webpack_require__(6);
 
 /**
  * Module exports.
@@ -45857,9 +45866,9 @@ Socket.protocol = parser.protocol; // this is an int
  */
 
 Socket.Socket = Socket;
-Socket.Transport = __webpack_require__(11);
-Socket.transports = __webpack_require__(27);
-Socket.parser = __webpack_require__(2);
+Socket.Transport = __webpack_require__(12);
+Socket.transports = __webpack_require__(28);
+Socket.parser = __webpack_require__(3);
 
 /**
  * Creates transport of the given type.
@@ -46494,11 +46503,11 @@ try {
  * Module requirements.
  */
 
-var XMLHttpRequest = __webpack_require__(10);
-var Polling = __webpack_require__(28);
-var Emitter = __webpack_require__(12);
-var inherit = __webpack_require__(6);
-var debug = __webpack_require__(7)('engine.io-client:polling-xhr');
+var XMLHttpRequest = __webpack_require__(11);
+var Polling = __webpack_require__(29);
+var Emitter = __webpack_require__(13);
+var inherit = __webpack_require__(7);
+var debug = __webpack_require__(8)('engine.io-client:polling-xhr');
 
 /**
  * Module exports.
@@ -47855,8 +47864,8 @@ function plural(ms, msAbs, n, name) {
  * Module requirements.
  */
 
-var Polling = __webpack_require__(28);
-var inherit = __webpack_require__(6);
+var Polling = __webpack_require__(29);
+var inherit = __webpack_require__(7);
 
 /**
  * Module exports.
@@ -48091,7 +48100,7 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
   }
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
 /* 87 */
@@ -48101,12 +48110,12 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
  * Module dependencies.
  */
 
-var Transport = __webpack_require__(11);
-var parser = __webpack_require__(2);
-var parseqs = __webpack_require__(5);
-var inherit = __webpack_require__(6);
-var yeast = __webpack_require__(30);
-var debug = __webpack_require__(7)('engine.io-client:websocket');
+var Transport = __webpack_require__(12);
+var parser = __webpack_require__(3);
+var parseqs = __webpack_require__(6);
+var inherit = __webpack_require__(7);
+var yeast = __webpack_require__(31);
+var debug = __webpack_require__(8)('engine.io-client:websocket');
 
 var BrowserWebSocket, NodeWebSocket;
 
@@ -48393,7 +48402,7 @@ WS.prototype.check = function () {
   return !!WebSocketImpl && !('__initialize' in WebSocketImpl && this.name === WS.prototype.name);
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).Buffer))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10).Buffer))
 
 /***/ }),
 /* 88 */
@@ -60466,7 +60475,7 @@ Vue.compile = compileToFunctions;
 
 module.exports = Vue;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(93).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(93).setImmediate))
 
 /***/ }),
 /* 93 */
@@ -60536,7 +60545,7 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
                          (typeof global !== "undefined" && global.clearImmediate) ||
                          (this && this.clearImmediate);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
 /* 94 */
@@ -60729,14 +60738,14 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(4)))
 
 /***/ }),
 /* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(36)
+var normalizeComponent = __webpack_require__(1)
 /* script */
 var __vue_script__ = __webpack_require__(96)
 /* template */
@@ -60937,7 +60946,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(36)
+var normalizeComponent = __webpack_require__(1)
 /* script */
 var __vue_script__ = __webpack_require__(99)
 /* template */
@@ -60958,7 +60967,7 @@ var Component = normalizeComponent(
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "resources/assets/js/components/ReportGenerated.vue"
+Component.options.__file = "resources/assets/js/components/InviteEmail.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -60967,9 +60976,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-1b6f9758", Component.options)
+    hotAPI.createRecord("data-v-5b805c2c", Component.options)
   } else {
-    hotAPI.reload("data-v-1b6f9758", Component.options)
+    hotAPI.reload("data-v-5b805c2c", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -61008,38 +61017,119 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-    props: ['user'],
+    props: ['users', 'errors', 'news', 'invited', 'roles', 'owner'],
     data: function data() {
         return {
-            toasts: []
+            members: [],
+            newEmail: '',
+            models: [],
+            userRole: [],
+            counter: 0,
+            helper: ''
         };
     },
     mounted: function mounted() {
-        var _this = this;
+        this.members = this.users;
+        for (var i in this.members) {
+            this.members[i].isNew = false;
+            this.models[this.members[i].id] = this.members[i].email;
+            this.userRole[this.members[i].id] = this.members[i].pivot.role_id;
+        }
 
-        Echo.private('ReportCompleted.' + this.user).listen('GenerateReport', function (data) {
-            var date = new Date();
-            _this.toasts.unshift({
-                tables: data.tables,
-                url: '/admin/reports/' + data.attach,
-                timeBeforeDelete: data.timeBeforeDelete,
-                id: 'toast' + '_' + date.getTime(),
-                time: date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds()
+        for (var _i in this.invited) {
+            this.invited[_i].id += '_invite';
+            this.invited[_i].isNew = true;
+            this.models[this.invited[_i].id] = this.invited[_i].email;
+            this.userRole[this.invited[_i].id] = this.invited[_i].role_id;
+            this.members.push(this.invited[_i]);
+        }
+
+        for (var _i2 in this.news) {
+            var id = 'new_' + this.counter;
+            this.members.push({
+                isNew: true,
+                id: id,
+                errors: this.errors['news.' + _i2 + '.email']
             });
-            console.log(_this.toasts);
-        });
-        $('#report_toasts').bind("DOMSubtreeModified", function () {
-            $('.toast').toast('show');
-        });
+            this.models[id] = this.news[_i2].email;
+            this.userRole[id] = this.news[_i2].role;
+            this.counter++;
+        }
+
+        console.log(this.errors);
     },
 
 
     methods: {
-        del: function del(id) {
-            for (var key in this.toasts) {
-                if (this.toasts[key].id == id) this.toasts.splice(key, 1);
+        del: function del(key) {
+            if (confirm('Точно удалить?')) this.members.splice(key, 1);
+        },
+        put: function put(key) {
+            if (this.newEmail) {
+                if (this.models.indexOf(this.newEmail) == -1) {
+                    this.counter++;
+                    var id = 'new_' + this.counter;
+                    var newUser = {
+                        isNew: true,
+                        id: id
+                    };
+                    this.models[id] = this.newEmail;
+                    this.newEmail = '';
+                    this.members.push(newUser);
+                } else {
+                    alert('Такой email уже введен ранее');
+                }
+            } else {
+                alert('Введите email');
             }
         }
     }
@@ -61053,44 +61143,2627 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { attrs: { id: "report_toasts" } },
-    _vm._l(_vm.toasts, function(toast) {
-      return _c("div", { staticClass: "container" }, [
+  return _c("div", [
+    _c(
+      "div",
+      {
+        staticClass: "btn btn-secondary btn-block",
+        attrs: {
+          "data-toggle": "collapse",
+          href: "#collapseExample",
+          role: "button",
+          "aria-expanded": "false",
+          "aria-controls": "collapseExample"
+        }
+      },
+      [
+        _vm._v(
+          "\n        Члены команды - " + _vm._s(this.members.length) + "\n    "
+        )
+      ]
+    ),
+    _vm._v(" "),
+    _c("div", { staticClass: "collapse", attrs: { id: "collapseExample" } }, [
+      _c("div", { staticClass: "card card-body" }, [
+        _c("div", { staticClass: "table-responsive" }, [
+          _c(
+            "table",
+            { attrs: { width: "100%" } },
+            _vm._l(_vm.members, function(member, key) {
+              return _c("tr", [
+                _c("td", [
+                  _c("div", { staticClass: "input-group mb-3" }, [
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.models[member.id],
+                          expression: "models[member.id]"
+                        }
+                      ],
+                      staticClass: "form-control",
+                      class: [member.errors ? "is-invalid" : ""],
+                      attrs: {
+                        type: "text",
+                        placeholder: "Email пользователя",
+                        "aria-label": "Email пользователя",
+                        "aria-describedby": "button-addon" + member.id,
+                        name: member.isNew
+                          ? "news[" + key + "][email]"
+                          : "members[" + key + "][email]",
+                        readonly: !member.isNew,
+                        required: ""
+                      },
+                      domProps: { value: _vm.models[member.id] },
+                      on: {
+                        input: function($event) {
+                          if ($event.target.composing) {
+                            return
+                          }
+                          _vm.$set(_vm.models, member.id, $event.target.value)
+                        }
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "input-group-append" }, [
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-danger",
+                          attrs: {
+                            type: "button",
+                            id: "button-addon" + member.id,
+                            disabled: member.id == _vm.owner.id
+                          },
+                          on: {
+                            click: function($event) {
+                              return _vm.del(key)
+                            }
+                          }
+                        },
+                        [_vm._v("Х")]
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "input-group-append" }, [
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-secondary",
+                          attrs: {
+                            type: "button",
+                            "data-toggle": "modal",
+                            "data-target": "#exampleModalCenter",
+                            "data-placement": "top"
+                          },
+                          on: {
+                            click: function($event) {
+                              _vm.helper = member.isNew
+                                ? "Ожидает согласие от пользователя на вступление в группу. Исправление email приведет к аннулированию ранее направленного приглашения"
+                                : "Действительный член команды"
+                            }
+                          }
+                        },
+                        [_vm._v("?")]
+                      )
+                    ]),
+                    _vm._v(" "),
+                    member.errors
+                      ? _c("div", { staticClass: "invalid-feedback" }, [
+                          _vm._v(
+                            "\n                                " +
+                              _vm._s(member.errors.join(", ")) +
+                              "\n                              "
+                          )
+                        ])
+                      : _vm._e()
+                  ])
+                ]),
+                _vm._v(" "),
+                _c("td", { attrs: { align: "rigth" } }, [
+                  _c("div", { staticClass: "input-group mb-3" }, [
+                    _c(
+                      "select",
+                      {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.userRole[member.id],
+                            expression: "userRole[member.id]"
+                          }
+                        ],
+                        staticClass: "custom-select",
+                        attrs: {
+                          disabled: member.id == _vm.owner.id,
+                          name: member.isNew
+                            ? "news[" + key + "][role]"
+                            : "members[" + key + "][role]",
+                          required: ""
+                        },
+                        on: {
+                          change: function($event) {
+                            var $$selectedVal = Array.prototype.filter
+                              .call($event.target.options, function(o) {
+                                return o.selected
+                              })
+                              .map(function(o) {
+                                var val = "_value" in o ? o._value : o.value
+                                return val
+                              })
+                            _vm.$set(
+                              _vm.userRole,
+                              member.id,
+                              $event.target.multiple
+                                ? $$selectedVal
+                                : $$selectedVal[0]
+                            )
+                          }
+                        }
+                      },
+                      _vm._l(_vm.roles, function(role) {
+                        return _c("option", { domProps: { value: role.id } }, [
+                          _vm._v(_vm._s(role.name))
+                        ])
+                      }),
+                      0
+                    ),
+                    _vm._v(" "),
+                    member.id == _vm.owner.id
+                      ? _c("input", {
+                          attrs: {
+                            type: "hidden",
+                            name: "members[" + key + "][role]"
+                          },
+                          domProps: { value: _vm.userRole[member.id] }
+                        })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "input-group-append" }, [
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-secondary",
+                          attrs: {
+                            type: "button",
+                            "data-toggle": "modal",
+                            "data-target": "#exampleModalCenter"
+                          },
+                          on: {
+                            click: function($event) {
+                              _vm.helper = _vm.userRole[member.id]
+                                ? _vm.roles.filter(function(role) {
+                                    return role.id == _vm.userRole[member.id]
+                                  })[0].description
+                                : "Установите роль в команде"
+                            }
+                          }
+                        },
+                        [_vm._v("?")]
+                      )
+                    ])
+                  ])
+                ])
+              ])
+            }),
+            0
+          )
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "input-group mb-3" }, [
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.newEmail,
+                expression: "newEmail"
+              }
+            ],
+            staticClass: "form-control",
+            attrs: {
+              type: "text",
+              placeholder: "Email нового пользователя",
+              "aria-label": "Email нового пользователя",
+              "aria-describedby": "button-addon-new",
+              id: "newEmail"
+            },
+            domProps: { value: _vm.newEmail },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.newEmail = $event.target.value
+              }
+            }
+          }),
+          _vm._v(" "),
+          _c("div", { staticClass: "input-group-append" }, [
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-primary",
+                attrs: { type: "button", id: "button-addon-new" },
+                on: {
+                  click: function($event) {
+                    return _vm.put()
+                  }
+                }
+              },
+              [_vm._v("+")]
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "input-group-append" }, [
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-secondary",
+                attrs: {
+                  type: "button",
+                  "data-toggle": "modal",
+                  "data-target": "#exampleModalCenter"
+                },
+                on: {
+                  click: function($event) {
+                    _vm.helper =
+                      "Введите email пользователя, которого хотите пригласить в группу, и нажмите +"
+                  }
+                }
+              },
+              [_vm._v("?")]
+            )
+          ])
+        ])
+      ])
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        attrs: {
+          id: "exampleModalCenter",
+          tabindex: "-1",
+          role: "dialog",
+          "aria-labelledby": "exampleModalCenterTitle",
+          "aria-hidden": "true"
+        }
+      },
+      [
         _c(
           "div",
           {
-            staticClass: "toast",
-            attrs: {
-              role: "alert",
-              "aria-live": "assertive",
-              "aria-atomic": "true",
-              "data-autohide": "false",
-              id: toast.id
-            }
+            staticClass: "modal-dialog modal-dialog-centered",
+            attrs: { role: "document" }
           },
           [
-            _c("div", { staticClass: "toast-header" }, [
-              _c("strong", { staticClass: "mr-auto" }, [
-                _vm._v("Сгенерирован новый отчет")
+            _c("div", { staticClass: "modal-content" }, [
+              _vm._m(0),
+              _vm._v(" "),
+              _c("div", { staticClass: "modal-body" }, [
+                _vm._v("\n            " + _vm._s(_vm.helper) + "\n          ")
               ]),
               _vm._v(" "),
-              _c("small", [_vm._v(_vm._s(toast.time))]),
+              _vm._m(1)
+            ])
+          ]
+        )
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-header" }, [
+      _c(
+        "h5",
+        {
+          staticClass: "modal-title",
+          attrs: { id: "exampleModalCenterTitle" }
+        },
+        [_vm._v("Подсказка")]
+      ),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "close",
+          attrs: {
+            type: "button",
+            "data-dismiss": "modal",
+            "aria-label": "Close"
+          }
+        },
+        [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-footer" }, [
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-secondary",
+          attrs: { type: "button", "data-dismiss": "modal" }
+        },
+        [_vm._v("Закрыть")]
+      )
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-5b805c2c", module.exports)
+  }
+}
+
+/***/ }),
+/* 101 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(102)
+/* template */
+var __vue_template__ = __webpack_require__(103)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/TaskRepeatability.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-6c4c10fa", Component.options)
+  } else {
+    hotAPI.reload("data-v-6c4c10fa", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 102 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['intervals', 'old', 'errors', 'load'],
+    data: function data() {
+        return {
+            model: {
+                repeatability: this.getOld('repeatability'),
+                value: this.getOld('intervalValue'),
+                type: this.getOld('interval')
+            }
+        };
+    },
+    mounted: function mounted() {},
+
+
+    methods: {
+        getOld: function getOld(name) {
+            var loaded = this.load ? this.getLoad(name) : '';
+            return this.old[name] ? this.old[name] : loaded;
+        },
+        getLoad: function getLoad(name) {
+            var _this = this;
+
+            if (name == 'intervalValue') return this.load.interval_value;
+            if (name == 'interval') return this.intervals.find(function (item) {
+                return item.id == _this.load.reference_interval_id;
+            }).value;
+            if (name == 'repeatability') return this.load.repeatability;
+        }
+    }
+});
+
+/***/ }),
+/* 103 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c("div", { staticClass: "custom-control custom-switch" }, [
+      _c("input", {
+        directives: [
+          {
+            name: "model",
+            rawName: "v-model",
+            value: _vm.model["repeatability"],
+            expression: "model['repeatability']"
+          }
+        ],
+        class:
+          "custom-control-input" +
+          (_vm.errors["repeatability"] ? " is-invalid" : ""),
+        attrs: {
+          type: "checkbox",
+          "data-toggle": "collapse",
+          href: "#collapseIntervals",
+          id: "customSwitch1",
+          name: "repeatability"
+        },
+        domProps: {
+          checked: Array.isArray(_vm.model["repeatability"])
+            ? _vm._i(_vm.model["repeatability"], null) > -1
+            : _vm.model["repeatability"]
+        },
+        on: {
+          change: function($event) {
+            var $$a = _vm.model["repeatability"],
+              $$el = $event.target,
+              $$c = $$el.checked ? true : false
+            if (Array.isArray($$a)) {
+              var $$v = null,
+                $$i = _vm._i($$a, $$v)
+              if ($$el.checked) {
+                $$i < 0 &&
+                  _vm.$set(_vm.model, "repeatability", $$a.concat([$$v]))
+              } else {
+                $$i > -1 &&
+                  _vm.$set(
+                    _vm.model,
+                    "repeatability",
+                    $$a.slice(0, $$i).concat($$a.slice($$i + 1))
+                  )
+              }
+            } else {
+              _vm.$set(_vm.model, "repeatability", $$c)
+            }
+          }
+        }
+      }),
+      _vm._v(" "),
+      _c(
+        "label",
+        {
+          staticClass: "custom-control-label",
+          attrs: { for: "customSwitch1" }
+        },
+        [_vm._v("Повторять мероприятие")]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "invalid-feedback" }, [
+        _vm._v(
+          "\n            " + _vm._s(_vm.errors["repeatability"]) + "\n        "
+        )
+      ])
+    ]),
+    _vm._v(" "),
+    _vm.model["repeatability"]
+      ? _c(
+          "div",
+          {
+            class: "collapse" + (_vm.model["repeatability"] ? " show" : ""),
+            attrs: { id: "collapseIntervals" }
+          },
+          [
+            _c("div", { staticClass: "card card-body" }, [
+              _c("div", { staticClass: "form-group" }, [
+                _c("label", { attrs: { for: "inputIntervalValue" } }, [
+                  _vm._v("Повторять каждые")
+                ]),
+                _vm._v(" "),
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.model["value"],
+                      expression: "model['value']"
+                    }
+                  ],
+                  class:
+                    "form-control" +
+                    (_vm.errors["intervalValue"] ? " is-invalid" : ""),
+                  attrs: {
+                    type: "text",
+                    id: "inputIntervalValue",
+                    name: "intervalValue",
+                    placeholder: "Введите значение интервала",
+                    required: _vm.model["repeatability"]
+                  },
+                  domProps: { value: _vm.model["value"] },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.model, "value", $event.target.value)
+                    }
+                  }
+                }),
+                _vm._v(" "),
+                _c("div", { staticClass: "invalid-feedback" }, [
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.errors["intervalValue"]) +
+                      "\n                "
+                  )
+                ])
+              ]),
               _vm._v(" "),
+              _c("div", { staticClass: "form-group" }, [
+                _c("label", { attrs: { for: "intervalsSelect" } }, [
+                  _vm._v("Тип интервала")
+                ]),
+                _vm._v(" "),
+                _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.model["type"],
+                        expression: "model['type']"
+                      }
+                    ],
+                    class:
+                      "form-control" +
+                      (_vm.errors["interval"] ? " is-invalid" : ""),
+                    attrs: {
+                      id: "intervalsSelect",
+                      name: "interval",
+                      required: _vm.model["repeatability"]
+                    },
+                    on: {
+                      change: function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.$set(
+                          _vm.model,
+                          "type",
+                          $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        )
+                      }
+                    }
+                  },
+                  [
+                    _c("option", { attrs: { disabled: "", selected: "" } }, [
+                      _vm._v("Выберите тип интервала...")
+                    ]),
+                    _vm._v(" "),
+                    _vm._l(_vm.intervals, function(interval) {
+                      return _c(
+                        "option",
+                        { domProps: { value: interval.value } },
+                        [_vm._v(_vm._s(interval.name))]
+                      )
+                    })
+                  ],
+                  2
+                ),
+                _vm._v(" "),
+                _c("div", { staticClass: "invalid-feedback" }, [
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.errors["interval"]) +
+                      "\n                "
+                  )
+                ])
+              ])
+            ])
+          ]
+        )
+      : _vm._e()
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-6c4c10fa", module.exports)
+  }
+}
+
+/***/ }),
+/* 104 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(105)
+/* template */
+var __vue_template__ = __webpack_require__(106)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/AttachSubtask.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-80dfa5ce", Component.options)
+  } else {
+    hotAPI.reload("data-v-80dfa5ce", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 105 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['selects', 'old', 'errors', 'load', 'users', 'preinstaller_tasks'],
+    data: function data() {
+        return {
+            model: [],
+            filterUser: [],
+            preinstallerTaskModel: ''
+        };
+    },
+    mounted: function mounted() {
+        var _this = this;
+
+        if (this.load) {
+            var _loop = function _loop(i) {
+                var subtask = _this.load.subtasks[i];
+                subtask.delay_interval = _this.selects.intervals.find(function (item) {
+                    return item.id == subtask.reference_interval_id;
+                }).value;
+                subtask.difficulty = _this.selects.difficulties.find(function (item) {
+                    return item.id == subtask.reference_difficulty_id;
+                }).value;
+                subtask.priority = _this.selects.priorities.find(function (item) {
+                    return item.id == subtask.reference_priority_id;
+                }).value;
+                subtask.user_executor = subtask.executor_id;
+                subtask.user_validator = subtask.validator_id;
+                _this.model.push(_this.getModelTemplate(subtask));
+            };
+
+            for (var i in this.load.subtasks) {
+                _loop(i);
+            }
+        }
+
+        for (var i in this.old.subtasks) {
+            var _subtask = this.old.subtasks[i];
+            if (!this.model[i]) {
+                this.model.push(this.getModelTemplate(_subtask));
+            } else {
+                this.model[i] = this.getModelTemplate(_subtask);
+            }
+        }
+        if (this.model.length == 0) this.newModelHolder();
+        console.log(this.model);
+    },
+
+
+    methods: {
+        newModelHolder: function newModelHolder() {
+            this.model.push(this.getModelTemplate(new Array()));
+        },
+        deleteModelHolder: function deleteModelHolder(index) {
+            if (confirm('Вы уверены?')) {
+                this.model.splice(index, 1);
+                for (var i in this.errors) {
+                    if (i.indexOf('subtasks.' + index + '.') > -1) delete this.errors[i];
+                }
+                if (this.model.length == 0) this.newModelHolder();
+            }
+        },
+        getValue: function getValue(val) {
+            return val ? val : '';
+        },
+        getClass: function getClass(subtask) {
+            if (subtask.delay || subtask.delayInterval || subtask.difficulty || subtask.priority || subtask.location || subtask.score || subtask.delayable) return ' show';
+            return '';
+        },
+        getError: function getError(index, key) {
+            return this.errors['subtasks.' + index + '.' + key];
+        },
+        getModelTemplate: function getModelTemplate(values) {
+            return {
+                'description': this.getValue(values['description']),
+                'id': this.getValue(values['id']),
+                'delay': this.getValue(values['delay']),
+                'delay_interval': this.getValue(values['delay_interval']),
+                'difficulty': this.getValue(values['difficulty']),
+                'priority': this.getValue(values['priority']),
+                'location': this.getValue(values['location']),
+                'score': this.getValue(values['score']),
+                'not_delayable': this.getValue(values['not_delayable']),
+                'user_executor': this.getValue(values['user_executor']),
+                'user_validator': this.getValue(values['user_validator']),
+                'showable_by': this.getValue(values['showable_by'])
+            };
+        },
+        filteredUsers: function filteredUsers(key) {
+            var _this2 = this;
+
+            return this.filterUser[key] == undefined ? this.users : this.users.filter(function (user) {
+                return user.name.toLowerCase().indexOf(_this2.filterUser[key].toLowerCase()) > -1;
+            });
+        },
+        preinstall: function preinstall() {
+            var _this3 = this;
+
+            if (!confirm('Вы уверены?')) return null;
+            this.model = [];
+
+            var _loop2 = function _loop2(i) {
+                var subtask = _this3.preinstaller_tasks[_this3.preinstallerTaskModel].subtasks[i];
+                subtask.delay_interval = _this3.selects.intervals.find(function (item) {
+                    return item.id == subtask.reference_interval_id;
+                }).value;
+                subtask.difficulty = _this3.selects.difficulties.find(function (item) {
+                    return item.id == subtask.reference_difficulty_id;
+                }).value;
+                subtask.priority = _this3.selects.priorities.find(function (item) {
+                    return item.id == subtask.reference_priority_id;
+                }).value;
+                _this3.model.push(_this3.getModelTemplate(subtask));
+            };
+
+            for (var i in this.preinstaller_tasks[this.preinstallerTaskModel].subtasks) {
+                _loop2(i);
+            }
+        }
+    }
+});
+
+/***/ }),
+/* 106 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _vm.preinstaller_tasks
+      ? _c("div", { staticClass: "form-group" }, [
+          _c("label", { attrs: { for: "selectPreinstallerTasks" } }, [
+            _vm._v("Предустановленные задачи")
+          ]),
+          _vm._v(" "),
+          _c(
+            "select",
+            {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.preinstallerTaskModel,
+                  expression: "preinstallerTaskModel"
+                }
+              ],
+              staticClass: "form-control",
+              attrs: { id: "selectPreinstallerTasks" },
+              on: {
+                change: [
+                  function($event) {
+                    var $$selectedVal = Array.prototype.filter
+                      .call($event.target.options, function(o) {
+                        return o.selected
+                      })
+                      .map(function(o) {
+                        var val = "_value" in o ? o._value : o.value
+                        return val
+                      })
+                    _vm.preinstallerTaskModel = $event.target.multiple
+                      ? $$selectedVal
+                      : $$selectedVal[0]
+                  },
+                  function($event) {
+                    return _vm.preinstall()
+                  }
+                ]
+              }
+            },
+            [
+              _c("option", { attrs: { disabled: "", selected: "" } }, [
+                _vm._v("...")
+              ]),
+              _vm._v(" "),
+              _vm._l(_vm.preinstaller_tasks, function(task, key) {
+                return _c("option", { domProps: { value: key } }, [
+                  _vm._v(_vm._s(task.name))
+                ])
+              })
+            ],
+            2
+          )
+        ])
+      : _vm._e(),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "accordion mt-1 mb-1 shadow", attrs: { id: "accordion" } },
+      _vm._l(_vm.model, function(subtask, key) {
+        return _c("div", { staticClass: "card" }, [
+          _c(
+            "div",
+            { staticClass: "card-header p-1", attrs: { id: "heading" + key } },
+            [
+              _c("h6", { staticClass: "mb-0 pl-2" }, [
+                _c(
+                  "a",
+                  {
+                    attrs: {
+                      href: "#",
+                      "data-toggle": "collapse",
+                      "data-target": "#collapse" + key,
+                      "aria-controls": "collapse" + key,
+                      "aria-expanded": "false"
+                    }
+                  },
+                  [
+                    _vm._v(
+                      "\n                        " +
+                        _vm._s(key + 1) +
+                        ") " +
+                        _vm._s(
+                          subtask.description
+                            ? subtask.description
+                            : "Новая задача"
+                        ) +
+                        "\n                        "
+                    ),
+                    !subtask.description
+                      ? _c("span", { staticClass: "badge badge-warning" }, [
+                          _vm._v("!")
+                        ])
+                      : _vm._e()
+                  ]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-danger m-0 btn-sm",
+                    attrs: { type: "button" },
+                    on: {
+                      click: function($event) {
+                        return _vm.deleteModelHolder(key)
+                      }
+                    }
+                  },
+                  [_vm._v("X")]
+                )
+              ])
+            ]
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              staticClass: "collapse p-2",
+              attrs: {
+                id: "collapse" + key,
+                "aria-labelledby": "heading" + key,
+                "data-parent": "#accordion"
+              }
+            },
+            [
+              _c("div", { staticClass: "form-group" }, [
+                _c("label", { attrs: { for: "subtaskDescription" + key } }, [
+                  _vm._v("Описание задачи")
+                ]),
+                _vm._v(" "),
+                _c("textarea", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: subtask.description,
+                      expression: "subtask.description"
+                    }
+                  ],
+                  class:
+                    "form-control" +
+                    (_vm.getError(key, "description") ? " is-invalid" : ""),
+                  attrs: {
+                    id: "subtaskDescription" + key,
+                    rows: "3",
+                    name: "subtasks[" + key + "][description]",
+                    required: ""
+                  },
+                  domProps: { value: subtask.description },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(subtask, "description", $event.target.value)
+                    }
+                  }
+                }),
+                _vm._v(" "),
+                _c("div", { staticClass: "invalid-feedback" }, [
+                  _vm._v(
+                    "\n                    " +
+                      _vm._s(_vm.getError(key, "description")) +
+                      "\n                    "
+                  )
+                ])
+              ]),
+              _vm._v(" "),
+              _vm.users
+                ? _c("div", [
+                    _c("label", { attrs: { for: "subtaskExecutor" + key } }, [
+                      _vm._v("Исполнитель")
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "input-group mb-3" }, [
+                      _c("input", {
+                        staticClass: "form-control",
+                        attrs: {
+                          "data-toggle": "modal",
+                          "data-target": "#chooseExecutor" + key,
+                          type: "text",
+                          id: "subtaskExecutor" + key,
+                          readonly: "",
+                          "aria-describedby": "button-addon-executor" + key
+                        },
+                        domProps: {
+                          value:
+                            subtask.user_executor != ""
+                              ? _vm.users.find(function(element) {
+                                  return element.id == subtask.user_executor
+                                }).name
+                              : "Выберите исполнителя"
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "input-group-append" }, [
+                        _c(
+                          "button",
+                          {
+                            staticClass: "btn btn-outline-secondary",
+                            attrs: {
+                              type: "button",
+                              id: "button-addon-executor" + key
+                            },
+                            on: {
+                              click: function($event) {
+                                subtask.user_executor = ""
+                              }
+                            }
+                          },
+                          [_vm._v("Х")]
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: subtask.user_executor,
+                            expression: "subtask.user_executor"
+                          }
+                        ],
+                        attrs: {
+                          type: "hidden",
+                          name: "subtasks[" + key + "][user_executor]"
+                        },
+                        domProps: { value: subtask.user_executor },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(
+                              subtask,
+                              "user_executor",
+                              $event.target.value
+                            )
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                            " +
+                            _vm._s(_vm.getError(key, "user_executor")) +
+                            "\n                        "
+                        )
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      {
+                        staticClass: "modal fade",
+                        attrs: {
+                          id: "chooseExecutor" + key,
+                          tabindex: "-1",
+                          role: "dialog",
+                          "aria-labelledby": "chooseExecutor" + key + "Title",
+                          "aria-hidden": "true"
+                        }
+                      },
+                      [
+                        _c(
+                          "div",
+                          {
+                            staticClass: "modal-dialog modal-dialog-centered",
+                            attrs: { role: "document" }
+                          },
+                          [
+                            _c("div", { staticClass: "modal-content" }, [
+                              _c("div", { staticClass: "modal-header" }, [
+                                _c(
+                                  "h5",
+                                  {
+                                    staticClass: "modal-title",
+                                    attrs: {
+                                      id: "chooseExecutor" + key + "Title"
+                                    }
+                                  },
+                                  [_vm._v("Выбор исполнителя")]
+                                ),
+                                _vm._v(" "),
+                                _vm._m(0, true)
+                              ]),
+                              _vm._v(" "),
+                              _c(
+                                "div",
+                                { staticClass: "modal-body" },
+                                [
+                                  _c("input", {
+                                    directives: [
+                                      {
+                                        name: "model",
+                                        rawName: "v-model",
+                                        value: _vm.filterUser[key],
+                                        expression: "filterUser[key]"
+                                      }
+                                    ],
+                                    staticClass: "form-control",
+                                    attrs: {
+                                      placeholder: "Отфильтровать пользователей"
+                                    },
+                                    domProps: { value: _vm.filterUser[key] },
+                                    on: {
+                                      input: function($event) {
+                                        if ($event.target.composing) {
+                                          return
+                                        }
+                                        _vm.$set(
+                                          _vm.filterUser,
+                                          key,
+                                          $event.target.value
+                                        )
+                                      }
+                                    }
+                                  }),
+                                  _vm._v(" "),
+                                  _vm._l(_vm.filteredUsers(key), function(
+                                    user,
+                                    keyUser
+                                  ) {
+                                    return _c(
+                                      "div",
+                                      {
+                                        staticClass:
+                                          "custom-control custom-radio"
+                                      },
+                                      [
+                                        _c("input", {
+                                          directives: [
+                                            {
+                                              name: "model",
+                                              rawName: "v-model",
+                                              value: subtask.user_executor,
+                                              expression:
+                                                "subtask.user_executor"
+                                            }
+                                          ],
+                                          staticClass: "custom-control-input",
+                                          attrs: {
+                                            type: "radio",
+                                            id:
+                                              "customRadioExecutor" +
+                                              key +
+                                              keyUser
+                                          },
+                                          domProps: {
+                                            value: user.id,
+                                            checked: _vm._q(
+                                              subtask.user_executor,
+                                              user.id
+                                            )
+                                          },
+                                          on: {
+                                            change: function($event) {
+                                              return _vm.$set(
+                                                subtask,
+                                                "user_executor",
+                                                user.id
+                                              )
+                                            }
+                                          }
+                                        }),
+                                        _vm._v(" "),
+                                        _c(
+                                          "label",
+                                          {
+                                            staticClass: "custom-control-label",
+                                            attrs: {
+                                              for:
+                                                "customRadioExecutor" +
+                                                key +
+                                                keyUser
+                                            }
+                                          },
+                                          [_vm._v(_vm._s(user.name))]
+                                        )
+                                      ]
+                                    )
+                                  })
+                                ],
+                                2
+                              ),
+                              _vm._v(" "),
+                              _vm._m(1, true)
+                            ])
+                          ]
+                        )
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _c("label", { attrs: { for: "subtaskValidator" + key } }, [
+                      _vm._v("Контроллер")
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "input-group mb-3" }, [
+                      _c("input", {
+                        staticClass: "form-control",
+                        attrs: {
+                          type: "text",
+                          id: "subtaskValidator" + key,
+                          readonly: "",
+                          "aria-describedby": "button-addon-validator" + key,
+                          "data-toggle": "modal",
+                          "data-target": "#chooseValidator" + key
+                        },
+                        domProps: {
+                          value:
+                            subtask.user_validator != ""
+                              ? _vm.users.find(function(element) {
+                                  return element.id == subtask.user_validator
+                                }).name
+                              : "Выберите контроллера"
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "input-group-append" }, [
+                        _c(
+                          "button",
+                          {
+                            staticClass: "btn btn-outline-secondary",
+                            attrs: {
+                              type: "button",
+                              id: "button-addon-validator" + key
+                            },
+                            on: {
+                              click: function($event) {
+                                subtask.user_validator = ""
+                              }
+                            }
+                          },
+                          [_vm._v("Х")]
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: subtask.user_validator,
+                            expression: "subtask.user_validator"
+                          }
+                        ],
+                        attrs: {
+                          type: "hidden",
+                          name: "subtasks[" + key + "][user_validator]"
+                        },
+                        domProps: { value: subtask.user_validator },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(
+                              subtask,
+                              "user_validator",
+                              $event.target.value
+                            )
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                            " +
+                            _vm._s(_vm.getError(key, "user_validator")) +
+                            "\n                        "
+                        )
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      {
+                        staticClass: "modal fade",
+                        attrs: {
+                          id: "chooseValidator" + key,
+                          tabindex: "-1",
+                          role: "dialog",
+                          "aria-labelledby": "chooseValidator" + key + "Title",
+                          "aria-hidden": "true"
+                        }
+                      },
+                      [
+                        _c(
+                          "div",
+                          {
+                            staticClass: "modal-dialog modal-dialog-centered",
+                            attrs: { role: "document" }
+                          },
+                          [
+                            _c("div", { staticClass: "modal-content" }, [
+                              _c("div", { staticClass: "modal-header" }, [
+                                _c(
+                                  "h5",
+                                  {
+                                    staticClass: "modal-title",
+                                    attrs: {
+                                      id: "chooseValidator" + key + "Title"
+                                    }
+                                  },
+                                  [_vm._v("Выбор контроллера")]
+                                ),
+                                _vm._v(" "),
+                                _vm._m(2, true)
+                              ]),
+                              _vm._v(" "),
+                              _c(
+                                "div",
+                                { staticClass: "modal-body" },
+                                [
+                                  _c("input", {
+                                    directives: [
+                                      {
+                                        name: "model",
+                                        rawName: "v-model",
+                                        value: _vm.filterUser[key],
+                                        expression: "filterUser[key]"
+                                      }
+                                    ],
+                                    staticClass: "form-control",
+                                    attrs: {
+                                      placeholder: "Отфильтровать пользователей"
+                                    },
+                                    domProps: { value: _vm.filterUser[key] },
+                                    on: {
+                                      input: function($event) {
+                                        if ($event.target.composing) {
+                                          return
+                                        }
+                                        _vm.$set(
+                                          _vm.filterUser,
+                                          key,
+                                          $event.target.value
+                                        )
+                                      }
+                                    }
+                                  }),
+                                  _vm._v(" "),
+                                  _vm._l(_vm.filteredUsers(key), function(
+                                    user,
+                                    keyUser
+                                  ) {
+                                    return _c(
+                                      "div",
+                                      {
+                                        staticClass:
+                                          "custom-control custom-radio"
+                                      },
+                                      [
+                                        _c("input", {
+                                          directives: [
+                                            {
+                                              name: "model",
+                                              rawName: "v-model",
+                                              value: subtask.user_validator,
+                                              expression:
+                                                "subtask.user_validator"
+                                            }
+                                          ],
+                                          staticClass: "custom-control-input",
+                                          attrs: {
+                                            type: "radio",
+                                            id:
+                                              "customRadioValidator" +
+                                              key +
+                                              keyUser
+                                          },
+                                          domProps: {
+                                            value: user.id,
+                                            checked: _vm._q(
+                                              subtask.user_validator,
+                                              user.id
+                                            )
+                                          },
+                                          on: {
+                                            change: function($event) {
+                                              return _vm.$set(
+                                                subtask,
+                                                "user_validator",
+                                                user.id
+                                              )
+                                            }
+                                          }
+                                        }),
+                                        _vm._v(" "),
+                                        _c(
+                                          "label",
+                                          {
+                                            staticClass: "custom-control-label",
+                                            attrs: {
+                                              for:
+                                                "customRadioValidator" +
+                                                key +
+                                                keyUser
+                                            }
+                                          },
+                                          [_vm._v(_vm._s(user.name))]
+                                        )
+                                      ]
+                                    )
+                                  })
+                                ],
+                                2
+                              ),
+                              _vm._v(" "),
+                              _vm._m(3, true)
+                            ])
+                          ]
+                        )
+                      ]
+                    )
+                  ])
+                : _vm._e(),
+              _vm._v(" "),
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: subtask.id,
+                    expression: "subtask.id"
+                  }
+                ],
+                attrs: { type: "hidden", name: "subtasks[" + key + "][id]" },
+                domProps: { value: subtask.id },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(subtask, "id", $event.target.value)
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c(
+                "a",
+                {
+                  staticClass: "btn btn-primary btn-sm",
+                  attrs: {
+                    "data-toggle": "collapse",
+                    role: "button",
+                    href: "#collapseExt" + key,
+                    "aria-expanded": "false",
+                    "aria-controls": "collapseExt" + key
+                  }
+                },
+                [
+                  _vm._v(
+                    "\n                    Дополнительные параметры\n                "
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "div",
+                { class: "collapse", attrs: { id: "collapseExt" + key } },
+                [
+                  _c("div", { staticClass: "card card-body" }, [
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", { attrs: { for: "subtaskDelay" + key } }, [
+                        _vm._v("Сдвинуть срок исполнения на (дни)")
+                      ]),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: subtask.delay,
+                            expression: "subtask.delay"
+                          }
+                        ],
+                        class:
+                          "form-control" +
+                          (_vm.getError(key, "delay") ? " is-invalid" : ""),
+                        attrs: {
+                          type: "text",
+                          id: "subtaskDelay" + key,
+                          name: "subtasks[" + key + "][delay]",
+                          placeholder: "Введите значение интервала"
+                        },
+                        domProps: { value: subtask.delay },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(subtask, "delay", $event.target.value)
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                                " +
+                            _vm._s(_vm.getError(key, "delay")) +
+                            "\n                            "
+                        )
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "form-group" }, [
+                      _c(
+                        "label",
+                        { attrs: { for: "delayIntervalsSelect" + key } },
+                        [_vm._v("Тип интервала")]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "select",
+                        {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: subtask.delay_interval,
+                              expression: "subtask.delay_interval"
+                            }
+                          ],
+                          class:
+                            "form-control" +
+                            (_vm.getError(key, "delay_interval")
+                              ? " is-invalid"
+                              : ""),
+                          attrs: {
+                            id: "delayIntervalsSelect" + key,
+                            name: "subtasks[" + key + "][delay_interval]"
+                          },
+                          on: {
+                            change: function($event) {
+                              var $$selectedVal = Array.prototype.filter
+                                .call($event.target.options, function(o) {
+                                  return o.selected
+                                })
+                                .map(function(o) {
+                                  var val = "_value" in o ? o._value : o.value
+                                  return val
+                                })
+                              _vm.$set(
+                                subtask,
+                                "delay_interval",
+                                $event.target.multiple
+                                  ? $$selectedVal
+                                  : $$selectedVal[0]
+                              )
+                            }
+                          }
+                        },
+                        [
+                          _c(
+                            "option",
+                            { attrs: { disabled: "", selected: "" } },
+                            [_vm._v("Выберите тип интервала...")]
+                          ),
+                          _vm._v(" "),
+                          _vm._l(_vm.selects.intervals, function(interval) {
+                            return _c(
+                              "option",
+                              { domProps: { value: interval.value } },
+                              [_vm._v(_vm._s(interval.name))]
+                            )
+                          })
+                        ],
+                        2
+                      ),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                                " +
+                            _vm._s(_vm.getError(key, "delay_interval")) +
+                            "\n                            "
+                        )
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "form-group" }, [
+                      _c(
+                        "label",
+                        { attrs: { for: "subtaskShowableBy" + key } },
+                        [
+                          _vm._v(
+                            "Включить в повестку за ... (дни) до срока выполнения задачи"
+                          )
+                        ]
+                      ),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: subtask.showable_by,
+                            expression: "subtask.showable_by"
+                          }
+                        ],
+                        class:
+                          "form-control" +
+                          (_vm.getError(key, "showable_by")
+                            ? " is-invalid"
+                            : ""),
+                        attrs: {
+                          type: "text",
+                          id: "subtaskShowableBy" + key,
+                          name: "subtasks[" + key + "][showable_by]",
+                          placeholder: "Введите значение интервала"
+                        },
+                        domProps: { value: subtask.showable_by },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(
+                              subtask,
+                              "showable_by",
+                              $event.target.value
+                            )
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                                " +
+                            _vm._s(_vm.getError(key, "showable_by")) +
+                            "\n                            "
+                        )
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", { attrs: { for: "difficulty" + key } }, [
+                        _vm._v("Сложность")
+                      ]),
+                      _vm._v(" "),
+                      _c(
+                        "select",
+                        {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: subtask.difficulty,
+                              expression: "subtask.difficulty"
+                            }
+                          ],
+                          class:
+                            "form-control" +
+                            (_vm.getError(key, "difficulty")
+                              ? " is-invalid"
+                              : ""),
+                          attrs: {
+                            id: "difficulty" + key,
+                            name: "subtasks[" + key + "][difficulty]"
+                          },
+                          on: {
+                            change: function($event) {
+                              var $$selectedVal = Array.prototype.filter
+                                .call($event.target.options, function(o) {
+                                  return o.selected
+                                })
+                                .map(function(o) {
+                                  var val = "_value" in o ? o._value : o.value
+                                  return val
+                                })
+                              _vm.$set(
+                                subtask,
+                                "difficulty",
+                                $event.target.multiple
+                                  ? $$selectedVal
+                                  : $$selectedVal[0]
+                              )
+                            }
+                          }
+                        },
+                        [
+                          _c(
+                            "option",
+                            { attrs: { disabled: "", selected: "" } },
+                            [_vm._v("Выберите сложность...")]
+                          ),
+                          _vm._v(" "),
+                          _vm._l(_vm.selects.difficulties, function(
+                            difficulty
+                          ) {
+                            return _c(
+                              "option",
+                              { domProps: { value: difficulty.value } },
+                              [_vm._v(_vm._s(difficulty.name))]
+                            )
+                          })
+                        ],
+                        2
+                      ),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                                " +
+                            _vm._s(_vm.getError(key, "difficulty")) +
+                            "\n                            "
+                        )
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", { attrs: { for: "priority" + key } }, [
+                        _vm._v("Приоритет")
+                      ]),
+                      _vm._v(" "),
+                      _c(
+                        "select",
+                        {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: subtask.priority,
+                              expression: "subtask.priority"
+                            }
+                          ],
+                          class:
+                            "form-control" +
+                            (_vm.getError(key, "priority")
+                              ? " is-invalid"
+                              : ""),
+                          attrs: {
+                            id: "priority" + key,
+                            name: "subtasks[" + key + "][priority]"
+                          },
+                          on: {
+                            change: function($event) {
+                              var $$selectedVal = Array.prototype.filter
+                                .call($event.target.options, function(o) {
+                                  return o.selected
+                                })
+                                .map(function(o) {
+                                  var val = "_value" in o ? o._value : o.value
+                                  return val
+                                })
+                              _vm.$set(
+                                subtask,
+                                "priority",
+                                $event.target.multiple
+                                  ? $$selectedVal
+                                  : $$selectedVal[0]
+                              )
+                            }
+                          }
+                        },
+                        [
+                          _c(
+                            "option",
+                            { attrs: { disabled: "", selected: "" } },
+                            [_vm._v("Выберите приоритет...")]
+                          ),
+                          _vm._v(" "),
+                          _vm._l(_vm.selects.priorities, function(priority) {
+                            return _c(
+                              "option",
+                              { domProps: { value: priority.value } },
+                              [_vm._v(_vm._s(priority.name))]
+                            )
+                          })
+                        ],
+                        2
+                      ),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                                " +
+                            _vm._s(_vm.getError(key, "priority")) +
+                            "\n                            "
+                        )
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", { attrs: { for: "subtaskLocation" + key } }, [
+                        _vm._v("Место выполнения задачи")
+                      ]),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: subtask.location,
+                            expression: "subtask.location"
+                          }
+                        ],
+                        class:
+                          "form-control" +
+                          (_vm.getError(key, "location") ? " is-invalid" : ""),
+                        attrs: {
+                          type: "text",
+                          id: "subtaskLocation" + key,
+                          name: "subtasks[" + key + "][location]",
+                          placeholder: "Введите значение интервала"
+                        },
+                        domProps: { value: subtask.location },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(subtask, "location", $event.target.value)
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                                " +
+                            _vm._s(_vm.getError(key, "location")) +
+                            "\n                            "
+                        )
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "form-group" }, [
+                      _c("label", { attrs: { for: "subtaskScore" + key } }, [
+                        _vm._v("Количество очков")
+                      ]),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: subtask.score,
+                            expression: "subtask.score"
+                          }
+                        ],
+                        class:
+                          "form-control" +
+                          (_vm.getError(key, "score") ? " is-invalid" : ""),
+                        attrs: {
+                          type: "text",
+                          id: "subtaskScore" + key,
+                          name: "subtasks[" + key + "][score]",
+                          placeholder: "Введите колчество очков"
+                        },
+                        domProps: { value: subtask.score },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(subtask, "score", $event.target.value)
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                                " +
+                            _vm._s(_vm.getError(key, "score")) +
+                            "\n                            "
+                        )
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "custom-control custom-switch" }, [
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: subtask.not_delayable,
+                            expression: "subtask.not_delayable"
+                          }
+                        ],
+                        class:
+                          "custom-control-input" +
+                          (_vm.errors["not_delayable"] ? " is-invalid" : ""),
+                        attrs: {
+                          type: "checkbox",
+                          id: "customSwitchSubtask" + key,
+                          name: "subtasks[" + key + "][not_delayable]"
+                        },
+                        domProps: {
+                          checked: Array.isArray(subtask.not_delayable)
+                            ? _vm._i(subtask.not_delayable, null) > -1
+                            : subtask.not_delayable
+                        },
+                        on: {
+                          change: function($event) {
+                            var $$a = subtask.not_delayable,
+                              $$el = $event.target,
+                              $$c = $$el.checked ? true : false
+                            if (Array.isArray($$a)) {
+                              var $$v = null,
+                                $$i = _vm._i($$a, $$v)
+                              if ($$el.checked) {
+                                $$i < 0 &&
+                                  _vm.$set(
+                                    subtask,
+                                    "not_delayable",
+                                    $$a.concat([$$v])
+                                  )
+                              } else {
+                                $$i > -1 &&
+                                  _vm.$set(
+                                    subtask,
+                                    "not_delayable",
+                                    $$a.slice(0, $$i).concat($$a.slice($$i + 1))
+                                  )
+                              }
+                            } else {
+                              _vm.$set(subtask, "not_delayable", $$c)
+                            }
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c(
+                        "label",
+                        {
+                          staticClass: "custom-control-label",
+                          attrs: { for: "customSwitchSubtask" + key }
+                        },
+                        [_vm._v("Задачу отложить нельзя")]
+                      )
+                    ])
+                  ])
+                ]
+              )
+            ]
+          )
+        ])
+      }),
+      0
+    ),
+    _vm._v(" "),
+    _c(
+      "button",
+      {
+        staticClass: "btn btn-info mb-4 mt-2 btn-sm btn-block",
+        attrs: { type: "button" },
+        on: {
+          click: function($event) {
+            return _vm.newModelHolder()
+          }
+        }
+      },
+      [_vm._v("Добавить новую задачу")]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "modal",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-footer" }, [
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-secondary",
+          attrs: { type: "button", "data-dismiss": "modal" }
+        },
+        [_vm._v("Закрыть")]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "modal",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-footer" }, [
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-secondary",
+          attrs: { type: "button", "data-dismiss": "modal" }
+        },
+        [_vm._v("Закрыть")]
+      )
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-80dfa5ce", module.exports)
+  }
+}
+
+/***/ }),
+/* 107 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(108)
+/* template */
+var __vue_template__ = __webpack_require__(109)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/Comments.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-19fc3d2b", Component.options)
+  } else {
+    hotAPI.reload("data-v-19fc3d2b", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 108 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['subtask_id', 'user'],
+    data: function data() {
+        return {
+            'comments': {},
+            'errors': '',
+            'body': '',
+            'refer_comment': '',
+            'currentPage': 1,
+            'commentToChange': '',
+            'valuesToAxios': [],
+            'urlToAxios': '',
+            'attachments': []
+        };
+    },
+    mounted: function mounted() {
+        this.loadPage();
+    },
+
+
+    methods: {
+        send: function send() {
+            var _this = this;
+
+            this.errors = '';
+            this.attachments = [];
+            axios.post(this.urlToAxios, this.valuesToAxios.join('&')).then(function (response) {
+                _this.comments = [];
+                _this.refer_comment = '';
+                _this.body = '';
+                _this.commentToChange = '';
+                _this.valuesToAxios = [];
+                _this.urlToAxios = '';
+                _this.loadPage();
+            }).catch(function (error) {
+                _this.errors = error.response.data;
+            });
+            for (var i in this.$refs.commentFiles.files) {
+                this.$refs.commentFiles.files[i].checked = false;
+            }
+        },
+        attachComment: function attachComment() {
+            if (!this.valuesToAxios.length) {
+                this.currentPage = 1;
+                this.valuesToAxios.push('_method=POST');
+                this.urlToAxios = '/home/subtasks/' + this.subtask_id + '/comments';
+            }
+            this.valuesToAxios.push('body=' + this.body);
+            for (var i in this.attachments) {
+                this.valuesToAxios.push('files[]=' + this.attachments[i].id);
+            }
+
+            this.send();
+        },
+        editComment: function editComment() {
+            this.valuesToAxios = [];
+            this.valuesToAxios.push('_method=PATCH');
+            this.urlToAxios = '/home/subtasks/' + this.subtask_id + '/comments/' + this.commentToChange.id;
+            this.$refs['comment_body'].focus();
+        },
+        replyComment: function replyComment() {
+            this.valuesToAxios = [];
+            this.valuesToAxios.push('_method=POST');
+            this.urlToAxios = '/home/subtasks/' + this.subtask_id + '/comments';
+            this.valuesToAxios.push('refer_comment=' + this.refer_comment);
+            this.$refs['comment_body'].focus();
+        },
+        loadPage: function loadPage() {
+            var _this2 = this;
+
+            if (this.comments) {
+                if (!this.comments.next_page_url) this.currentPage--;
+                if (this.currentPage < 1) this.currentPage = 1;
+            }
+            this.refer_comment = '';
+            if (!this.comments || this.comments.current_page != this.currentPage) axios.get('/home/subtasks/' + this.subtask_id + '/comments?page=' + this.currentPage).then(function (response) {
+                _this2.comments = response.data.comments;
+                console.log(_this2.comments);
+            }).catch(function (error) {
+                return _this2.errors = error.response.data;
+            });
+        },
+        attachFiles: function attachFiles() {
+            this.attachments = [];
+            var files = this.$refs.commentFiles.files;
+            for (var i in files) {
+                if (files[i].checked) {
+                    this.attachments.push(files[i]);
+                }
+            }
+        },
+        unCheckedFile: function unCheckedFile(key) {
+            this.attachments[key].checked = false;
+            this.attachments.splice(key, 1);
+        }
+    }
+});
+
+/***/ }),
+/* 109 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { staticClass: "container" },
+    [
+      _vm.errors
+        ? _c(
+            "div",
+            {
+              staticClass: "alert alert-warning alert-dismissible fade show",
+              attrs: { role: "alert" }
+            },
+            [
+              _c("strong", [_vm._v("Внимание! ")]),
+              _vm._v(
+                "Произошла непредвиденная ошибка: " +
+                  _vm._s(_vm.errors.message) +
+                  "\n        "
+              ),
+              _vm._m(0)
+            ]
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _c("label", { attrs: { for: "formControlBody" } }, [
+          _vm._v("Ваш комментарий")
+        ]),
+        _vm._v(" "),
+        _c("textarea", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.body,
+              expression: "body"
+            }
+          ],
+          ref: "comment_body",
+          class:
+            "form-control" +
+            (_vm.errors.errors && _vm.errors.errors.body ? " is-invalid" : ""),
+          attrs: { id: "formControlBody", rows: "3" },
+          domProps: { value: _vm.body },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.body = $event.target.value
+            }
+          }
+        }),
+        _vm._v(" "),
+        _c(
+          "small",
+          { staticClass: "form-text text-muted", attrs: { id: "bodyHelp" } },
+          [
+            _vm._v(
+              "Не менее 5 символов. Можно добавить еще " +
+                _vm._s(65535 - _vm.body.length) +
+                " симв."
+            )
+          ]
+        ),
+        _vm._v(" "),
+        _vm.errors.errors && _vm.errors.errors.body
+          ? _c("div", { staticClass: "invalid-feedback" }, [
+              _vm._v(
+                "\n            " +
+                  _vm._s(_vm.errors.errors.body.join("; ")) +
+                  "\n        "
+              )
+            ])
+          : _vm._e()
+      ]),
+      _vm._v(" "),
+      _vm.refer_comment != ""
+        ? _c(
+            "div",
+            {
+              staticClass: "alert alert-info alert-dismissible fade show",
+              attrs: { role: "alert" }
+            },
+            [
+              _vm._v(
+                '\n        Ответ на комментарий "' +
+                  _vm._s(
+                    _vm.comments.data.filter(function(element) {
+                      return element.id == _vm.refer_comment
+                    })[0].body
+                  ) +
+                  '"\n        '
+              ),
               _c(
                 "button",
                 {
-                  staticClass: "ml-2 mb-1 close",
+                  staticClass: "close",
                   attrs: {
                     type: "button",
-                    "data-dismiss": toast.id,
+                    "data-dismiss": "alert",
                     "aria-label": "Close"
                   },
                   on: {
                     click: function($event) {
-                      $event.preventDefault()
-                      return _vm.del(toast.id)
+                      _vm.refer_comment = ""
                     }
                   }
                 },
@@ -61100,36 +63773,2827 @@ var render = function() {
                   ])
                 ]
               )
-            ]),
+            ]
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.attachments.length
+        ? _c("div", [
+            _vm._v("\n        Вложения:\n        "),
+            _c(
+              "ul",
+              _vm._l(_vm.attachments, function(attachment, pos) {
+                return _c("li", [
+                  _c(
+                    "a",
+                    {
+                      attrs: {
+                        target: "_blank",
+                        href:
+                          "/home/subtasks/" +
+                          _vm.subtask_id +
+                          "/files/" +
+                          attachment.id
+                      }
+                    },
+                    [_vm._v(_vm._s(attachment.name))]
+                  ),
+                  _c(
+                    "span",
+                    {
+                      staticClass: "badge badge-danger m-1",
+                      on: {
+                        click: function($event) {
+                          return _vm.unCheckedFile(pos)
+                        }
+                      }
+                    },
+                    [_vm._v("X")]
+                  )
+                ])
+              }),
+              0
+            )
+          ])
+        : _vm._e(),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-primary btn-sm",
+          attrs: { type: "button" },
+          on: {
+            click: function($event) {
+              return _vm.attachComment()
+            }
+          }
+        },
+        [_vm._v("Отправить")]
+      ),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-info btn-sm",
+          attrs: {
+            type: "button",
+            "data-toggle": "modal",
+            "data-target": "#chooseFiles"
+          }
+        },
+        [_vm._v("\n        Выбрать файл\n    ")]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "dropdown-divider" }),
+      _vm._v(" "),
+      _vm.comments.next_page_url || _vm.comments.prev_page_url
+        ? _c("div", { staticClass: "btn-group", attrs: { role: "group" } }, [
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-secondary btn-sm",
+                attrs: { type: "button" },
+                on: {
+                  click: function($event) {
+                    _vm.currentPage--
+                    _vm.loadPage()
+                  }
+                }
+              },
+              [_vm._v("<")]
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-secondary btn-sm",
+                attrs: { type: "button" }
+              },
+              [
+                _vm._v(
+                  "Страница #" +
+                    _vm._s(_vm.comments.current_page) +
+                    " (" +
+                    _vm._s(_vm.comments.from) +
+                    " - " +
+                    _vm._s(_vm.comments.to) +
+                    ")"
+                )
+              ]
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-secondary btn-sm",
+                attrs: { type: "button" },
+                on: {
+                  click: function($event) {
+                    _vm.currentPage++
+                    _vm.loadPage()
+                  }
+                }
+              },
+              [_vm._v(">")]
+            )
+          ])
+        : _vm._e(),
+      _vm._v(" "),
+      _vm._l(_vm.comments.data, function(comment) {
+        return _c(
+          "div",
+          { staticClass: "card mb-2" },
+          [_c("comment", { attrs: { comment: comment, user: _vm.user } })],
+          1
+        )
+      }),
+      _vm._v(" "),
+      _vm.comments.next_page_url || _vm.comments.prev_page_url
+        ? _c("div", { staticClass: "btn-group", attrs: { role: "group" } }, [
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-secondary btn-sm",
+                attrs: { type: "button" },
+                on: {
+                  click: function($event) {
+                    _vm.currentPage--
+                    _vm.loadPage()
+                  }
+                }
+              },
+              [_vm._v("<")]
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-secondary btn-sm",
+                attrs: { type: "button" }
+              },
+              [_vm._v("Страница #" + _vm._s(_vm.currentPage))]
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-secondary btn-sm",
+                attrs: { type: "button" },
+                on: {
+                  click: function($event) {
+                    _vm.currentPage++
+                    _vm.loadPage()
+                  }
+                }
+              },
+              [_vm._v(">")]
+            )
+          ])
+        : _vm._e(),
+      _vm._v(" "),
+      !_vm.comments.data
+        ? _c("p", [_vm._v("\n        Пока комментариев нет\n    ")])
+        : _vm._e(),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "modal fade",
+          attrs: {
+            id: "chooseFiles",
+            tabindex: "-1",
+            role: "dialog",
+            "aria-labelledby": "exampleModalLongTitle",
+            "aria-hidden": "true"
+          }
+        },
+        [
+          _c(
+            "div",
+            { staticClass: "modal-dialog", attrs: { role: "document" } },
+            [
+              _c("div", { staticClass: "modal-content" }, [
+                _vm._m(1),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "modal-body" },
+                  [
+                    _c(
+                      "file",
+                      {
+                        ref: "commentFiles",
+                        attrs: { subtask: _vm.subtask_id, checkbox: true }
+                      },
+                      [_vm._v("Подождите...")]
+                    )
+                  ],
+                  1
+                ),
+                _vm._v(" "),
+                _c("div", { staticClass: "modal-footer" }, [
+                  _c(
+                    "button",
+                    {
+                      staticClass: "btn btn-secondary",
+                      attrs: { type: "button", "data-dismiss": "modal" },
+                      on: {
+                        click: function($event) {
+                          return _vm.attachFiles()
+                        }
+                      }
+                    },
+                    [_vm._v("Закрыть")]
+                  )
+                ])
+              ])
+            ]
+          )
+        ]
+      )
+    ],
+    2
+  )
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "alert",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-header" }, [
+      _c(
+        "h5",
+        { staticClass: "modal-title", attrs: { id: "exampleModalLongTitle" } },
+        [_vm._v("Выбор файла")]
+      ),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "close",
+          attrs: {
+            type: "button",
+            "data-dismiss": "modal",
+            "aria-label": "Close"
+          }
+        },
+        [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+      )
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-19fc3d2b", module.exports)
+  }
+}
+
+/***/ }),
+/* 110 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(111)
+/* template */
+var __vue_template__ = __webpack_require__(112)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/Comment.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-82b07a10", Component.options)
+  } else {
+    hotAPI.reload("data-v-82b07a10", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 111 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['comment', 'user'],
+    data: function data() {
+        return {};
+    },
+    mounted: function mounted() {},
+
+
+    methods: {
+        getCommentsVue: function getCommentsVue() {
+            return this.$root.$children[0];
+        },
+        edit: function edit() {
+            var _this = this;
+
+            var commentsVue = this.getCommentsVue();
+            commentsVue.commentToChange = this.comment;
+            commentsVue.refer_comment = '';
+            commentsVue.body = this.comment.body;
+            commentsVue.editComment();
+            this.$parent.attachments = [];
+
+            var _loop = function _loop(i) {
+                var fileToCheck = _this.$parent.$refs.commentFiles.files.find(function (elem) {
+                    return elem.id == _this.comment.files[i].id;
+                });
+                if (fileToCheck) {
+                    fileToCheck.checked = true;
+                    _this.$parent.attachments.push(fileToCheck);
+                }
+            };
+
+            for (var i in this.comment.files) {
+                _loop(i);
+            }
+        },
+        reply: function reply() {
+            var commentsVue = this.getCommentsVue();
+            commentsVue.commentToChange = '';
+            commentsVue.body = '';
+            commentsVue.refer_comment = this.comment.id;
+            commentsVue.replyComment();
+        }
+    }
+});
+
+/***/ }),
+/* 112 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c("div", { staticClass: "card-header" }, [
+      _vm._v(
+        "\n        " +
+          _vm._s(_vm.comment.owner.name) +
+          " / " +
+          _vm._s(_vm.comment.updated_at) +
+          "\n    "
+      )
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "card-body" }, [
+      _vm._v("\n        " + _vm._s(_vm.comment.body) + "\n        "),
+      _vm.comment.files.length
+        ? _c("div", [
+            _c("div", { staticClass: "dropdown-divider" }),
+            _vm._v(" "),
+            _c("u", [_vm._v("Вложения:")]),
+            _vm._v(" "),
+            _c(
+              "ul",
+              _vm._l(_vm.comment.files, function(file) {
+                return _c("li", [
+                  _c(
+                    "a",
+                    {
+                      attrs: {
+                        target: "_blank",
+                        href:
+                          "/home/subtasks/" +
+                          _vm.$parent.subtask_id +
+                          "/files/" +
+                          file.id
+                      }
+                    },
+                    [_vm._v(_vm._s(file.name))]
+                  )
+                ])
+              }),
+              0
+            )
+          ])
+        : _vm._e(),
+      _vm._v(" "),
+      _c("br"),
+      _vm._v(" "),
+      _vm.comment.refer_comment
+        ? _c("div", { staticClass: "container" }, [
+            _c("u", [_vm._v("в ответ на:")]),
             _vm._v(" "),
             _c(
               "div",
-              { staticClass: "toast-body" },
+              { staticClass: "card mb-2" },
               [
-                _vm._l(toast.tables, function(table) {
-                  return _c("ul", { staticClass: "container" }, [
-                    _c("li", [
-                      _vm._v(_vm._s(table.name) + " - " + _vm._s(table.data))
-                    ])
-                  ])
-                }),
-                _vm._v(" "),
-                _c("p", [
-                  _vm._v(
-                    "Файл отчета доступен на скачивание до " +
-                      _vm._s(toast.timeBeforeDelete)
+                _c("comment", {
+                  attrs: { comment: _vm.comment.refer_comment, user: _vm.user }
+                })
+              ],
+              1
+            )
+          ])
+        : _vm._e()
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "card-footer text-muted" }, [
+      _vm.user == _vm.comment.owner_id
+        ? _c(
+            "button",
+            {
+              staticClass: "btn btn-sm btn-primary",
+              on: {
+                click: function($event) {
+                  return _vm.edit()
+                }
+              }
+            },
+            [_vm._v("Изменить")]
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-sm btn-primary",
+          attrs: { type: "button" },
+          on: {
+            click: function($event) {
+              return _vm.reply()
+            }
+          }
+        },
+        [_vm._v("Ответить")]
+      )
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-82b07a10", module.exports)
+  }
+}
+
+/***/ }),
+/* 113 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(114)
+/* template */
+var __vue_template__ = __webpack_require__(115)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/File.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-84c10f9a", Component.options)
+  } else {
+    hotAPI.reload("data-v-84c10f9a", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 114 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['subtask', 'checkbox'],
+    data: function data() {
+        return {
+            errors: [],
+            files: [],
+            storages: [],
+            search: '',
+            link: ''
+        };
+    },
+    mounted: function mounted() {
+        this.getFiles();
+    },
+
+
+    methods: {
+        getFiles: function getFiles() {
+            var _this = this;
+
+            axios.get('/home/subtasks/' + this.subtask + '/files').then(function (response) {
+                _this.files = response.data.files;
+                _this.storages = response.data.storages;
+                for (var key in _this.files) {
+                    _this.files[key].title = '';
+                    //this.files[key].checked = '';
+                    _this.uploadProgress = '';
+                }
+            }).catch(function (error) {
+                _this.errors = error.response.data;
+            });
+        },
+        send: function send(key) {
+            var _this2 = this;
+
+            this.errors = [];
+            if (!this.storages.length) {
+                alert('У вас нет ни одного хранилища, загружать файлы нельзя');
+                return null;
+            }
+            this.files[key].title = '';
+            var fileHandler = this.files[key];
+            var url = '/home/subtasks/' + this.subtask + '/files';
+
+            var method = '';
+            if (fileHandler.id) {
+                url += '/' + fileHandler.id;
+                method = 'patch';
+            } else {
+                method = 'post';
+            }
+            var formData = new FormData();
+            formData.append('name', fileHandler.name);
+            formData.append('description', fileHandler.description);
+            formData.append('file', this.$refs.file[key].files[0]);
+            formData.append('_method', method);
+            formData.append('storage', fileHandler.storage_id);
+            fileHandler.uploadProgress = '';
+
+            axios.post(url, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                onUploadProgress: function onUploadProgress(uploadedEvent) {
+                    fileHandler.uploadProgress = Math.round(uploadedEvent.loaded / uploadedEvent.total * 100);
+                }
+            }).then(function (response) {
+                fileHandler.uploadProgress = '';
+                _this2.files[key].id = response.data.id;
+                _this2.files[key].title = response.data.name;
+                _this2.files[key].name = response.data.name;
+                _this2.files[key].checked = true;
+                _this2.$refs.file[key].files[0] = undefined;
+            }).catch(function (error) {
+                _this2.errors = error.response.data;
+                fileHandler.uploadProgress = '';
+            });
+        },
+        getTemplate: function getTemplate() {
+            return {
+                name: '',
+                description: '',
+                id: '',
+                storage: '',
+                title: '',
+                uploadProgress: '',
+                checked: ''
+            };
+        },
+        remove: function remove(key) {
+            var _this3 = this;
+
+            var fileHandler = this.files[key];
+            if (confirm('Точно удалить?') && fileHandler.id) {
+                axios.delete('/home/subtasks/' + this.subtask + '/files/' + fileHandler.id).then(function (response) {
+                    _this3.files.splice(key, 1);
+                }).catch(function (error) {
+                    _this3.errors = error.response.data;
+                });
+            }
+        },
+        getDate: function getDate() {
+            return new Date().getTime();
+        },
+        filtered: function filtered() {
+            var _this4 = this;
+
+            if (this.files == []) return [];
+            return this.files.filter(function (elem) {
+                return elem.name.indexOf(_this4.search) > -1;
+            });
+        }
+    }
+});
+
+/***/ }),
+/* 115 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { staticClass: "container" },
+    [
+      _vm.errors.length
+        ? _c(
+            "div",
+            {
+              staticClass: "alert alert-warning alert-dismissible fade show",
+              attrs: { role: "alert" }
+            },
+            [
+              _c("strong", [_vm._v("Внимание! ")]),
+              _vm._v(
+                "Произошла непредвиденная ошибка: " +
+                  _vm._s(_vm.errors.message) +
+                  "\n        "
+              ),
+              _vm._m(0)
+            ]
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.files != []
+        ? _c("div", { staticClass: "form-group" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.search,
+                  expression: "search"
+                }
+              ],
+              staticClass: "form-control",
+              attrs: { type: "text", placeholder: "Фильтр" },
+              domProps: { value: _vm.search },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.search = $event.target.value
+                }
+              }
+            })
+          ])
+        : _vm._e(),
+      _vm._v(" "),
+      _vm._l(_vm.filtered(), function(fileHandler, key) {
+        return _vm.files != []
+          ? _c("div", { staticClass: "container" }, [
+              _vm.checkbox
+                ? _c(
+                    "div",
+                    { staticClass: "custom-control custom-switch d-inline" },
+                    [
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: fileHandler.checked,
+                            expression: "fileHandler.checked"
+                          }
+                        ],
+                        staticClass: "custom-control-input",
+                        attrs: {
+                          type: "checkbox",
+                          id: "customSwitch" + key + _vm._uid
+                        },
+                        domProps: {
+                          checked: Array.isArray(fileHandler.checked)
+                            ? _vm._i(fileHandler.checked, null) > -1
+                            : fileHandler.checked
+                        },
+                        on: {
+                          change: function($event) {
+                            var $$a = fileHandler.checked,
+                              $$el = $event.target,
+                              $$c = $$el.checked ? true : false
+                            if (Array.isArray($$a)) {
+                              var $$v = null,
+                                $$i = _vm._i($$a, $$v)
+                              if ($$el.checked) {
+                                $$i < 0 &&
+                                  _vm.$set(
+                                    fileHandler,
+                                    "checked",
+                                    $$a.concat([$$v])
+                                  )
+                              } else {
+                                $$i > -1 &&
+                                  _vm.$set(
+                                    fileHandler,
+                                    "checked",
+                                    $$a.slice(0, $$i).concat($$a.slice($$i + 1))
+                                  )
+                              }
+                            } else {
+                              _vm.$set(fileHandler, "checked", $$c)
+                            }
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("label", {
+                        staticClass: "custom-control-label",
+                        attrs: { for: "customSwitch" + key + _vm._uid }
+                      }),
+                      _vm._v(" "),
+                      fileHandler.checked && fileHandler.id
+                        ? _c("input", {
+                            attrs: { type: "hidden", name: "files[]" },
+                            domProps: { value: fileHandler.id }
+                          })
+                        : _vm._e()
+                    ]
                   )
+                : _vm._e(),
+              _vm._v(" "),
+              _c(
+                "a",
+                {
+                  attrs: {
+                    "data-toggle": "collapse",
+                    href: "#collapseFileHandler" + key + _vm._uid,
+                    "aria-expanded": "false",
+                    "aria-controls": "collapseFileHandler" + key + _vm._uid
+                  }
+                },
+                [
+                  _vm._v(
+                    "\n            " +
+                      _vm._s(
+                        fileHandler.name ? fileHandler.name : "Новый файл"
+                      ) +
+                      "\n        "
+                  )
+                ]
+              ),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass: "collapse mb-2",
+                  attrs: { id: "collapseFileHandler" + key + _vm._uid }
+                },
+                [
+                  _c("div", { staticClass: "card card-body" }, [
+                    _c(
+                      "form",
+                      {
+                        on: {
+                          submit: function($event) {
+                            $event.preventDefault()
+                            return _vm.send(key)
+                          }
+                        }
+                      },
+                      [
+                        _c(
+                          "a",
+                          {
+                            staticClass: "btn btn-secondary btn-sm",
+                            attrs: {
+                              "data-toggle": "collapse",
+                              href: "#collapseFile" + key + _vm._uid,
+                              role: "button",
+                              "aria-expanded": "false",
+                              "aria-controls": "collapseFile" + key + _vm._uid
+                            }
+                          },
+                          [
+                            _vm._v(
+                              "\n                        Дополнительные данные\n                    "
+                            )
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "div",
+                          {
+                            staticClass: "collapse",
+                            attrs: { id: "collapseFile" + key + _vm._uid }
+                          },
+                          [
+                            _c("div", { staticClass: "card card-body" }, [
+                              _c("div", { staticClass: "form-group" }, [
+                                _c(
+                                  "label",
+                                  {
+                                    attrs: {
+                                      for: "inputDescription" + key + _vm._uid
+                                    }
+                                  },
+                                  [_vm._v("Описание файла")]
+                                ),
+                                _vm._v(" "),
+                                _c("textarea", {
+                                  directives: [
+                                    {
+                                      name: "model",
+                                      rawName: "v-model",
+                                      value: fileHandler.description,
+                                      expression: "fileHandler.description"
+                                    }
+                                  ],
+                                  class:
+                                    "form-control" +
+                                    (_vm.errors.errors &&
+                                    _vm.errors.errors.description
+                                      ? " is-invalid"
+                                      : ""),
+                                  attrs: {
+                                    id: "inputDescription" + key + _vm._uid,
+                                    rows: "3"
+                                  },
+                                  domProps: { value: fileHandler.description },
+                                  on: {
+                                    input: function($event) {
+                                      if ($event.target.composing) {
+                                        return
+                                      }
+                                      _vm.$set(
+                                        fileHandler,
+                                        "description",
+                                        $event.target.value
+                                      )
+                                    }
+                                  }
+                                }),
+                                _vm._v(" "),
+                                _vm.errors.errors &&
+                                _vm.errors.errors.description
+                                  ? _c(
+                                      "div",
+                                      { staticClass: "invalid-feedback" },
+                                      [
+                                        _vm._v(
+                                          "\n                                    " +
+                                            _vm._s(
+                                              _vm.errors.errors.description.join(
+                                                "; "
+                                              )
+                                            ) +
+                                            "\n                                "
+                                        )
+                                      ]
+                                    )
+                                  : _vm._e()
+                              ]),
+                              _vm._v(" "),
+                              _c("div", { staticClass: "form-group" }, [
+                                _c(
+                                  "label",
+                                  {
+                                    attrs: { for: "inputName" + key + _vm._uid }
+                                  },
+                                  [_vm._v("Название файла")]
+                                ),
+                                _vm._v(" "),
+                                _c("input", {
+                                  directives: [
+                                    {
+                                      name: "model",
+                                      rawName: "v-model",
+                                      value: fileHandler.name,
+                                      expression: "fileHandler.name"
+                                    }
+                                  ],
+                                  class:
+                                    "form-control" +
+                                    (_vm.errors.errors && _vm.errors.errors.name
+                                      ? " is-invalid"
+                                      : ""),
+                                  attrs: {
+                                    type: "text",
+                                    id: "inputName" + key + _vm._uid,
+                                    placeholder: "Введите название"
+                                  },
+                                  domProps: { value: fileHandler.name },
+                                  on: {
+                                    input: function($event) {
+                                      if ($event.target.composing) {
+                                        return
+                                      }
+                                      _vm.$set(
+                                        fileHandler,
+                                        "name",
+                                        $event.target.value
+                                      )
+                                    }
+                                  }
+                                }),
+                                _vm._v(" "),
+                                _c(
+                                  "small",
+                                  { staticClass: "form-text text-muted" },
+                                  [
+                                    _vm._v(
+                                      "\n                                    В случае незаполнения при сохранении файла будет использовано его оригинальное имя\n                                "
+                                    )
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _vm.errors.errors && _vm.errors.errors.name
+                                  ? _c(
+                                      "div",
+                                      { staticClass: "invalid-feedback" },
+                                      [
+                                        _vm._v(
+                                          "\n                                    " +
+                                            _vm._s(
+                                              _vm.errors.errors.name.join("; ")
+                                            ) +
+                                            "\n                                "
+                                        )
+                                      ]
+                                    )
+                                  : _vm._e()
+                              ])
+                            ])
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "form-group" }, [
+                          _c(
+                            "label",
+                            {
+                              attrs: { for: "selectStorage" + key + _vm._uid }
+                            },
+                            [_vm._v("Выберите хранилище")]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "select",
+                            {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: fileHandler.storage_id,
+                                  expression: "fileHandler.storage_id"
+                                }
+                              ],
+                              class:
+                                "form-control-file" +
+                                (_vm.errors.errors && _vm.errors.errors.storage
+                                  ? " is-invalid"
+                                  : ""),
+                              attrs: {
+                                id: "selectStorage" + key + _vm._uid,
+                                required: ""
+                              },
+                              on: {
+                                change: function($event) {
+                                  var $$selectedVal = Array.prototype.filter
+                                    .call($event.target.options, function(o) {
+                                      return o.selected
+                                    })
+                                    .map(function(o) {
+                                      var val =
+                                        "_value" in o ? o._value : o.value
+                                      return val
+                                    })
+                                  _vm.$set(
+                                    fileHandler,
+                                    "storage_id",
+                                    $event.target.multiple
+                                      ? $$selectedVal
+                                      : $$selectedVal[0]
+                                  )
+                                }
+                              }
+                            },
+                            _vm._l(_vm.storages, function(storage) {
+                              return _c(
+                                "option",
+                                { domProps: { value: storage.id } },
+                                [_vm._v(_vm._s(storage.name))]
+                              )
+                            }),
+                            0
+                          ),
+                          _vm._v(" "),
+                          _vm.errors.errors && _vm.errors.errors.storage
+                            ? _c("div", { staticClass: "invalid-feedback" }, [
+                                _vm._v(
+                                  "\n                            " +
+                                    _vm._s(
+                                      _vm.errors.errors.storage.join("; ")
+                                    ) +
+                                    "\n                        "
+                                )
+                              ])
+                            : _vm._e()
+                        ]),
+                        _vm._v(" "),
+                        _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: fileHandler.id,
+                              expression: "fileHandler.id"
+                            }
+                          ],
+                          attrs: { type: "hidden", name: "id" },
+                          domProps: { value: fileHandler.id },
+                          on: {
+                            input: function($event) {
+                              if ($event.target.composing) {
+                                return
+                              }
+                              _vm.$set(fileHandler, "id", $event.target.value)
+                            }
+                          }
+                        }),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "form-group mt-2" }, [
+                          _c("input", {
+                            ref: "file",
+                            refInFor: true,
+                            class:
+                              "form-control-file" +
+                              (_vm.errors.errors && _vm.errors.errors.file
+                                ? " is-invalid"
+                                : ""),
+                            attrs: {
+                              type: "file",
+                              id: "uploadFile" + key + _vm._uid,
+                              required: !fileHandler.id
+                            }
+                          }),
+                          _vm._v(" "),
+                          _vm.errors.errors && _vm.errors.errors.file
+                            ? _c("div", { staticClass: "invalid-feedback" }, [
+                                _vm._v(
+                                  "\n                            " +
+                                    _vm._s(_vm.errors.errors.file.join("; ")) +
+                                    "\n                        "
+                                )
+                              ])
+                            : _vm._e()
+                        ]),
+                        _vm._v(" "),
+                        _c("input", {
+                          staticClass: "btn btn-primary btn-sm",
+                          attrs: { type: "submit" },
+                          domProps: {
+                            value: fileHandler.id ? "Изменить" : "Выгрузить"
+                          }
+                        }),
+                        _vm._v(" "),
+                        fileHandler.id
+                          ? _c(
+                              "a",
+                              {
+                                staticClass: "btn btn-success btn-sm",
+                                attrs: {
+                                  target: "_blank",
+                                  href:
+                                    "/home/subtasks/" +
+                                    _vm.subtask +
+                                    "/files/" +
+                                    fileHandler.id +
+                                    "?v=" +
+                                    _vm.getDate(),
+                                  role: "button"
+                                }
+                              },
+                              [_vm._v("Скачать")]
+                            )
+                          : _vm._e(),
+                        _vm._v(" "),
+                        fileHandler.id
+                          ? _c(
+                              "a",
+                              {
+                                staticClass: "btn btn-danger btn-sm",
+                                attrs: { href: "#", role: "button" },
+                                on: {
+                                  click: function($event) {
+                                    return _vm.remove(key)
+                                  }
+                                }
+                              },
+                              [_vm._v("Удалить")]
+                            )
+                          : _vm._e(),
+                        _vm._v(" "),
+                        fileHandler.uploadProgress
+                          ? _c("div", { staticClass: "progress mt-2 mb-2" }, [
+                              _c(
+                                "div",
+                                {
+                                  staticClass: "progress-bar",
+                                  style:
+                                    "width:" +
+                                    fileHandler.uploadProgress +
+                                    "%;",
+                                  attrs: {
+                                    role: "progressbar",
+                                    "aria-valuenow": fileHandler.uploadProgress,
+                                    "aria-valuemin": "0",
+                                    "aria-valuemax": "100"
+                                  }
+                                },
+                                [
+                                  _vm._v(
+                                    _vm._s(fileHandler.uploadProgress) + "%"
+                                  )
+                                ]
+                              )
+                            ])
+                          : _vm._e(),
+                        _vm._v(" "),
+                        fileHandler.title
+                          ? _c(
+                              "div",
+                              {
+                                staticClass:
+                                  "alert alert-success alert-dismissible fade show m-2",
+                                attrs: { role: "alert" }
+                              },
+                              [
+                                _c("strong", [
+                                  _vm._v(
+                                    'Файл "' +
+                                      _vm._s(fileHandler.title) +
+                                      '" загружен на сервер успешно и добавлен в очередь на выгрузку в хранилище'
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _vm._m(1, true)
+                              ]
+                            )
+                          : _vm._e(),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "dropdown-divider" })
+                      ]
+                    )
+                  ])
+                ]
+              )
+            ])
+          : _c("div", [_vm._v("\n        Загрузка...\n    ")])
+      }),
+      _vm._v(" "),
+      _c(
+        "a",
+        {
+          staticClass: "btn btn-primary btn-sm",
+          attrs: { href: "#", role: "button" },
+          on: {
+            click: function($event) {
+              $event.preventDefault()
+              _vm.files.push(_vm.getTemplate())
+            }
+          }
+        },
+        [_vm._v("Добавить еще файл")]
+      )
+    ],
+    2
+  )
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "alert",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "alert",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-84c10f9a", module.exports)
+  }
+}
+
+/***/ }),
+/* 116 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(117)
+/* template */
+var __vue_template__ = __webpack_require__(118)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/Marker.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-2ca1079e", Component.options)
+  } else {
+    hotAPI.reload("data-v-2ca1079e", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 117 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['project_id', 'checked'],
+    data: function data() {
+        return {
+            markers: [],
+            filter: '',
+            elementToChange: this.getTemplate(),
+            errors: [],
+            marker_id: '',
+            marker_name: '',
+            marker_radio: ''
+        };
+    },
+    mounted: function mounted() {
+        this.getMarkers();
+        if (this.checked) {
+            this.marker_id = this.checked.id;
+            this.marker_name = this.checked.name;
+            this.marker_radio = this.checked.id;
+        }
+    },
+
+
+    methods: {
+        getTemplate: function getTemplate() {
+            return {
+                name: '',
+                description: '',
+                url: '/home/projects/' + this.project_id + '/markers',
+                id: '',
+                values: [],
+                callable: this.saveElement
+            };
+        },
+        getAxios: function getAxios(url, values, callable) {
+            var _this = this;
+
+            this.errors = [];
+            axios.post(url, values.join('&')).then(function (response) {
+                callable(response.data);
+                _this.elementToChange = _this.getTemplate();
+                _this.$refs['modalEditClose'].click();
+            }).catch(function (error) {
+                _this.errors = error.response.data;
+            });
+        },
+        getMarkers: function getMarkers() {
+            this.getAxios('/home/projects/' + this.project_id + '/markers', ['_method=GET'], this.setMarkers);
+        },
+        saveElement: function saveElement() {
+            this.elementToChange.values.push('name=' + this.elementToChange.name);
+            this.elementToChange.values.push('description=' + this.elementToChange.description);
+            this.getAxios(this.elementToChange.url, this.elementToChange.values, this.getMarkers);
+        },
+        filtred: function filtred() {
+            if (this.markers == []) return [];
+            if (!this.filter) return this.markers;
+            console.log(this.markers);
+            var search = this.filter.toLowerCase();
+
+            return this.markers.map(function (marker) {
+                return {
+                    created_at: marker.created_at,
+                    description: marker.description,
+                    id: marker.id,
+                    marker_id: marker.marker_id,
+                    markers: marker.markers.filter(function (submarker) {
+                        return submarker.name.toLowerCase().indexOf(search) > -1;
+                    }),
+                    name: marker.name,
+                    project_id: marker.project_id,
+                    team_id: marker.team_id,
+                    updated_at: marker.updated_at
+                };
+            }).filter(function (marker) {
+                return marker.markers.length;
+            });
+        },
+        addMarker: function addMarker() {
+            this.elementToChange.values.push('_method=POST');
+        },
+        addSubmarker: function addSubmarker(marker) {
+            this.addMarker();
+            this.elementToChange.values.push('marker_id=' + marker.id);
+        },
+        editMarker: function editMarker(marker) {
+            this.elementToChange.url += '/' + marker.id;
+            this.elementToChange.values.push('_method=PATCH');
+            this.elementToChange.name = marker.name;
+            this.elementToChange.description = marker.description;
+            this.elementToChange.id = marker.id;
+        },
+        deleteMarker: function deleteMarker(marker) {
+            if (confirm('Точно удалить?')) this.getAxios('/home/projects/' + this.project_id + '/markers/' + marker.id, ['_method=DELETE'], this.getMarkers);
+        },
+        setMarkers: function setMarkers(data) {
+            this.markers = data;
+        }
+    }
+});
+
+/***/ }),
+/* 118 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "container mt-2 mb-2 p-0" }, [
+    _c("div", { staticClass: "input-group mb-3" }, [
+      _c("input", {
+        directives: [
+          {
+            name: "model",
+            rawName: "v-model",
+            value: _vm.marker_name,
+            expression: "marker_name"
+          }
+        ],
+        staticClass: "form-control",
+        attrs: {
+          type: "text",
+          placeholder: "Выберите маркер",
+          "aria-label": "Маркер",
+          "aria-describedby": "button-marker-addon",
+          readonly: "",
+          "data-toggle": "collapse",
+          href: "#collapseChooseMarker",
+          role: "button",
+          "aria-expanded": "false",
+          "aria-controls": "collapseChooseMarker"
+        },
+        domProps: { value: _vm.marker_name },
+        on: {
+          input: function($event) {
+            if ($event.target.composing) {
+              return
+            }
+            _vm.marker_name = $event.target.value
+          }
+        }
+      }),
+      _vm._v(" "),
+      _c("input", {
+        directives: [
+          {
+            name: "model",
+            rawName: "v-model",
+            value: _vm.marker_id,
+            expression: "marker_id"
+          }
+        ],
+        attrs: { type: "hidden", name: "marker_id" },
+        domProps: { value: _vm.marker_id },
+        on: {
+          input: function($event) {
+            if ($event.target.composing) {
+              return
+            }
+            _vm.marker_id = $event.target.value
+          }
+        }
+      }),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "input-group-append",
+          attrs: { id: "button-marker-addon" }
+        },
+        [
+          _c(
+            "button",
+            {
+              staticClass: "btn btn-outline-secondary",
+              attrs: {
+                type: "button",
+                "data-toggle": "collapse",
+                href: "#collapseChooseMarker",
+                role: "button",
+                "aria-expanded": "false"
+              }
+            },
+            [_vm._v("..")]
+          ),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass: "btn btn-outline-secondary",
+              attrs: { type: "button" },
+              on: {
+                click: function($event) {
+                  $event.preventDefault()
+                  _vm.marker_radio = ""
+                  _vm.marker_id = ""
+                  _vm.marker_name = ""
+                }
+              }
+            },
+            [_vm._v("X")]
+          )
+        ]
+      )
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "collapse", attrs: { id: "collapseChooseMarker" } },
+      [
+        _c("div", { staticClass: "card card-body" }, [
+          _vm.errors != ""
+            ? _c(
+                "div",
+                {
+                  staticClass:
+                    "alert alert-warning alert-dismissible fade show",
+                  attrs: { role: "alert" }
+                },
+                [
+                  _c("strong", [_vm._v("Внимание! ")]),
+                  _vm._v(
+                    "Произошла непредвиденная ошибка: " +
+                      _vm._s(_vm.errors.message) +
+                      "\n                "
+                  ),
+                  _vm._m(0)
+                ]
+              )
+            : _vm._e(),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.filter,
+                expression: "filter"
+              }
+            ],
+            staticClass: "form-control",
+            attrs: { type: "text", placeholder: "Фильтр", autofocus: "" },
+            domProps: { value: _vm.filter },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.filter = $event.target.value
+              }
+            }
+          }),
+          _vm._v(" "),
+          _c(
+            "div",
+            { staticClass: "accordion", attrs: { id: "accordionMarkers" } },
+            _vm._l(_vm.filtred(), function(marker, key) {
+              return _c(
+                "div",
+                { staticClass: "card text m-2 shadow rounded" },
+                [
+                  _c(
+                    "div",
+                    {
+                      staticClass: "card-header p-0",
+                      attrs: {
+                        id: "heading" + key,
+                        "data-toggle": "collapse",
+                        "data-target": "#collapse_marker" + key,
+                        "aria-expanded":
+                          _vm.filter != "" && marker.markers.length,
+                        "aria-controls": "collapse_marker" + key
+                      }
+                    },
+                    [
+                      _c("div", { staticClass: "form-check m-1" }, [
+                        _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.marker_radio,
+                              expression: "marker_radio"
+                            }
+                          ],
+                          staticClass: "form-check-input",
+                          attrs: {
+                            type: "radio",
+                            name: "_marker",
+                            id: "markerRadio" + key
+                          },
+                          domProps: {
+                            value: marker.id,
+                            checked: _vm._q(_vm.marker_radio, marker.id)
+                          },
+                          on: {
+                            click: function($event) {
+                              _vm.marker_id = marker.id
+                              _vm.marker_name = marker.name
+                            },
+                            change: function($event) {
+                              _vm.marker_radio = marker.id
+                            }
+                          }
+                        }),
+                        _vm._v(" "),
+                        _c(
+                          "label",
+                          {
+                            staticClass: "form-check-label",
+                            attrs: { for: "markerRadio" + key }
+                          },
+                          [
+                            _vm._v(
+                              "\n                                " +
+                                _vm._s(marker.name) +
+                                " (" +
+                                _vm._s(marker.markers.length) +
+                                " шт.)\n                            "
+                            )
+                          ]
+                        )
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      class:
+                        "collapse" +
+                        (_vm.filter != "" && marker.markers.length
+                          ? " show"
+                          : ""),
+                      attrs: {
+                        id: "collapse_marker" + key,
+                        "aria-labelledby": "'heading' + key",
+                        "data-parent": "#accordionMarkers"
+                      }
+                    },
+                    [
+                      _c(
+                        "div",
+                        { staticClass: "card-body" },
+                        [
+                          marker.team_id
+                            ? _c(
+                                "a",
+                                {
+                                  staticClass: "btn btn-sm btn-info",
+                                  attrs: {
+                                    href: "#",
+                                    role: "button",
+                                    "data-toggle": "modal",
+                                    "data-target": "#modalLongEditMarker"
+                                  },
+                                  on: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      return _vm.editMarker(marker)
+                                    }
+                                  }
+                                },
+                                [_vm._v("Исправить")]
+                              )
+                            : _vm._e(),
+                          _vm._v(" "),
+                          marker.team_id
+                            ? _c(
+                                "a",
+                                {
+                                  staticClass: "btn btn-sm btn-danger",
+                                  attrs: { href: "#", role: "button" },
+                                  on: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      return _vm.deleteMarker(marker)
+                                    }
+                                  }
+                                },
+                                [_vm._v("Удалить")]
+                              )
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _c(
+                            "a",
+                            {
+                              staticClass: "btn btn-sm btn-secondary",
+                              attrs: {
+                                "data-toggle": "collapse",
+                                href: "#collapseChooseMarker",
+                                role: "button",
+                                "aria-expanded": "false",
+                                "aria-controls": "collapseChooseMarker"
+                              }
+                            },
+                            [_vm._v("Свернуть")]
+                          ),
+                          _vm._v(" "),
+                          _c("div", { staticClass: "dropdown-divider" }),
+                          _vm._v(" "),
+                          _c("b", [_vm._v("Доступные маркеры:")]),
+                          _vm._v(" "),
+                          _vm._l(marker.markers, function(submarker) {
+                            return _c("div", [
+                              _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.marker_radio,
+                                    expression: "marker_radio"
+                                  }
+                                ],
+                                staticClass: "d-inline",
+                                attrs: { type: "radio", name: "_marker" },
+                                domProps: {
+                                  value: submarker.id,
+                                  checked: _vm._q(
+                                    _vm.marker_radio,
+                                    submarker.id
+                                  )
+                                },
+                                on: {
+                                  click: function($event) {
+                                    _vm.marker_id = submarker.id
+                                    _vm.marker_name = submarker.name
+                                  },
+                                  change: function($event) {
+                                    _vm.marker_radio = submarker.id
+                                  }
+                                }
+                              }),
+                              _vm._v(
+                                " " +
+                                  _vm._s(submarker.name) +
+                                  " \n                                "
+                              ),
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "badge badge-info",
+                                  attrs: {
+                                    "data-toggle": "modal",
+                                    "data-target": "#modalLongEditMarker"
+                                  },
+                                  on: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      return _vm.editMarker(submarker)
+                                    }
+                                  }
+                                },
+                                [_vm._v("Исправить")]
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "span",
+                                {
+                                  staticClass: "badge badge-danger",
+                                  on: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      return _vm.deleteMarker(submarker)
+                                    }
+                                  }
+                                },
+                                [_vm._v("Х")]
+                              )
+                            ])
+                          }),
+                          _vm._v(" "),
+                          !marker.markers.length
+                            ? _c("div", [_vm._v("Нет маркеров")])
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _c(
+                            "button",
+                            {
+                              staticClass:
+                                "btn btn-outline-secondary btn-sm mt-2",
+                              attrs: {
+                                type: "button",
+                                "data-toggle": "modal",
+                                "data-target": "#modalLongEditMarker"
+                              },
+                              on: {
+                                click: function($event) {
+                                  return _vm.addSubmarker(marker)
+                                }
+                              }
+                            },
+                            [
+                              _vm._v(
+                                "\n                                Новый маркер\n                            "
+                              )
+                            ]
+                          )
+                        ],
+                        2
+                      )
+                    ]
+                  )
+                ]
+              )
+            }),
+            0
+          ),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass: "btn btn-outline-secondary btn-sm mt-2",
+              attrs: {
+                type: "button",
+                "data-toggle": "modal",
+                "data-target": "#modalLongEditMarker"
+              },
+              on: {
+                click: function($event) {
+                  return _vm.addMarker()
+                }
+              }
+            },
+            [_vm._v("\n                Новая категория\n            ")]
+          )
+        ])
+      ]
+    ),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        attrs: {
+          id: "modalLongEditMarker",
+          tabindex: "-1",
+          role: "dialog",
+          "aria-labelledby": "modalLongEditMarkerTitle",
+          "aria-hidden": "true"
+        }
+      },
+      [
+        _c(
+          "div",
+          { staticClass: "modal-dialog", attrs: { role: "document" } },
+          [
+            _c("div", { staticClass: "modal-content" }, [
+              _vm._m(1),
+              _vm._v(" "),
+              _c("div", { staticClass: "modal-body" }, [
+                _vm.errors != ""
+                  ? _c(
+                      "div",
+                      {
+                        staticClass:
+                          "alert alert-warning alert-dismissible fade show",
+                        attrs: { role: "alert" }
+                      },
+                      [
+                        _c("strong", [_vm._v("Внимание! ")]),
+                        _vm._v(
+                          "Произошла непредвиденная ошибка: " +
+                            _vm._s(_vm.errors.message) +
+                            "\n                        "
+                        ),
+                        _vm._m(2)
+                      ]
+                    )
+                  : _vm._e(),
+                _vm._v(" "),
+                _c("div", { staticClass: "form-group" }, [
+                  _c("label", { attrs: { for: "elementName" } }, [
+                    _vm._v("Название")
+                  ]),
+                  _vm._v(" "),
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.elementToChange.name,
+                        expression: "elementToChange.name"
+                      }
+                    ],
+                    class:
+                      "form-control" +
+                      (_vm.errors.errors && _vm.errors.errors.name
+                        ? " is-invalid"
+                        : ""),
+                    attrs: {
+                      type: "text",
+                      id: "elementName",
+                      "aria-describedby": "Название"
+                    },
+                    domProps: { value: _vm.elementToChange.name },
+                    on: {
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.$set(
+                          _vm.elementToChange,
+                          "name",
+                          $event.target.value
+                        )
+                      }
+                    }
+                  }),
+                  _vm._v(" "),
+                  _vm.errors.errors && _vm.errors.errors.name
+                    ? _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                            " +
+                            _vm._s(_vm.errors.errors.name.join("; ")) +
+                            "\n                        "
+                        )
+                      ])
+                    : _vm._e()
                 ]),
                 _vm._v(" "),
-                _c("a", { attrs: { href: toast.url } }, [
-                  _vm._v("Скачать файл")
+                _c("div", { staticClass: "form-group" }, [
+                  _c("label", { attrs: { for: "elementDescription" } }, [
+                    _vm._v("Описание")
+                  ]),
+                  _vm._v(" "),
+                  _c("textarea", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.elementToChange.description,
+                        expression: "elementToChange.description"
+                      }
+                    ],
+                    class:
+                      "form-control" +
+                      (_vm.errors.errors && _vm.errors.errors.description
+                        ? " is-invalid"
+                        : ""),
+                    attrs: { id: "elementDescription", rows: "3" },
+                    domProps: { value: _vm.elementToChange.description },
+                    on: {
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.$set(
+                          _vm.elementToChange,
+                          "description",
+                          $event.target.value
+                        )
+                      }
+                    }
+                  }),
+                  _vm._v(" "),
+                  _vm.errors.errors && _vm.errors.errors.description
+                    ? _c("div", { staticClass: "invalid-feedback" }, [
+                        _vm._v(
+                          "\n                            " +
+                            _vm._s(_vm.errors.errors.description.join("; ")) +
+                            "\n                        "
+                        )
+                      ])
+                    : _vm._e()
                 ])
-              ],
-              2
-            )
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "modal-footer" }, [
+                _c(
+                  "button",
+                  {
+                    ref: "modalEditClose",
+                    staticClass: "btn btn-secondary",
+                    attrs: { type: "button", "data-dismiss": "modal" },
+                    on: {
+                      click: function($event) {
+                        _vm.elementToChange = _vm.getTemplate()
+                      }
+                    }
+                  },
+                  [_vm._v("Закрыть")]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-primary",
+                    attrs: { type: "button" },
+                    on: { click: _vm.elementToChange.callable }
+                  },
+                  [_vm._v("Сохранить")]
+                )
+              ])
+            ])
           ]
         )
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "alert",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-header" }, [
+      _c(
+        "h5",
+        { staticClass: "modal-title", attrs: { id: "exampleModalLongTitle" } },
+        [_vm._v("Меню редактирования")]
+      ),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "close",
+          attrs: {
+            type: "button",
+            "data-dismiss": "modal",
+            "aria-label": "Close"
+          }
+        },
+        [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "alert",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-2ca1079e", module.exports)
+  }
+}
+
+/***/ }),
+/* 119 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(120)
+/* template */
+var __vue_template__ = __webpack_require__(121)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/Days.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-5d9f8d8e", Component.options)
+  } else {
+    hotAPI.reload("data-v-5d9f8d8e", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 120 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['range', 'year'],
+    data: function data() {
+        return {
+            dateRange: [],
+            monthName: {
+                1: 'Январь',
+                2: 'Февраль',
+                3: 'Март',
+                4: 'Апрель',
+                5: 'Май',
+                6: 'Июнь',
+                7: 'Июль',
+                8: 'Август',
+                9: 'Сентябрь',
+                10: 'Октябрь',
+                11: 'Ноябрь',
+                12: 'Декабрь'
+            }
+        };
+    },
+    mounted: function mounted() {
+        this.dateRange = this.range;
+    },
+
+
+    methods: {}
+});
+
+/***/ }),
+/* 121 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { staticClass: "container" },
+    _vm._l(_vm.dateRange, function(month, monthNumber) {
+      return _c("div", { staticClass: "shadow p-1 col-lg-7" }, [
+        _c("div", { staticClass: "card shadow" }, [
+          _c("h5", { staticClass: "card-header" }, [
+            _vm._v(
+              _vm._s(_vm.monthName[monthNumber]) +
+                " " +
+                _vm._s(_vm.year) +
+                " года"
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "card-body" }, [
+            _c("div", { staticClass: "table-responsive" }, [
+              _c("table", { staticClass: "table" }, [
+                _vm._m(0, true),
+                _vm._v(" "),
+                _c(
+                  "tbody",
+                  _vm._l(month, function(week, weekNumber) {
+                    return _c(
+                      "tr",
+                      [
+                        _c("th", { attrs: { scope: "row" } }, [
+                          _vm._v(_vm._s(weekNumber))
+                        ]),
+                        _vm._v(" "),
+                        _vm._l([1, 2, 3, 4, 5, 6, 7], function(day) {
+                          return _c(
+                            "td",
+                            {
+                              class:
+                                week[day] && week[day].is_holiday
+                                  ? "text-danger shadow-sm"
+                                  : ""
+                            },
+                            [
+                              week[day]
+                                ? _c(
+                                    "div",
+                                    {
+                                      on: {
+                                        click: function($event) {
+                                          _vm.dateRange[monthNumber][
+                                            weekNumber
+                                          ][day].is_holiday = !week[day]
+                                            .is_holiday
+                                        }
+                                      }
+                                    },
+                                    [
+                                      _vm._v(
+                                        "\n                                        " +
+                                          _vm._s(week[day].day) +
+                                          "\n                                        "
+                                      ),
+                                      _c("input", {
+                                        directives: [
+                                          {
+                                            name: "model",
+                                            rawName: "v-model",
+                                            value:
+                                              _vm.dateRange[monthNumber][
+                                                weekNumber
+                                              ][day].is_holiday,
+                                            expression:
+                                              "dateRange[monthNumber][weekNumber][day].is_holiday"
+                                          }
+                                        ],
+                                        attrs: {
+                                          type: "hidden",
+                                          name:
+                                            "days[" +
+                                            monthNumber +
+                                            weekNumber +
+                                            day +
+                                            "][weekend]"
+                                        },
+                                        domProps: {
+                                          value:
+                                            _vm.dateRange[monthNumber][
+                                              weekNumber
+                                            ][day].is_holiday
+                                        },
+                                        on: {
+                                          input: function($event) {
+                                            if ($event.target.composing) {
+                                              return
+                                            }
+                                            _vm.$set(
+                                              _vm.dateRange[monthNumber][
+                                                weekNumber
+                                              ][day],
+                                              "is_holiday",
+                                              $event.target.value
+                                            )
+                                          }
+                                        }
+                                      }),
+                                      _vm._v(" "),
+                                      _c("input", {
+                                        attrs: {
+                                          type: "hidden",
+                                          name:
+                                            "days[" +
+                                            monthNumber +
+                                            weekNumber +
+                                            day +
+                                            "][date]"
+                                        },
+                                        domProps: {
+                                          value:
+                                            _vm.dateRange[monthNumber][
+                                              weekNumber
+                                            ][day].date
+                                        }
+                                      })
+                                    ]
+                                  )
+                                : _vm._e()
+                            ]
+                          )
+                        })
+                      ],
+                      2
+                    )
+                  }),
+                  0
+                )
+              ])
+            ])
+          ])
+        ])
       ])
+    }),
+    0
+  )
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", { staticClass: "thead-light" }, [
+      _c("tr", [
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("#")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("ПН")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("ВТ")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("СР")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("ЧТ")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("ПТ")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("СБ")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("ВС")])
+      ])
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-5d9f8d8e", module.exports)
+  }
+}
+
+/***/ }),
+/* 122 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(123)
+/* template */
+var __vue_template__ = __webpack_require__(124)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/Toasts.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-e35763ba", Component.options)
+  } else {
+    hotAPI.reload("data-v-e35763ba", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 123 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['user', 'data'],
+    data: function data() {
+        return {
+            toasts: []
+        };
+    },
+    mounted: function mounted() {
+        var _this = this;
+
+        this.data = this.data.reverse();
+        for (var i in this.data) {
+            this.toasts.unshift(this.getToast(this.data[i]));
+        }
+
+        Echo.private('App.User.' + this.user).notification(function (notification) {
+            _this.toasts.unshift(_this.getToast(notification));
+        });
+        $('#report_toasts').bind("DOMSubtreeModified", function () {
+            $('.toast').toast('show');
+        });
+    },
+
+
+    methods: {
+        getToast: function getToast(notification) {
+            var date = notification.updated_at ? notification.updated_at.split(' ')[1] : new Date().toLocaleString('ru', { hour: 'numeric', minute: 'numeric', second: 'numeric' });
+            var data = notification.data ? notification.data : notification;
+            return {
+                message: data.message,
+                link: data.link,
+                id: notification.id,
+                time: date
+            };
+        },
+        delNotification: function delNotification(key) {
+            var _this2 = this;
+
+            axios.delete('/home/notifications/' + this.toasts[key].id).then(function (response) {
+                _this2.toasts.splice(key, 1);
+            }).catch(function (error) {
+                console.log(error.response.data);
+            });
+        }
+    }
+});
+
+/***/ }),
+/* 124 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { attrs: { id: "report_toasts" } },
+    _vm._l(_vm.toasts, function(toast, key) {
+      return _c(
+        "div",
+        {
+          staticClass: "toast vw-100",
+          attrs: {
+            role: "alert",
+            "aria-live": "assertive",
+            "aria-atomic": "true",
+            "data-autohide": "false"
+          }
+        },
+        [
+          _c("div", { staticClass: "toast-header" }, [
+            _c("strong", { staticClass: "mr-auto" }, [_vm._v("Внимание!")]),
+            _vm._v(" "),
+            _c("small", [_vm._v("в " + _vm._s(toast.time))]),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass: "ml-2 mb-1 close",
+                attrs: {
+                  type: "button",
+                  "data-dismiss": toast.id,
+                  "aria-label": "Close"
+                },
+                on: {
+                  click: function($event) {
+                    $event.preventDefault()
+                    return _vm.delNotification(key)
+                  }
+                }
+              },
+              [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "toast-body" }, [
+            _vm._v("\n        " + _vm._s(toast.message) + "\n        "),
+            _c("a", { attrs: { href: toast.link } }, [_vm._v("Перейти")])
+          ])
+        ]
+      )
     }),
     0
   )
@@ -61140,12 +66604,12 @@ module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-1b6f9758", module.exports)
+    require("vue-hot-reload-api")      .rerender("data-v-e35763ba", module.exports)
   }
 }
 
 /***/ }),
-/* 101 */
+/* 125 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin

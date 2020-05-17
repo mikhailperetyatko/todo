@@ -6,23 +6,30 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>MyBlog</title>
     <!-- Bootstrap core CSS -->
-   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    
     <!-- Custom styles for this template -->
     <link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
     <link href="/css/blog.css" rel="stylesheet">
   </head>
 
   <body class="d-flex flex-column h-100">
-    
     @include('layout.nav')
     
-    <main role="main" class="mb-2">
+    <main role="main" class="mb-2" id="app">
+        <div aria-live="polite" class="fixed-top" aria-atomic="true">
+            <div style="position: absolute; top: 0; right: 0;">
+                <div class="container focus">
+                    @if(auth()->check())
+                        <toasts :user="{{ auth()->user()->id }}" :data='@json(auth()->user()->unreadNotifications)'>Подождите...</toasts>
+                    @endif
+                    @yield('vueExt') 
+                </div>            
+            </div>
+        </div>
         <div class="container">
-            @include('layout.notification') 
+            @include('layout.notification')
         </div>
         <div class="container">
             <div class="row">
@@ -36,15 +43,7 @@
             </div>
         </div>
     </main>
-    <div aria-live="polite" class="fixed-top" aria-atomic="true" id="app">
-        <div style="position: absolute; top: 0; right: 0;">
-            <div class="container focus">
-                <post-update></post-update>
-                @yield('vueExt') 
-            </div>            
-        </div>
-    </div>
     @include('layout.footer')
-    <script src="/js/app.js"></script>
+    <script src="/js/app.js?v={{ 4 }}"></script>
   </body>
 </html>

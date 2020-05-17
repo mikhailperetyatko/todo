@@ -16,7 +16,16 @@ window.Vue = require('vue');
  */
 
 Vue.component('post-update', require('./components/PostUpdate.vue'));
-Vue.component('report-generated', require('./components/ReportGenerated.vue'));
+//Vue.component('report-generated', require('./components/ReportGenerated.vue'));
+Vue.component('invite', require('./components/InviteEmail.vue'));
+Vue.component('task-repeatability', require('./components/TaskRepeatability.vue'));
+Vue.component('attach-subtask', require('./components/AttachSubtask.vue'));
+Vue.component('comments', require('./components/Comments.vue'));
+Vue.component('comment', require('./components/Comment.vue'));
+Vue.component('file', require('./components/File.vue'));
+Vue.component('my-marker', require('./components/Marker.vue'));
+Vue.component('days', require('./components/Days.vue'));
+Vue.component('toasts', require('./components/Toasts.vue'));
 
 const app = new Vue({
     el: '#app'

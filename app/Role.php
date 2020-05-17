@@ -8,8 +8,13 @@ class Role extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
     
-    public function users()
+    public function permissions()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(Permission::class, 'permission_role');
+    }
+    
+    public function hasPermission(string $value) : bool
+    {
+        return (boolean) $this->permissions()->where('value', $value)->first();
     }
 }
