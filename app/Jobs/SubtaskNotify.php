@@ -36,9 +36,13 @@ class SubtaskNotify implements ShouldQueue
     public function handle()
     {
         $subtask = Subtask::findOrFail($this->subtaskId);
+        if ($subtask->finished) return;
         $now = Carbon::now();
         $uuid = \Redis::get('subtask-job-' . $subtask->id);
         if ($uuid !== NULL && $uuid !== $this->uuid) return;
+        
+        $subtask->repeatEventTomorrow($subtask);
+        
         \Mail::to(collect([$subtask->executor, $subtask->validator])->unique())->send(new SubtaskEvent($subtask));
     }
 }

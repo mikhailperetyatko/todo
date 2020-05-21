@@ -26,13 +26,18 @@ class Subtask extends Model
         'showable_date'
     ];
     
-    protected static function createdAndUpdatedEvents(Subtask $subtask)
+    protected static function createdAndUpdatedEvents(Subtask $subtask, Carbon $delay = null)
     {
         $uuid = (string) Str::uuid();
         \Redis::set('subtask-job-' . $subtask->id, $uuid);
         if ($subtask->referencePriority && $subtask->referencePriority->value == 'high') {
-            SubtaskNotify::dispatch($uuid, $subtask)->delay(Carbon::now()->diffInSeconds($subtask->execution_date->addHours(config('app.delay_before_notify_about_subtask_event'))));
+            SubtaskNotify::dispatch($uuid, $subtask)->delay(Carbon::now()->diffInSeconds($delay ? $delay : $subtask->execution_date->addHours(config('app.delay_before_notify_about_subtask_event'))));
         }
+    }
+    
+    public static function repeatEventTomorrow(Subtask $subtask)
+    {
+        self::createdAndUpdatedEvents($subtask, Carbon::now()->subHours(config('app.delay_before_notify_about_subtask_event'))->addDay());
     }
     
     protected static function boot()
@@ -95,14 +100,14 @@ class Subtask extends Model
     public function setUserExecutorAttribute($value)
     {
         if (policy($this)->delegation(auth()->user(), $this)) {
-            $this->executor()->associate($this->task->project->team->users()->where('id', $value)->firstOrFail());
+            $this->executor()->associate($this->task->project->members()->where('id', $value)->firstOrFail());
         }
     }
     
     public function setUserValidatorAttribute($value)
     {
         if (policy($this)->delegation(auth()->user(), $this)) {
-            $this->validator()->associate($this->task->project->team->users()->where('id', $value)->firstOrFail());
+            $this->validator()->associate($this->task->project->members()->where('id', $value)->firstOrFail());
         }
     }
     
@@ -162,6 +167,6 @@ class Subtask extends Model
     public function isUserHasPermission(User $user, string $permission) : bool
     {
         if (! Subtask::where('id', $this->id)->exists()) return true;
-        return (boolean) $this->task->project->team->users()->where('user_id', $user->id)->firstOrFail()->pivot->role->hasPermission($permission);
+        return (boolean) $this->task->project->members()->where('id', $user->id)->firstOrFail()->pivot->role->hasPermission($permission);
     }
 }

@@ -37,7 +37,7 @@ class MarkerController extends Controller
             'description' => 'nullable|min:3|max:255',
             'marker_id' => 'nullable|integer',
         ]);
-        if ($project->team->users()->where('user_id', $user->id)->exists()) {
+        if ($project->members()->where('user_id', $user->id)->exists()) {
             $marker->project()->associate($project);
             $marker->team()->associate($project->team);
         }

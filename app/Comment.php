@@ -23,7 +23,7 @@ class Comment extends Model
             toasts(
                 $comment,
                 CommentCreate::class,
-                $comment->subtask->task->project->team->users,
+                $comment->subtask->task->project->members,
                 [$comment->owner->id]
             );
         });

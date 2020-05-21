@@ -103,7 +103,7 @@ class SubtasksController extends Controller
     public function edit(Subtask $subtask)
     {
         $this->authorize($subtask);
-        $users = $subtask->task->project->team->users;
+        $users = $subtask->task->project->members;
         $intervals = ReferenceInterval::all();
         $difficulties = ReferenceDifficulty::all();
         $priorities = ReferencePriority::all();

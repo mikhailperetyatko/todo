@@ -13,7 +13,7 @@ class CommentPolicy
     
     protected function userInTeam(User $user, Subtask $subtask)
     {
-        return $subtask->task->project->team->users()->where('user_id', $user->id)->exists();
+        return $subtask->task->project->members()->where('user_id', $user->id)->exists();
     }
     /**
      * Determine whether the user can view the subtask.

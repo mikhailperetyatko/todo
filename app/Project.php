@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Pivots\ProjectUser;
 
 class Project extends Model
 {
@@ -16,6 +17,11 @@ class Project extends Model
     public function team()
     {
         return $this->belongsTo(Team::class, 'team_id');
+    }
+    
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'project_user', 'project_id', 'user_id')->withPivot('role_id')->using(ProjectUser::class);
     }
     
     public function tasks()

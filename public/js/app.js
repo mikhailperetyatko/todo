@@ -20114,6 +20114,7 @@ Vue.component('file', __webpack_require__(113));
 Vue.component('my-marker', __webpack_require__(116));
 Vue.component('days', __webpack_require__(119));
 Vue.component('toasts', __webpack_require__(122));
+Vue.component('project-members', __webpack_require__(130));
 
 var app = new Vue({
   el: '#app'
@@ -66613,6 +66614,284 @@ if (false) {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 126 */,
+/* 127 */,
+/* 128 */,
+/* 129 */,
+/* 130 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(131)
+/* template */
+var __vue_template__ = __webpack_require__(132)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/ProjectMembers.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-0dc6fdb7", Component.options)
+  } else {
+    hotAPI.reload("data-v-0dc6fdb7", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 131 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['teams', 'project'],
+    data: function data() {
+        return {
+            teamId: '',
+            filter: '',
+            members: [],
+            owner: ''
+        };
+    },
+    mounted: function mounted() {
+        if (this.project) {
+            this.teamId = this.project.team_id;
+            this.members = this.project.members.map(function (member) {
+                return member.id;
+            });
+        } else {
+            this.teamId = this.teams[0].id;
+        }
+    },
+
+
+    methods: {
+        getFilteredUsers: function getFilteredUsers() {
+            var _this = this;
+
+            if (!this.teamId) return [];
+            var search = this.filter.toLowerCase();
+            var team = this.teams.filter(function (team) {
+                return team.id == _this.teamId;
+            }).shift();
+            return search ? team.users.filter(function (user) {
+                return user.name.toLowerCase().indexOf(search) > -1;
+            }) : team.users;
+        }
+    }
+});
+
+/***/ }),
+/* 132 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _c("div", { staticClass: "form-group" }, [
+      _c("label", { attrs: { for: "teamSelect" } }, [_vm._v("Команда")]),
+      _vm._v(" "),
+      _c(
+        "select",
+        {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.teamId,
+              expression: "teamId"
+            }
+          ],
+          staticClass: "form-control",
+          attrs: { id: "teamSelect", name: "team" },
+          on: {
+            change: function($event) {
+              var $$selectedVal = Array.prototype.filter
+                .call($event.target.options, function(o) {
+                  return o.selected
+                })
+                .map(function(o) {
+                  var val = "_value" in o ? o._value : o.value
+                  return val
+                })
+              _vm.teamId = $event.target.multiple
+                ? $$selectedVal
+                : $$selectedVal[0]
+            }
+          }
+        },
+        _vm._l(_vm.teams, function(team, key) {
+          return _c("option", { domProps: { value: team.id } }, [
+            _vm._v(_vm._s(team.name))
+          ])
+        }),
+        0
+      )
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "card mb-2" }, [
+      _c(
+        "div",
+        { staticClass: "card-body" },
+        [
+          _c("div", { staticClass: "form-group" }, [
+            _c("label", { attrs: { for: "formControlFilter" } }, [
+              _vm._v("Допущенные участники команды")
+            ]),
+            _vm._v(" "),
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.filter,
+                  expression: "filter"
+                }
+              ],
+              staticClass: "form-control",
+              attrs: {
+                type: "text",
+                id: "formControlFilter",
+                placeholder: "Фильтр пользователей"
+              },
+              domProps: { value: _vm.filter },
+              on: {
+                input: function($event) {
+                  if ($event.target.composing) {
+                    return
+                  }
+                  _vm.filter = $event.target.value
+                }
+              }
+            })
+          ]),
+          _vm._v(" "),
+          _vm._l(_vm.getFilteredUsers(), function(user, key) {
+            return _c("div", { staticClass: "custom-control custom-switch" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.members,
+                    expression: "members"
+                  }
+                ],
+                staticClass: "custom-control-input",
+                attrs: {
+                  type: "checkbox",
+                  id: "customSwitch" + key,
+                  name: "users[" + key + "]"
+                },
+                domProps: {
+                  value: user.id,
+                  checked: Array.isArray(_vm.members)
+                    ? _vm._i(_vm.members, user.id) > -1
+                    : _vm.members
+                },
+                on: {
+                  change: function($event) {
+                    var $$a = _vm.members,
+                      $$el = $event.target,
+                      $$c = $$el.checked ? true : false
+                    if (Array.isArray($$a)) {
+                      var $$v = user.id,
+                        $$i = _vm._i($$a, $$v)
+                      if ($$el.checked) {
+                        $$i < 0 && (_vm.members = $$a.concat([$$v]))
+                      } else {
+                        $$i > -1 &&
+                          (_vm.members = $$a
+                            .slice(0, $$i)
+                            .concat($$a.slice($$i + 1)))
+                      }
+                    } else {
+                      _vm.members = $$c
+                    }
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c(
+                "label",
+                {
+                  staticClass: "custom-control-label",
+                  attrs: { for: "customSwitch" + key }
+                },
+                [_vm._v(_vm._s(user.name))]
+              )
+            ])
+          })
+        ],
+        2
+      )
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-0dc6fdb7", module.exports)
+  }
+}
 
 /***/ })
 /******/ ]);

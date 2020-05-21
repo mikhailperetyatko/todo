@@ -178,6 +178,15 @@ class TeamsController extends Controller
         $teamUsers = $team->users;
         $roles = Role::all();
         
+        $members = [];
+        
+        foreach ($team->projects as $project) {
+            $members[$project->id] = [];
+            foreach ($project->members()->whereIn('email', array_column($request->members, 'email'))->get() as $member) {
+                $members[$project->id][$member->id] = ['role_id' => $member->pivot->role->id];
+            }
+            $project->members()->detach();
+        }
         $team->users()->detach();
         foreach ($request->members as $member) {
             $user = $teamUsers->where('email', $member['email'])->first();
@@ -190,6 +199,10 @@ class TeamsController extends Controller
             }
         }
         $team->users()->attach($owner->id, ['role_id' => Role::where('slug', 'director')->firstOrFail()->id]);
+        
+        foreach ($team->projects as $project) {
+            $project->members()->sync($members[$project->id]);
+        }
         
         $team->invitedToTeam()->delete();
         if ($request->news) $this->invite($request->news, $team);

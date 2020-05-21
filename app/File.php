@@ -64,7 +64,7 @@ class File extends Model
         
         foreach ($files as $file) {
             $fileModel = File::findOrFail($file);
-            if ($fileModel->subtask->task->project->team->users()->where('user_id', auth()->user()->id)->exists()) $filesToSync[] = $file;
+            if ($fileModel->subtask->task->project->members()->where('user_id', auth()->user()->id)->exists()) $filesToSync[] = $file;
         }
         $model->files()->sync($filesToSync);
     }

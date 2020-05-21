@@ -30,7 +30,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($project->team->users as $user)
+                    @foreach($project->members as $user)
                         <tr>
                             <th scope="row">{{ ++$counter }}</th>
                             <td>

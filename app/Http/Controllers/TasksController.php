@@ -212,6 +212,7 @@ class TasksController extends Controller
      */
     public function edit(Project $project, Task $task)
     {
+        $this->authorize($task);
         $task->subtasks = $task->subtasks;
         $selects = [
             'intervals' => ReferenceInterval::all(),

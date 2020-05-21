@@ -42,7 +42,7 @@ class Task extends Model
     public function isUserHasPermission(User $user, string $permission) : bool
     {
         if (! Task::where('id', $this->id)->exists()) return true;
-        return (boolean) $this->project->team->users()->where('user_id', $user->id)->firstOrFail()->pivot->role->hasPermission($permission);
+        return (boolean) $this->project->members()->where('user_id', $user->id)->firstOrFail()->pivot->role->hasPermission($permission);
     }
     
     public function deleteWithFiles()

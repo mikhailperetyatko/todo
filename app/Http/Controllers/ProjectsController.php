@@ -41,9 +41,24 @@ class ProjectsController extends Controller
     public function create()
     {
         $this->authorize(Project::class);
-        return view('home.projects.create', ['teams' => auth()->user()->teams]);
+        return view('home.projects.create', ['teams' => auth()->user()->teams()->with('users')->get()]);
     }
-
+    
+    public function syncMembers(Team $team, Project $project)
+    {
+        $attr = request()->validate([
+            'users' => 'array|nullable',
+            'users.*' => 'integer',
+        ]);
+        $ownerId = $team->owner->id;
+        if (! in_array($ownerId, $attr)) $attr['users'][] = $ownerId;
+        $project->members()->detach();
+        
+        foreach ($team->users()->whereIn('id', $attr['users'])->get() as $user) {
+            $project->members()->attach([$user->id => ['role_id' => $user->pivot->role->id]]);
+        }
+    }
+    
     /**
      * Store a newly created resource in storage.
      *
@@ -61,8 +76,10 @@ class ProjectsController extends Controller
         
         $attr['owner_id'] = $user->id;
         $attr['team_id'] = $team->id;
-
-        Project::create($attr);
+        
+        $project = Project::create($attr);
+        
+        $this->syncMembers($team, $project);
         
         flash('success');
         return redirect('/home/projects');
@@ -86,11 +103,12 @@ class ProjectsController extends Controller
      * @param  \App\Project  $project
      * @return \Illuminate\Http\Response
      */
-    public function edit(Project $project)
+    public function edit(int $projectId)
     {
+        $project = Project::with('members')->findOrFail($projectId);
         $this->authorize($project);
         
-        $teams = auth()->user()->teams;
+        $teams = auth()->user()->teams()->with('users')->get();
         
         return view('home.projects.edit', compact('project', 'teams'));
     }
@@ -135,6 +153,7 @@ class ProjectsController extends Controller
         
         $project->team()->associate($team);
         $project->update($attr);
+        $this->syncMembers($team, $project);
         
         flash('success');
         return redirect('/home/projects');

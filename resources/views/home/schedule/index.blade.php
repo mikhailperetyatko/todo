@@ -46,7 +46,7 @@
         @php
             $filteredSubtasks = collect($subtasks->filter(function ($value, $key) use ($date, $showableNotNeed, $overdueNotNeed, $shown) {
                 $date = parseDate($date);
-                return ($overdueNotNeed != 'on' && $value->execution_date < $date && ! in_array($value->id, $shown)) || ($value->execution_date->format('d.m.Y') == $date->format('d.m.Y')) || ($showableNotNeed != 'on' && ($value->showable_date->format('d.m.Y') == $date->format('d.m.Y')));
+                return ($overdueNotNeed != 'on' && $value->execution_date < $date && ! in_array($value->id, $shown)) || ($value->execution_date->format('d.m.Y') == $date->format('d.m.Y')) || ($showableNotNeed != 'on' && ($value->showable_date->format('d.m.Y') == $date->format('d.m.Y') && \Carbon\Carbon::now()->startOfDay() < $value->showable_date));
             })->all());
             $shown = array_merge($shown, collect($filteredSubtasks)->pluck('id')->toArray());
         @endphp

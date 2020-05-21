@@ -27,20 +27,13 @@ class Kernel extends ConsoleKernel
      */
      
     protected function schedule(Schedule $schedule)
-    {
-        $schedule
-            ->command(
-                'horizon:snapshot'
-            )
-            ->everyFiveMinutes();
-            
+    {     
         $schedule
             ->call(function () {
                 $storages = Storage::all();
                 foreach ($storages as $storage){
                     \Queue::push(new RefreshToken($storage));
                 }
-        //})->everyMinute();
         })->monthlyOn(1, '00:00');
     }
 

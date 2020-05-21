@@ -12,14 +12,7 @@
                     {{ implode(',', $errors->get('name') ?? []) }}
                 </div>
             </div>
-            <div class="form-group">
-            <label for="teamSelect">Команда</label>
-            <select class="form-control" id="teamSelect" name="team">
-                @foreach($teams as $team)
-                    <option value="{{ $team->id }}">{{ $team->name }}</option>
-                @endforeach
-            </select>
-          </div>
+            <project-members :teams='@json($teams)'>Подождите...</project-members>
             <button type="submit" class="btn btn-primary">Создать</button>
         </form>
     </div>

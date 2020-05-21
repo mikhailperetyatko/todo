@@ -5,6 +5,8 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Pivots\TeamUser;
+use App\Pivots\ProjectUser;
+use App\Jobs\ResetPassword;
 
 class User extends Authenticatable
 {
@@ -62,11 +64,11 @@ class User extends Authenticatable
     {
         return $this->hasManyThrough(
             Project::class,
-            TeamUser::class,
+            ProjectUser::class,
             'user_id',
-            'team_id',
             'id',
-            'team_id'
+            'id',
+            'project_id'
         );
     }
     
@@ -85,8 +87,8 @@ class User extends Authenticatable
     public function getTasks()
     {
         return Task::join('projects', 'tasks.project_id', 'projects.id')
-            ->join('team_user', 'team_user.team_id', 'projects.team_id')
-            ->where('team_user.user_id', $this->id)
+            ->join('project_user', 'project_user.project_id', 'projects.id')
+            ->where('project_user.user_id', $this->id)
         ;
     }
     
@@ -95,9 +97,13 @@ class User extends Authenticatable
         return Subtask::select('subtasks.*')
             ->join('tasks', 'subtasks.task_id', 'tasks.id')
             ->join('projects', 'tasks.project_id', 'projects.id')
-            ->join('team_user', 'team_user.team_id', 'projects.team_id')
-            ->where('team_user.user_id', $this->id)
+            ->join('project_user', 'project_user.project_id', 'projects.id')
+            ->where('project_user.user_id', $this->id)
         ;
     }
     
+    public function sendPasswordResetNotification($token)
+    {
+        ResetPassword::dispatch($token, $this);
+    }
 }

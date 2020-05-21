@@ -26,6 +26,7 @@ Vue.component('file', require('./components/File.vue'));
 Vue.component('my-marker', require('./components/Marker.vue'));
 Vue.component('days', require('./components/Days.vue'));
 Vue.component('toasts', require('./components/Toasts.vue'));
+Vue.component('project-members', require('./components/ProjectMembers.vue'));
 
 const app = new Vue({
     el: '#app'

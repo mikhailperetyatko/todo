@@ -35,7 +35,7 @@ class ProjectPolicy
      */
     public function view(User $user, Project $project)
     {
-        return $user->teams->contains('id', $project->team->id);
+        return $project->members()->where('id', $user->id)->exists();
     }
 
     /**

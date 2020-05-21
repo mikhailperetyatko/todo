@@ -13,7 +13,7 @@ class FilePolicy
     
     protected function userInTeam(User $user, File $file)
     {
-        return $file->subtask->task->project->team->users()->where('user_id', $user->id)->exists();
+        return $file->subtask->task->project->members()->where('user_id', $user->id)->exists();
     }
     
     /**

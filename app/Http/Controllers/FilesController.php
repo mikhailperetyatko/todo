@@ -19,7 +19,7 @@ class FilesController extends Controller
      */
     public function index(Request $request, Subtask $subtask)
     {
-        if (! $subtask->task->project->team->users()->where('user_id', auth()->user()->id)->exists()) abort(403);
+        if (! $subtask->task->project->members()->where('user_id', auth()->user()->id)->exists()) abort(403);
         
         return json_encode([
             'files' => $subtask->files,
