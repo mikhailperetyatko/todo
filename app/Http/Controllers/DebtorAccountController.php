@@ -3,81 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\DebtorAccount;
+use App\Debtor;
+use App\DebtorType;
 use Illuminate\Http\Request;
 
 class DebtorAccountController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    protected function getValidateRules()
+    {
+        return [
+            'relations' => 'array',
+            'relations.*.id' => 'alpha_dash',
+            'relations.*.payment_uuid' => 'alpha_dash',
+            'relations.*.service_uuid' => 'alpha_dash',
+            'relations.*.amount' => 'numeric',
+        ];
+    }
+    
+    public function relations(DebtorAccount $account)
+    {
+        return view('home.debtors.communals.accounts.relations', compact('account'));
+    }
+    
+    public function relationsStore(Request $request, DebtorAccount $account)
+    {
+        $data = $request->validate($this->getValidateRules());
+        $account->payments_relation = $data['relations'];
+        $account->save();
+        
+        return ['result' => true];
+    }
+    
     public function index()
     {
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         //
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\DebtorAccount  $debtorAccount
-     * @return \Illuminate\Http\Response
-     */
     public function show(DebtorAccount $debtorAccount)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\DebtorAccount  $debtorAccount
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(DebtorAccount $debtorAccount)
+    public function edit(DebtorAccount $account)
     {
-        //
+        return view('home.debtors.communals.accounts.edit', compact('account'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\DebtorAccount  $debtorAccount
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, DebtorAccount $debtorAccount)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\DebtorAccount  $debtorAccount
-     * @return \Illuminate\Http\Response
-     */
+
     public function destroy(DebtorAccount $debtorAccount)
     {
         //

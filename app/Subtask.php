@@ -37,7 +37,7 @@ class Subtask extends Model
     
     public static function repeatEventTomorrow(Subtask $subtask)
     {
-        self::createdAndUpdatedEvents($subtask, Carbon::now()->subHours(config('app.delay_before_notify_about_subtask_event'))->addDay());
+        self::createdAndUpdatedEvents($subtask, Carbon::now()->addDay());
     }
     
     protected static function boot()

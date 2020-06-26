@@ -20079,7 +20079,7 @@ module.exports = function(obj, fn){
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(38);
-module.exports = __webpack_require__(125);
+module.exports = __webpack_require__(134);
 
 
 /***/ }),
@@ -20114,7 +20114,10 @@ Vue.component('file', __webpack_require__(113));
 Vue.component('my-marker', __webpack_require__(116));
 Vue.component('days', __webpack_require__(119));
 Vue.component('toasts', __webpack_require__(122));
-Vue.component('project-members', __webpack_require__(130));
+Vue.component('project-members', __webpack_require__(125));
+
+Vue.component('debtor-relations', __webpack_require__(128));
+Vue.component('debtor-account', __webpack_require__(131));
 
 var app = new Vue({
   el: '#app'
@@ -62927,7 +62930,8 @@ var render = function() {
                               : ""),
                           attrs: {
                             id: "delayIntervalsSelect" + key,
-                            name: "subtasks[" + key + "][delay_interval]"
+                            name: "subtasks[" + key + "][delay_interval]",
+                            required: subtask.delay != ""
                           },
                           on: {
                             change: function($event) {
@@ -66611,24 +66615,14 @@ if (false) {
 
 /***/ }),
 /* 125 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 126 */,
-/* 127 */,
-/* 128 */,
-/* 129 */,
-/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
 var normalizeComponent = __webpack_require__(1)
 /* script */
-var __vue_script__ = __webpack_require__(131)
+var __vue_script__ = __webpack_require__(126)
 /* template */
-var __vue_template__ = __webpack_require__(132)
+var __vue_template__ = __webpack_require__(127)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -66667,7 +66661,7 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 131 */
+/* 126 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -66735,7 +66729,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 132 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -66892,6 +66886,2480 @@ if (false) {
     require("vue-hot-reload-api")      .rerender("data-v-0dc6fdb7", module.exports)
   }
 }
+
+/***/ }),
+/* 128 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(129)
+/* template */
+var __vue_template__ = __webpack_require__(130)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/DebtorRelations.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-d7a7190c", Component.options)
+  } else {
+    hotAPI.reload("data-v-d7a7190c", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 129 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['account', 'form'],
+    data: function data() {
+        return {
+            relations: [],
+            currentPeriodKey: 0,
+            payments: [],
+            auto: 1,
+            error: [],
+            success: []
+        };
+    },
+    mounted: function mounted() {
+        if (this.account.incoming_saldo < 0) {
+            this.payments.push({
+                name: 'incoming_balance',
+                type: 'subZero',
+                amount: Math.abs(this.account.incoming_saldo),
+                model: Math.abs(this.account.incoming_saldo)
+            });
+        }
+
+        for (var i in this.account.balance) {
+            var tempPayments = this.account.balance[i].paid;
+            tempPayments.map(function (payment) {
+                payment.model = payment.amount;
+                payment.name = 'payment';
+                return payment;
+            });
+
+            var tempRecostings = this.account.balance[i].recosting;
+            tempRecostings.map(function (recosting) {
+                recosting.name = 'recosting';
+                recosting.type = recosting.amount > 0 ? 'aboveZero' : 'subZero';
+                recosting.amount = Math.abs(recosting.amount);
+                recosting.model = recosting.amount;
+                return recosting;
+            });
+            this.payments = this.payments.concat(tempPayments, tempRecostings);
+        }
+
+        this.relations = this.account.payments_relation ? this.account.payments_relation : [];
+        for (var _i in this.relations) {
+            this.relations[_i].model = this.relations[_i].amount;
+        }
+
+        console.log(this.payments);
+    },
+
+
+    methods: {
+        getPaymentName: function getPaymentName(name) {
+            switch (name) {
+                case 'payment':
+                    return ['Платеж', 'платеж'];
+                case 'recosting':
+                    return ['Перерасчет', 'перерасчет'];
+                case 'incoming_balance':
+                    return ['Входящее сальдо', 'входящее сальдо'];
+            }
+        },
+        generateUUID: function generateUUID() {
+            var d = new Date().getTime();
+            var d2 = performance && performance.now && performance.now() * 1000 || 0;
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16;
+                if (d > 0) {
+                    r = (d + r) % 16 | 0;
+                    d = Math.floor(d / 16);
+                } else {
+                    r = (d2 + r) % 16 | 0;
+                    d2 = Math.floor(d2 / 16);
+                }
+                return (c === 'x' ? r : r & 0x3 | 0x8).toString(16);
+            });
+        },
+        getMonth: function getMonth(string) {
+            var date = string.split('-');
+
+            switch (date[1]) {
+                case '01':
+                    return 'Январь ' + date[0];
+                case '02':
+                    return 'Февраль ' + date[0];
+                case '03':
+                    return 'Март ' + date[0];
+                case '04':
+                    return 'Апрель ' + date[0];
+                case '05':
+                    return 'Май ' + date[0];
+                case '06':
+                    return 'Июнь ' + date[0];
+                case '07':
+                    return 'Июль ' + date[0];
+                case '08':
+                    return 'Август ' + date[0];
+                case '09':
+                    return 'Сентябрь ' + date[0];
+                case '10':
+                    return 'Октябрь ' + date[0];
+                case '11':
+                    return 'Ноябрь ' + date[0];
+                case '12':
+                    return 'Декабрь ' + date[0];
+            }
+        },
+        round: function round(element) {
+            var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 2;
+
+            return element.toFixed(n) * 1;
+        },
+        getServiceAmount: function getServiceAmount(service) {
+            return this.round(service.amount * service.tariff).toFixed(2) * 1;
+        },
+        getBalance: function getBalance(uuid, amount) {
+            this.relations.forEach(function (item) {
+                if (item.payment_uuid == uuid || item.service_uuid == uuid) {
+                    if (item.service_uuid == uuid && item.type == 'aboveZero') amount += item.amount;else amount -= item.amount;
+                }
+            });
+            amount = this.round(amount);
+
+            return amount < 0 ? 0 : amount;
+        },
+        getBalancePeroiod: function getBalancePeroiod() {
+            var balance = 0;
+            var services = this.account.balance[this.currentPeriodKey].services;
+            for (var i in services) {
+                balance += this.getBalance(services[i].uuid, this.getServiceAmount(services[i]));
+            }
+            return this.round(balance);
+        },
+        proccessPayment: function proccessPayment(payment) {
+            var paymentBalance = this.getBalance(payment.uuid, payment.amount);
+            var periodBalance = this.getBalancePeroiod();
+
+            var period = this.account.balance[this.currentPeriodKey];
+
+            var forDistribution = payment.model > paymentBalance ? paymentBalance : payment.model;
+            forDistribution = forDistribution > periodBalance ? periodBalance : forDistribution;
+            forDistribution < 0 ? 0 : forDistribution;
+            if (periodBalance <= 0 || paymentBalance <= 0 || forDistribution <= 0) return null;
+            this.allocatePayment(period.services, payment, forDistribution);
+            payment.model = this.getBalance(payment.uuid, payment.amount);
+        },
+        allocatePayment: function allocatePayment(services, payment, forDistribution) {
+            var id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : this.generateUUID();
+
+            if (services.length < 1) return;
+            var periodAmount = 0;
+            var balance = 0;
+
+            for (var i in services) {
+                periodAmount += this.getBalance(services[i].uuid, this.getServiceAmount(services[i]));
+            }
+
+            forDistribution = forDistribution > periodAmount ? periodAmount : forDistribution;
+
+            for (var _i2 in services) {
+                var service = services[_i2];
+                var serviceAmount = this.getServiceAmount(service);
+                var serviceBalance = this.getBalance(service.uuid, serviceAmount);
+                if (serviceBalance > 0) {
+                    var koef = serviceBalance / periodAmount;
+                    var amount = services.length - 1 > _i2 ? koef * forDistribution : forDistribution - balance;
+                    amount = this.round(amount);
+
+                    this.relations.push({
+                        payment_uuid: payment.uuid,
+                        service_uuid: service.uuid,
+                        amount: amount,
+                        id: id,
+                        model: amount,
+                        name: payment.name,
+                        type: payment.type
+                    });
+                    balance += amount;
+                }
+            }
+        },
+        getServicesByUuid: function getServicesByUuid(uuid) {
+            for (var i in this.account.balance) {
+                for (var j in this.account.balance[i].services) {
+                    if (this.account.balance[i].services[j].uuid == uuid) return this.account.balance[i].services[j];
+                }
+            }
+        },
+        changeProccessPayment: function changeProccessPayment(process, service) {
+            var payment = this.payments.find(function (payment) {
+                return payment.uuid == process.payment_uuid;
+            });
+            var forDistribution = process.model;
+            var relation = this.relations.find(function (relation) {
+                return relation == process;
+            });
+            var servicesToRecalculate = [];
+
+            for (var i in this.relations) {
+                if (this.relations[i] != process && this.relations[i].id == process.id) {
+                    servicesToRecalculate.push(this.getServicesByUuid(this.relations[i].service_uuid));
+                    this.relations.splice(i, 1);
+                }
+            }
+            relation.amount = 0;
+
+            var serviceBalance = this.getBalance(service.uuid, this.getServiceAmount(service));
+            var paymentBalance = this.getBalance(payment.uuid, payment.amount);
+
+            forDistribution = forDistribution > paymentBalance ? paymentBalance : forDistribution;
+            forDistribution = forDistribution > serviceBalance ? serviceBalance : forDistribution;
+            forDistribution = forDistribution < 0 ? 0 : forDistribution;
+
+            relation.amount = forDistribution;
+            relation.model = forDistribution;
+            relation.name = payment.name;
+            relation.type = payment.type;
+
+            this.allocatePayment(servicesToRecalculate, payment, this.round(paymentBalance - forDistribution), process.id);
+        },
+        getProcess: function getProcess(service) {
+            var serviceAmount = this.getServiceAmount(service);
+            var relations = this.relations.filter(function (relation) {
+                return relation.service_uuid == service.uuid;
+            }).map(function (process) {
+                if (process.type == 'aboveZero') serviceAmount += process.amount;else serviceAmount -= process.amount;
+                process.serviceBalance = serviceAmount.toFixed(2) * 1;
+                return process;
+            });
+
+            return relations;
+        },
+        getOrderedProcessByServices: function getOrderedProcessByServices(services) {
+            var _this = this;
+
+            var ids = [];
+            var result = [];
+
+            for (var i in services) {
+                for (var j in this.relations) {
+                    if (services[i].uuid == this.relations[j].service_uuid && ids.indexOf(this.relations[j].id) == -1) {
+                        ids.push(this.relations[j].id);
+                    }
+                }
+            }
+
+            var _loop = function _loop(_i3) {
+                var amount = 0;
+                _this.relations.filter(function (process) {
+                    return process.id == ids[_i3];
+                }).forEach(function (process) {
+                    amount += process.amount * 1;amount = amount.toFixed(2) * 1;
+                });
+                result.push({
+                    payment: _this.payments.find(function (payment) {
+                        return payment.uuid == _this.relations.find(function (process) {
+                            return process.id == ids[_i3];
+                        }).payment_uuid;
+                    }),
+                    id: ids[_i3],
+                    amount: amount
+                });
+            };
+
+            for (var _i3 in ids) {
+                _loop(_i3);
+            }
+            return result;
+        },
+        deleteRelations: function deleteRelations(id) {
+            this.relations = this.relations.filter(function (process) {
+                return process.id != id;
+            });
+        },
+        autoProccessPayment: function autoProccessPayment() {
+            if (this.auto == 1) this.autoProccessPaymentFirst();else this.autoProccessPaymentSecond();
+        },
+        autoProccessPaymentFirst: function autoProccessPaymentFirst() {
+            var isNeedToAutoProccessPaymentSecond = false;
+
+            for (var i in this.account.balance) {
+                this.currentPeriodKey = i;
+                var period = this.account.balance[i];
+                for (var j in period.paid) {
+                    var payment = period.paid[j];
+                    payment.model = this.getBalance(payment.uuid, payment.amount);
+                    this.proccessPayment(payment);
+                    if (this.getBalance(payment.uuid, payment.amount) > 0) isNeedToAutoProccessPaymentSecond = true;
+                }
+            }
+            if (isNeedToAutoProccessPaymentSecond) this.autoProccessPaymentSecond(true);
+            $('#collapseAutoButton').click();
+        },
+        autoProccessPaymentSecond: function autoProccessPaymentSecond() {
+            var isRobo = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+            for (var i in this.payments) {
+                var payment = this.payments[i];
+                payment.model = this.getBalance(payment.uuid, payment.amount);
+                var paymentBalance = this.getBalance(payment.uuid, payment.amount);
+
+                for (var j in this.account.balance) {
+                    this.currentPeriodKey = j;
+                    this.proccessPayment(payment);
+                }
+            }
+            if (!isRobo) $('#collapseAutoButton').click();
+        },
+        cancelRelations: function cancelRelations() {
+            if (confirm('Вы уверены?')) this.relations = [];
+        },
+        saveRelations: function saveRelations() {
+            var _this2 = this;
+
+            var data = this.relations.map(function (process) {
+                return {
+                    id: process.id,
+                    payment_uuid: process.payment_uuid,
+                    service_uuid: process.service_uuid,
+                    amount: process.amount,
+                    name: process.name,
+                    type: process.type
+                };
+            });
+            axios.post(this.form.action, {
+                relations: data
+            }).then(function (response) {
+                if (response.errors) _this2.error = response;else _this2.success.push(response.data.result);
+            }).catch(function (err) {
+                _this2.error.push(err);
+            });
+            ;
+        }
+    }
+});
+
+/***/ }),
+/* 130 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { attrs: { id: "container" } },
+    [
+      _vm._l(_vm.error, function(error) {
+        return _c(
+          "div",
+          {
+            staticClass: "alert alert-danger alert-dismissible fade show",
+            attrs: { role: "alert" }
+          },
+          [
+            _c("strong", [_vm._v("Произошла ошибка!")]),
+            _vm._v(
+              " " +
+                _vm._s(error.response ? error.response.data.message : error) +
+                "\n        "
+            ),
+            _vm._m(0, true)
+          ]
+        )
+      }),
+      _vm._v(" "),
+      _vm._l(_vm.success, function(success) {
+        return _c(
+          "div",
+          {
+            staticClass: "alert alert-success alert-dismissible fade show",
+            attrs: { role: "alert" }
+          },
+          [
+            _vm._v("\n        Запись произведена успешно!\n        "),
+            _vm._m(1, true)
+          ]
+        )
+      }),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-primary",
+          attrs: {
+            type: "button",
+            "data-toggle": "collapse",
+            "data-target": "#collapseAuto",
+            "aria-expanded": "false",
+            "aria-controls": "collapseAuto",
+            id: "collapseAutoButton"
+          }
+        },
+        [_vm._v("\n        Автоматическое распределение\n    ")]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "collapse", attrs: { id: "collapseAuto" } }, [
+        _c("div", { staticClass: "card card-body" }, [
+          _c("div", { staticClass: "form-check" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.auto,
+                  expression: "auto"
+                }
+              ],
+              staticClass: "form-check-input",
+              attrs: {
+                type: "radio",
+                name: "radios1",
+                id: "radios1",
+                value: "1"
+              },
+              domProps: { checked: _vm._q(_vm.auto, "1") },
+              on: {
+                change: function($event) {
+                  _vm.auto = "1"
+                }
+              }
+            }),
+            _vm._v(" "),
+            _c(
+              "label",
+              { staticClass: "form-check-label", attrs: { for: "radios1" } },
+              [
+                _vm._v(
+                  "\n                    Платеж, определенный в периоде, вначале распределить на этот период, остаток - на ранее возникшие периоды\n                "
+                )
+              ]
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "form-check" }, [
+            _c("input", {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.auto,
+                  expression: "auto"
+                }
+              ],
+              staticClass: "form-check-input",
+              attrs: {
+                type: "radio",
+                name: "radios2",
+                id: "radios2",
+                value: "2"
+              },
+              domProps: { checked: _vm._q(_vm.auto, "2") },
+              on: {
+                change: function($event) {
+                  _vm.auto = "2"
+                }
+              }
+            }),
+            _vm._v(" "),
+            _c(
+              "label",
+              { staticClass: "form-check-label", attrs: { for: "radios2" } },
+              [
+                _vm._v(
+                  "\n                    Платежи распределить в счет ранее возникших периодов\n                "
+                )
+              ]
+            )
+          ]),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass: "btn btn-sm btn-primary",
+              on: {
+                click: function($event) {
+                  return _vm.autoProccessPayment()
+                }
+              }
+            },
+            [_vm._v("Распределить автоматически")]
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-info",
+          on: {
+            click: function($event) {
+              return _vm.saveRelations()
+            }
+          }
+        },
+        [_vm._v("Сохранить")]
+      ),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-danger",
+          on: {
+            click: function($event) {
+              return _vm.cancelRelations()
+            }
+          }
+        },
+        [_vm._v("Сбросить")]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "table-responsive" }, [
+        _c("table", { staticClass: "table table-sm" }, [
+          _vm._m(2),
+          _vm._v(" "),
+          _c(
+            "tbody",
+            _vm._l(_vm.account.balance, function(period, periodKey) {
+              return _c("tr", [
+                _c("th", { attrs: { scope: "row" } }, [
+                  _vm._v(_vm._s(_vm.getMonth(period.month)))
+                ]),
+                _vm._v(" "),
+                _c("td", [
+                  _c(
+                    "table",
+                    { staticClass: "table table-striped table-sm" },
+                    [
+                      _vm._m(3, true),
+                      _vm._v(" "),
+                      _vm._l(period.services, function(service, serviceKey) {
+                        return _c("tr", [
+                          _c("td", [_vm._v(_vm._s(service.name))]),
+                          _vm._v(" "),
+                          _c("td", [
+                            _vm._v(_vm._s(_vm.getServiceAmount(service)))
+                          ]),
+                          _vm._v(" "),
+                          _vm.relations.filter(function(relation) {
+                            return relation.service_uuid == service.uuid
+                          }).length
+                            ? _c("td", [
+                                _c(
+                                  "table",
+                                  {
+                                    staticClass: "table table-striped table-sm"
+                                  },
+                                  [
+                                    _vm._m(4, true),
+                                    _vm._v(" "),
+                                    _vm._l(_vm.getProcess(service), function(
+                                      process,
+                                      processKey
+                                    ) {
+                                      return _c("tr", [
+                                        _c("td", [
+                                          _vm._v(
+                                            _vm._s(
+                                              process.type == "subZero"
+                                                ? "-"
+                                                : ""
+                                            ) +
+                                              " " +
+                                              _vm._s(
+                                                _vm.payments.find(function(
+                                                  payment
+                                                ) {
+                                                  return (
+                                                    payment.uuid ==
+                                                    process.payment_uuid
+                                                  )
+                                                }).amount
+                                              ) +
+                                              " руб."
+                                          )
+                                        ]),
+                                        _vm._v(" "),
+                                        _c("td", [
+                                          _c(
+                                            "div",
+                                            { staticClass: "input-group mb-3" },
+                                            [
+                                              _c("input", {
+                                                directives: [
+                                                  {
+                                                    name: "model",
+                                                    rawName: "v-model",
+                                                    value: process.model,
+                                                    expression: "process.model"
+                                                  }
+                                                ],
+                                                staticClass:
+                                                  "form-control w-auto",
+                                                attrs: {
+                                                  type: "text",
+                                                  placeholder: "Сумма",
+                                                  "aria-label": "Сумма",
+                                                  "aria-describedby":
+                                                    "button-addon" + processKey
+                                                },
+                                                domProps: {
+                                                  value: process.model
+                                                },
+                                                on: {
+                                                  input: function($event) {
+                                                    if (
+                                                      $event.target.composing
+                                                    ) {
+                                                      return
+                                                    }
+                                                    _vm.$set(
+                                                      process,
+                                                      "model",
+                                                      $event.target.value
+                                                    )
+                                                  }
+                                                }
+                                              }),
+                                              _vm._v(" "),
+                                              _c(
+                                                "div",
+                                                {
+                                                  staticClass:
+                                                    "input-group-append"
+                                                },
+                                                [
+                                                  _c(
+                                                    "button",
+                                                    {
+                                                      staticClass:
+                                                        "btn btn-outline-secondary btn-sm",
+                                                      attrs: {
+                                                        type: "button",
+                                                        id:
+                                                          "button-addon" +
+                                                          processKey
+                                                      },
+                                                      on: {
+                                                        click: function(
+                                                          $event
+                                                        ) {
+                                                          return _vm.changeProccessPayment(
+                                                            process,
+                                                            service
+                                                          )
+                                                        }
+                                                      }
+                                                    },
+                                                    [_vm._v(">")]
+                                                  )
+                                                ]
+                                              )
+                                            ]
+                                          )
+                                        ]),
+                                        _c("td", [
+                                          _vm._v(
+                                            " " + _vm._s(process.serviceBalance)
+                                          )
+                                        ]),
+                                        _vm._v(" "),
+                                        _c("td", [
+                                          _c(
+                                            "button",
+                                            {
+                                              staticClass:
+                                                "btn btn-danger btn-sm",
+                                              attrs: { type: "button" },
+                                              on: {
+                                                click: function($event) {
+                                                  _vm.relations.splice(
+                                                    _vm.relations.indexOf(
+                                                      process
+                                                    ),
+                                                    1
+                                                  )
+                                                }
+                                              }
+                                            },
+                                            [_vm._v("X")]
+                                          )
+                                        ])
+                                      ])
+                                    })
+                                  ],
+                                  2
+                                )
+                              ])
+                            : _c("td", [_vm._v(" - ")])
+                        ])
+                      })
+                    ],
+                    2
+                  )
+                ]),
+                _vm._v(" "),
+                _c(
+                  "td",
+                  [
+                    _vm._l(
+                      _vm.getOrderedProcessByServices(period.services),
+                      function(group) {
+                        return _c(
+                          "div",
+                          {
+                            staticClass: "alert alert-success",
+                            attrs: { role: "alert" }
+                          },
+                          [
+                            _vm._v(
+                              "\n                            Применен " +
+                                _vm._s(
+                                  _vm.getPaymentName(group.payment.name)[1]
+                                ) +
+                                " на сумму " +
+                                _vm._s(
+                                  group.payment.type == "subZero" ? "-" : ""
+                                ) +
+                                _vm._s(group.payment.amount) +
+                                " руб. в части суммы " +
+                                _vm._s(group.amount) +
+                                " руб.\n                            "
+                            ),
+                            _c(
+                              "button",
+                              {
+                                staticClass: "btn btn-sm btn-danger",
+                                on: {
+                                  click: function($event) {
+                                    return _vm.deleteRelations(group.id)
+                                  }
+                                }
+                              },
+                              [_vm._v("Х")]
+                            )
+                          ]
+                        )
+                      }
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-primary",
+                        attrs: {
+                          type: "button",
+                          "data-toggle": "modal",
+                          "data-target": "#staticBackdrop"
+                        },
+                        on: {
+                          click: function($event) {
+                            _vm.currentPeriodKey = periodKey
+                          }
+                        }
+                      },
+                      [
+                        _vm._v(
+                          "\n                            Выбрать\n                        "
+                        )
+                      ]
+                    )
+                  ],
+                  2
+                )
+              ])
+            }),
+            0
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "modal fade",
+          attrs: {
+            id: "staticBackdrop",
+            "data-backdrop": "static",
+            "data-keyboard": "false",
+            tabindex: "-1",
+            role: "dialog",
+            "aria-labelledby": "staticBackdropLabel",
+            "aria-hidden": "true"
+          }
+        },
+        [
+          _c(
+            "div",
+            {
+              staticClass:
+                "modal-dialog modal-dialog-centered modal-dialog-scrollable"
+            },
+            [
+              _c("div", { staticClass: "modal-content" }, [
+                _vm._m(5),
+                _vm._v(" "),
+                _c("div", { staticClass: "modal-body" }, [
+                  _c(
+                    "div",
+                    { staticClass: "container" },
+                    [
+                      _c("p", [
+                        _vm._v(
+                          "Общий баланс услуг для гашения " +
+                            _vm._s(_vm.getBalancePeroiod()) +
+                            " руб."
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _vm._l(_vm.payments, function(payment, paymentKey) {
+                        return _c("div", { staticClass: "form-group" }, [
+                          _vm.getBalance(payment.uuid, payment.amount) > 0
+                            ? _c("div", [
+                                _c(
+                                  "label",
+                                  {
+                                    attrs: { for: "paymentInput" + paymentKey }
+                                  },
+                                  [
+                                    _vm._v(
+                                      _vm._s(paymentKey + 1) +
+                                        ") " +
+                                        _vm._s(
+                                          _vm.getPaymentName(payment.name)[0]
+                                        ) +
+                                        " на сумму " +
+                                        _vm._s(
+                                          payment.amount +
+                                            (payment.date
+                                              ? " от " + payment.date
+                                              : "")
+                                        ) +
+                                        " руб. " +
+                                        _vm._s(
+                                          payment.type == "subZero"
+                                            ? "(с минусом)"
+                                            : ""
+                                        )
+                                    )
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "input-group mb-3" }, [
+                                  _c("input", {
+                                    directives: [
+                                      {
+                                        name: "model",
+                                        rawName: "v-model",
+                                        value: payment.model,
+                                        expression: "payment.model"
+                                      }
+                                    ],
+                                    staticClass: "form-control",
+                                    attrs: {
+                                      type: "text",
+                                      placeholder: "Введите сумму платежа",
+                                      id: "paymentInput" + paymentKey,
+                                      "aria-describedby":
+                                        "paymentInputButton" + paymentKey
+                                    },
+                                    domProps: { value: payment.model },
+                                    on: {
+                                      input: function($event) {
+                                        if ($event.target.composing) {
+                                          return
+                                        }
+                                        _vm.$set(
+                                          payment,
+                                          "model",
+                                          $event.target.value
+                                        )
+                                      }
+                                    }
+                                  }),
+                                  _vm._v(" "),
+                                  _c(
+                                    "div",
+                                    { staticClass: "input-group-append" },
+                                    [
+                                      _c(
+                                        "button",
+                                        {
+                                          staticClass:
+                                            "btn btn-outline-secondary",
+                                          attrs: {
+                                            type: "button",
+                                            id:
+                                              "paymentInputButton" + paymentKey
+                                          },
+                                          on: {
+                                            click: function($event) {
+                                              return _vm.proccessPayment(
+                                                payment
+                                              )
+                                            }
+                                          }
+                                        },
+                                        [_vm._v(">")]
+                                      )
+                                    ]
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _c(
+                                  "small",
+                                  { staticClass: "form-text text-muted" },
+                                  [
+                                    _vm._v(
+                                      "Для распределения доступно " +
+                                        _vm._s(
+                                          _vm.getBalance(
+                                            payment.uuid,
+                                            payment.amount
+                                          )
+                                        ) +
+                                        " руб. " +
+                                        _vm._s(
+                                          payment.type == "subZero"
+                                            ? "(с минусом)"
+                                            : ""
+                                        )
+                                    )
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "dropdown-divider" })
+                              ])
+                            : _vm._e()
+                        ])
+                      })
+                    ],
+                    2
+                  )
+                ]),
+                _vm._v(" "),
+                _vm._m(6)
+              ])
+            ]
+          )
+        ]
+      )
+    ],
+    2
+  )
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "alert",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "alert",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", { staticClass: "w-auto" }, [
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Месяц")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Начисления")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Оплата")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", { staticClass: "w-auto" }, [
+      _c("th", { attrs: { scope: "col" } }, [_vm._v("Услуга")]),
+      _vm._v(" "),
+      _c("th", { attrs: { scope: "col" } }, [_vm._v("Начислено")]),
+      _vm._v(" "),
+      _c("th", { attrs: { scope: "col" } }, [_vm._v("Оплачено")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("tr", { staticClass: "w-auto" }, [
+      _c("th", { attrs: { scope: "col" } }, [_vm._v("Платеж")]),
+      _vm._v(" "),
+      _c("th", { attrs: { scope: "col" } }, [_vm._v("Принято в оплату")]),
+      _vm._v(" "),
+      _c("th", { attrs: { scope: "col" } }, [_vm._v("Остаток от услуги")]),
+      _vm._v(" "),
+      _c("th", { attrs: { scope: "col" } }, [_vm._v("Удалить")])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-header" }, [
+      _c(
+        "h5",
+        { staticClass: "modal-title", attrs: { id: "staticBackdropLabel" } },
+        [_vm._v("Выбор платежа")]
+      ),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "close",
+          attrs: {
+            type: "button",
+            "data-dismiss": "modal",
+            "aria-label": "Close"
+          }
+        },
+        [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-footer" }, [
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-secondary",
+          attrs: { type: "button", "data-dismiss": "modal" }
+        },
+        [_vm._v("Отмена")]
+      )
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-d7a7190c", module.exports)
+  }
+}
+
+/***/ }),
+/* 131 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(132)
+/* template */
+var __vue_template__ = __webpack_require__(133)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/DebtorAccount.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-68b24b70", Component.options)
+  } else {
+    hotAPI.reload("data-v-68b24b70", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 132 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['account', 'form'],
+    data: function data() {
+        return {
+            address: this.account.address,
+            slug: this.account.slug,
+            saldo: this.account.incoming_saldo,
+            periods: {},
+            error: [],
+            success: [],
+            data: {}
+        };
+    },
+    mounted: function mounted() {
+        this.periods = this.account.balance.map(function (period) {
+            var date = period.month.split('-');
+            period.accountYear = date[0];
+            period.accountMonth = date[1];
+            return period;
+        });
+
+        console.log(this.periods);
+    },
+
+
+    methods: {
+        getMonth: function getMonth(month) {
+            switch (month) {
+                case '01':
+                    return 'Январь';
+                case '02':
+                    return 'Февраль';
+                case '03':
+                    return 'Март';
+                case '04':
+                    return 'Апрель';
+                case '05':
+                    return 'Май';
+                case '06':
+                    return 'Июнь';
+                case '07':
+                    return 'Июль';
+                case '08':
+                    return 'Август';
+                case '09':
+                    return 'Сентябрь';
+                case '10':
+                    return 'Октябрь';
+                case '11':
+                    return 'Ноябрь';
+                case '12':
+                    return 'Декабрь';
+            }
+        },
+        getTemplate: function getTemplate(element) {
+            switch (element) {
+                case 'service':
+                    return {
+                        amount: '',
+                        amount_title: '',
+                        name: '',
+                        onlyOwner: false,
+                        tariff: ''
+                    };
+                case 'payment':
+                    return {
+                        date: '',
+                        amount: ''
+                    };
+                case 'period':
+                    return {
+                        accountMonth: '',
+                        accountYear: '',
+                        month: '',
+                        paid: [this.getTemplate('payment')],
+                        recosting: [this.getTemplate('payment')],
+                        services: [this.getTemplate('service')]
+                    };
+            }
+        },
+        beforeSubmit: function beforeSubmit() {
+            this.data = JSON.stringify({
+                address: this.address,
+                slug: this.slug,
+                saldo: this.saldo,
+                periods: this.periods
+            });
+            alert(this.data);
+        },
+        round: function round(element) {
+            var n = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 2;
+
+            return element.toFixed(n) * 1;
+        }
+    }
+});
+
+/***/ }),
+/* 133 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { attrs: { id: "container" } }, [
+    _vm.account.payments_relation
+      ? _c(
+          "div",
+          {
+            staticClass: "alert alert-warning alert-dismissible fade show",
+            attrs: { role: "alert" }
+          },
+          [
+            _c("strong", [_vm._v("Внимание!")]),
+            _vm._v(
+              " После внесения изменений в лицевой счет ранее сохраненные связи оплат и начислений будут удалены\n    "
+            )
+          ]
+        )
+      : _vm._e(),
+    _vm._v(" "),
+    _c(
+      "form",
+      {
+        attrs: { method: "post", action: _vm.form.action, id: "myForm" },
+        on: {
+          "!submit": function($event) {
+            return _vm.beforeSubmit()
+          }
+        }
+      },
+      [
+        _c("input", {
+          attrs: { type: "hidden", name: "_method", value: "patch" }
+        }),
+        _vm._v(" "),
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.data,
+              expression: "data"
+            }
+          ],
+          attrs: { type: "hidden", name: "data" },
+          domProps: { value: _vm.data },
+          on: {
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.data = $event.target.value
+            }
+          }
+        }),
+        _vm._v(" "),
+        _c("div", { staticClass: "card" }, [
+          _c("div", { staticClass: "card-body" }, [
+            _c("div", { staticClass: "form-group" }, [
+              _c("label", { attrs: { for: "address" } }, [_vm._v("Адрес")]),
+              _vm._v(" "),
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.address,
+                    expression: "address"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "address",
+                  "aria-describedby": "Адрес жилого помещения",
+                  required: ""
+                },
+                domProps: { value: _vm.address },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.address = $event.target.value
+                  }
+                }
+              })
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "form-group" }, [
+              _c("label", { attrs: { for: "slug" } }, [
+                _vm._v("Номер лицевого счета")
+              ]),
+              _vm._v(" "),
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.slug,
+                    expression: "slug"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "slug",
+                  "aria-describedby": "Номер лицевого счета",
+                  required: ""
+                },
+                domProps: { value: _vm.slug },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.slug = $event.target.value
+                  }
+                }
+              })
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "form-group" }, [
+              _c("label", { attrs: { for: "saldo" } }, [
+                _vm._v(
+                  "Входящее сальдо (положительное сальдо не будет участвовать в расчете)"
+                )
+              ]),
+              _vm._v(" "),
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.saldo,
+                    expression: "saldo"
+                  }
+                ],
+                staticClass: "form-control",
+                attrs: {
+                  type: "text",
+                  id: "saldo",
+                  "aria-describedby": "Входящее сальдо"
+                },
+                domProps: { value: _vm.saldo },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.saldo = $event.target.value
+                  }
+                }
+              })
+            ])
+          ])
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "table-responsive" }, [
+          _c("table", { staticClass: "table table-sm" }, [
+            _vm._m(0),
+            _vm._v(" "),
+            _c(
+              "tbody",
+              [
+                _vm._l(_vm.periods, function(period) {
+                  return _c("tr", [
+                    _c("td", [
+                      _c("div", { staticClass: "row" }, [
+                        _c("div", { staticClass: "col" }, [
+                          _c(
+                            "select",
+                            {
+                              directives: [
+                                {
+                                  name: "model",
+                                  rawName: "v-model",
+                                  value: period.accountMonth,
+                                  expression: "period.accountMonth"
+                                }
+                              ],
+                              staticClass: "form-control w-auto",
+                              attrs: { id: "month", required: "" },
+                              on: {
+                                change: function($event) {
+                                  var $$selectedVal = Array.prototype.filter
+                                    .call($event.target.options, function(o) {
+                                      return o.selected
+                                    })
+                                    .map(function(o) {
+                                      var val =
+                                        "_value" in o ? o._value : o.value
+                                      return val
+                                    })
+                                  _vm.$set(
+                                    period,
+                                    "accountMonth",
+                                    $event.target.multiple
+                                      ? $$selectedVal
+                                      : $$selectedVal[0]
+                                  )
+                                }
+                              }
+                            },
+                            _vm._l(
+                              [
+                                "01",
+                                "02",
+                                "03",
+                                "04",
+                                "05",
+                                "06",
+                                "07",
+                                "08",
+                                "09",
+                                "10",
+                                "11",
+                                "12"
+                              ],
+                              function(month) {
+                                return _c(
+                                  "option",
+                                  { domProps: { value: month } },
+                                  [_vm._v(_vm._s(_vm.getMonth(month)))]
+                                )
+                              }
+                            ),
+                            0
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col" }, [
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: period.accountYear,
+                                expression: "period.accountYear"
+                              }
+                            ],
+                            staticClass: "form-control",
+                            attrs: {
+                              type: "text",
+                              placeholder: "Год",
+                              required: ""
+                            },
+                            domProps: { value: period.accountYear },
+                            on: {
+                              input: function($event) {
+                                if ($event.target.composing) {
+                                  return
+                                }
+                                _vm.$set(
+                                  period,
+                                  "accountYear",
+                                  $event.target.value
+                                )
+                              }
+                            }
+                          })
+                        ])
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("td", [
+                      _c("div", { staticClass: "table-responsive" }, [
+                        _c("table", { staticClass: "table table-sm" }, [
+                          _vm._m(1, true),
+                          _vm._v(" "),
+                          _c(
+                            "tbody",
+                            [
+                              _vm._l(period.services, function(service) {
+                                return _c("tr", [
+                                  _c("td", [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: service.name,
+                                          expression: "service.name"
+                                        }
+                                      ],
+                                      staticClass: "form-control w-auto",
+                                      attrs: {
+                                        type: "text",
+                                        placeholder: "Название",
+                                        required: ""
+                                      },
+                                      domProps: { value: service.name },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            service,
+                                            "name",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: service.tariff,
+                                          expression: "service.tariff"
+                                        }
+                                      ],
+                                      staticClass: "form-control w-auto",
+                                      attrs: {
+                                        type: "text",
+                                        placeholder: "Тариф",
+                                        required: ""
+                                      },
+                                      domProps: { value: service.tariff },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            service,
+                                            "tariff",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: service.amount,
+                                          expression: "service.amount"
+                                        }
+                                      ],
+                                      staticClass: "form-control w-auto",
+                                      attrs: {
+                                        type: "text",
+                                        placeholder: "Количество",
+                                        required: ""
+                                      },
+                                      domProps: { value: service.amount },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            service,
+                                            "amount",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: service.amount_title,
+                                          expression: "service.amount_title"
+                                        }
+                                      ],
+                                      staticClass: "form-control w-auto",
+                                      attrs: {
+                                        type: "text",
+                                        placeholder: "Единица измерения",
+                                        required: ""
+                                      },
+                                      domProps: { value: service.amount_title },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            service,
+                                            "amount_title",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _c(
+                                      "select",
+                                      {
+                                        directives: [
+                                          {
+                                            name: "model",
+                                            rawName: "v-model",
+                                            value: service.onlyOwner,
+                                            expression: "service.onlyOwner"
+                                          }
+                                        ],
+                                        staticClass: "form-control w-auto",
+                                        attrs: { id: "month", required: "" },
+                                        on: {
+                                          change: function($event) {
+                                            var $$selectedVal = Array.prototype.filter
+                                              .call(
+                                                $event.target.options,
+                                                function(o) {
+                                                  return o.selected
+                                                }
+                                              )
+                                              .map(function(o) {
+                                                var val =
+                                                  "_value" in o
+                                                    ? o._value
+                                                    : o.value
+                                                return val
+                                              })
+                                            _vm.$set(
+                                              service,
+                                              "onlyOwner",
+                                              $event.target.multiple
+                                                ? $$selectedVal
+                                                : $$selectedVal[0]
+                                            )
+                                          }
+                                        }
+                                      },
+                                      [
+                                        _c(
+                                          "option",
+                                          { domProps: { value: true } },
+                                          [_vm._v("Да")]
+                                        ),
+                                        _vm._v(" "),
+                                        _c(
+                                          "option",
+                                          { domProps: { value: false } },
+                                          [_vm._v("Нет")]
+                                        )
+                                      ]
+                                    )
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _c(
+                                      "button",
+                                      {
+                                        staticClass: "btn btn-danger btn-class",
+                                        attrs: { type: "button" },
+                                        on: {
+                                          click: function($event) {
+                                            period.services.splice(
+                                              period.services.indexOf(service),
+                                              1
+                                            )
+                                          }
+                                        }
+                                      },
+                                      [_vm._v("X")]
+                                    )
+                                  ])
+                                ])
+                              }),
+                              _vm._v(" "),
+                              _c("tr", [
+                                _c("td", { attrs: { colspan: "5" } }, [
+                                  _c(
+                                    "button",
+                                    {
+                                      staticClass: "btn btn-primary btn-sm",
+                                      attrs: { type: "button" },
+                                      on: {
+                                        click: function($event) {
+                                          period.services.push(
+                                            _vm.getTemplate("service")
+                                          )
+                                        }
+                                      }
+                                    },
+                                    [_vm._v("Добавить услугу")]
+                                  )
+                                ])
+                              ])
+                            ],
+                            2
+                          )
+                        ])
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("td", [
+                      _c("div", { staticClass: "table-responsive" }, [
+                        _c("table", { staticClass: "table table-sm" }, [
+                          _vm._m(2, true),
+                          _vm._v(" "),
+                          _c(
+                            "tbody",
+                            [
+                              _vm._l(period.paid, function(payment) {
+                                return _c("tr", [
+                                  _c("td", [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: payment.date,
+                                          expression: "payment.date"
+                                        }
+                                      ],
+                                      staticClass: "form-control w-auto",
+                                      attrs: {
+                                        type: "date",
+                                        placeholder: "Дата"
+                                      },
+                                      domProps: { value: payment.date },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            payment,
+                                            "date",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: payment.amount,
+                                          expression: "payment.amount"
+                                        }
+                                      ],
+                                      staticClass: "form-control w-auto",
+                                      attrs: {
+                                        type: "text",
+                                        placeholder: "Сумма",
+                                        required: ""
+                                      },
+                                      domProps: { value: payment.amount },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            payment,
+                                            "amount",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _c(
+                                      "button",
+                                      {
+                                        staticClass: "btn btn-danger btn-class",
+                                        attrs: { type: "button" },
+                                        on: {
+                                          click: function($event) {
+                                            period.paid.splice(
+                                              period.paid.indexOf(payment),
+                                              1
+                                            )
+                                          }
+                                        }
+                                      },
+                                      [_vm._v("X")]
+                                    )
+                                  ])
+                                ])
+                              }),
+                              _vm._v(" "),
+                              _c("tr", [
+                                _c("td", { attrs: { colspan: "5" } }, [
+                                  _c(
+                                    "button",
+                                    {
+                                      staticClass: "btn btn-primary btn-sm",
+                                      attrs: { type: "button" },
+                                      on: {
+                                        click: function($event) {
+                                          period.paid.push(
+                                            _vm.getTemplate("payment")
+                                          )
+                                        }
+                                      }
+                                    },
+                                    [_vm._v("Добавить оплату")]
+                                  )
+                                ])
+                              ])
+                            ],
+                            2
+                          )
+                        ])
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("td", [
+                      _c("div", { staticClass: "table-responsive" }, [
+                        _c("table", { staticClass: "table table-sm" }, [
+                          _vm._m(3, true),
+                          _vm._v(" "),
+                          _c(
+                            "tbody",
+                            [
+                              _vm._l(period.recosting, function(recosting) {
+                                return _c("tr", [
+                                  _c("td", [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: recosting.date,
+                                          expression: "recosting.date"
+                                        }
+                                      ],
+                                      staticClass: "form-control w-auto",
+                                      attrs: {
+                                        type: "date",
+                                        placeholder: "Дата"
+                                      },
+                                      domProps: { value: recosting.date },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            recosting,
+                                            "date",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _c("input", {
+                                      directives: [
+                                        {
+                                          name: "model",
+                                          rawName: "v-model",
+                                          value: recosting.amount,
+                                          expression: "recosting.amount"
+                                        }
+                                      ],
+                                      staticClass: "form-control w-auto",
+                                      attrs: {
+                                        type: "text",
+                                        placeholder: "Сумма",
+                                        required: ""
+                                      },
+                                      domProps: { value: recosting.amount },
+                                      on: {
+                                        input: function($event) {
+                                          if ($event.target.composing) {
+                                            return
+                                          }
+                                          _vm.$set(
+                                            recosting,
+                                            "amount",
+                                            $event.target.value
+                                          )
+                                        }
+                                      }
+                                    })
+                                  ]),
+                                  _vm._v(" "),
+                                  _c("td", [
+                                    _c(
+                                      "button",
+                                      {
+                                        staticClass: "btn btn-danger btn-class",
+                                        attrs: { type: "button" },
+                                        on: {
+                                          click: function($event) {
+                                            period.recosting.splice(
+                                              period.recosting.indexOf(
+                                                recosting
+                                              ),
+                                              1
+                                            )
+                                          }
+                                        }
+                                      },
+                                      [_vm._v("X")]
+                                    )
+                                  ])
+                                ])
+                              }),
+                              _vm._v(" "),
+                              _c("tr", [
+                                _c("td", { attrs: { colspan: "5" } }, [
+                                  _c(
+                                    "button",
+                                    {
+                                      staticClass: "btn btn-primary btn-sm",
+                                      attrs: { type: "button" },
+                                      on: {
+                                        click: function($event) {
+                                          period.recosting.push(
+                                            _vm.getTemplate("payment")
+                                          )
+                                        }
+                                      }
+                                    },
+                                    [_vm._v("Добавить перерасчет")]
+                                  )
+                                ])
+                              ])
+                            ],
+                            2
+                          )
+                        ])
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("td", [
+                      _c(
+                        "button",
+                        {
+                          staticClass: "btn btn-danger btn-class",
+                          attrs: { type: "button" },
+                          on: {
+                            click: function($event) {
+                              _vm.periods.splice(_vm.periods.indexOf(period), 1)
+                            }
+                          }
+                        },
+                        [_vm._v("X")]
+                      )
+                    ])
+                  ])
+                }),
+                _vm._v(" "),
+                _c("tr", [
+                  _c("td", { attrs: { colspan: "5" } }, [
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-primary btn-sm",
+                        attrs: { type: "button" },
+                        on: {
+                          click: function($event) {
+                            _vm.periods.push(_vm.getTemplate("period"))
+                          }
+                        }
+                      },
+                      [_vm._v("Добавить период")]
+                    )
+                  ])
+                ])
+              ],
+              2
+            )
+          ])
+        ]),
+        _vm._v(" "),
+        _c("button", { staticClass: "btn btn-success btn-block" }, [
+          _vm._v("Сохранить")
+        ])
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", { staticClass: "w-auto" }, [
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Месяц")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Начисления")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Оплата")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Перерасчет")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Удалить")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", { staticClass: "w-auto" }, [
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Название")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Тариф")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Количество")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Единица измерения")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [
+          _vm._v("Только для собственника")
+        ]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Удалить")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", { staticClass: "w-auto" }, [
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Дата")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Сумма")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Удалить")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", { staticClass: "w-auto" }, [
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Дата")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Сумма")]),
+        _vm._v(" "),
+        _c("th", [_vm._v("Удалить")])
+      ])
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-68b24b70", module.exports)
+  }
+}
+
+/***/ }),
+/* 134 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
 
 /***/ })
 /******/ ]);

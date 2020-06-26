@@ -32,14 +32,16 @@
         </div>
     </header>
     <div class="nav-scroller py-1 mb-2 border-bottom">
-        <nav class="nav d-flex justify-content-between">
-            <a class="p-2 text-muted" href="/home/schedule">Расписание</a>
-            <a class="p-2 text-muted" href="/home/tasks/create">Создать мероприятие</a>
-            <a class="p-2 text-muted" href="/home/teams">Мои команды</a>
-            <a class="p-2 text-muted" href="/home/projects">Мои проекты</a>
-            <a class="p-2 text-muted" href="/home/storages">Мои хранилища</a>
-            <a class="p-2 text-muted" href="/home/preinstaller_tasks">Предустановленные задачи</a>
-            <a class="p-2 text-muted" href="/home/days">Настройки</a>
-        </nav>
+        @if(auth()->check())
+            <nav class="nav d-flex justify-content-between">
+                <a class="p-2 text-muted" href="/home/schedule">Расписание</a>
+                <a class="p-2 text-muted" href="/home/tasks/create">Создать мероприятие</a>
+                <a class="p-2 text-muted" href="/home/teams">Мои команды</a>
+                <a class="p-2 text-muted" href="/home/projects">Мои проекты</a>
+                <a class="p-2 text-muted" href="/home/storages">Мои хранилища</a>
+                <a class="p-2 text-muted" href="/home/preinstaller_tasks">Предустановленные задачи</a>
+                <a class="p-2 text-muted" href="/home/days">Настройки</a>
+            </nav>
+        @endif
     </div>
 </div>

@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\User;
 use App\Subtask;
+use App\Task;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class SubtaskPolicy
@@ -39,9 +40,9 @@ class SubtaskPolicy
      * @param  \App\User  $user
      * @return mixed
      */
-    public function create(User $user)
+    public function create(User $user, Subtask $subtask)
     {
-        return false;
+        return $user->id == $subtask->task->owner->id || $subtask->task->isUserHasPermission($user, 'write');
     }
 
     /**

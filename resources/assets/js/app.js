@@ -28,6 +28,9 @@ Vue.component('days', require('./components/Days.vue'));
 Vue.component('toasts', require('./components/Toasts.vue'));
 Vue.component('project-members', require('./components/ProjectMembers.vue'));
 
+Vue.component('debtor-relations', require('./components/DebtorRelations.vue'));
+Vue.component('debtor-account', require('./components/DebtorAccount.vue'));
+
 const app = new Vue({
     el: '#app'
 });

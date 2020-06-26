@@ -9,7 +9,9 @@ class DebtorAccount extends Model
     protected $guarded = ['id', 'created_at', 'updated_at'];
     
     protected $casts = [
-        'periods' => 'json',
+        'balance' => 'json',
+        'payments_relation' => 'json',
+        'claim_calculation' => 'json',
     ];
     
     public function project()

@@ -12,6 +12,7 @@
 @section('content')
     <div class="container">
         <h5>Редактирование мероприятия</h5>
+        <h6><a href="/home/projects/{{ $task->project->id }}">Проект - {{ $task->project->name }}</a></h6>
         <form method="post" action="/home/projects/{{ $project->id }}/tasks/{{ $task->id }}">
             {{ csrf_field() }}
             {{ method_field('PATCH') }}

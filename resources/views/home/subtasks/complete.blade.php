@@ -15,6 +15,25 @@
                         {{ implode(',', $errors->get('executor_report') ?? []) }}
                     </div>
                 </div>
+                <div class="card">
+                    <div class="card-body">
+                        <p>Введите дату и время, если хотите отметить выполненной данную задачу и вновь ее назначить</p>
+                        <div class="form-group">
+                            <label for="subtaskDate">Дата выполнения задачи</label>
+                            <input type="date" class="form-control {{ $errors->get('date') ? 'is-invalid' : '' }}" name="date_repeat" id="subtaskDate" placeholder="Дата" value="{{ old('date') ?? '' }}">
+                            <div class="invalid-feedback">
+                                {{ implode(',', $errors->get('date') ?? []) }}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="subtaskTime">Время выполнения задачи</label>
+                            <input type="time" class="form-control {{ $errors->get('time') ? 'is-invalid' : '' }}" id="subtaskTime" name="time_repeat" placeholder="Время" value="{{ old('time') ?? '' }}">
+                            <div class="invalid-feedback">
+                                {{ implode(',', $errors->get('time') ?? []) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 @if(auth()->user()->id == $subtask->validator->id)
                     @include('home.subtasks.repeat')
                 @endif

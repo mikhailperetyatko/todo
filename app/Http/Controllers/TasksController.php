@@ -32,9 +32,7 @@ class TasksController extends Controller
     
     protected function getDate(Subtask $subtask, Task $task)
     {
-        $method = ($subtask->delay >= 0 ? 'add' : 'sub') . ucfirst($subtask->referenceInterval->value) . 's';
-
-        return $task->execution_date->$method(abs($subtask->delay));
+        return getDateFromInterval($subtask->referenceInterval->value, $subtask->delay, $task->execution_date);
     }
     
     protected function getValidateRules()
@@ -105,8 +103,7 @@ class TasksController extends Controller
             $subtask->task()->associate($task);
             
             if (isset($subtaskInput['delay'])) {
-                $method = ($subtaskInput['delay'] >= 0 ? 'add' : 'sub') . ucfirst($subtaskInput['delay_interval']) . 's';
-                $subtaskInput['execution_at'] = $task->execution_date->$method(abs($subtaskInput['delay']));
+                $subtaskInput['execution_at'] = getDateFromInterval($subtaskInput['delay_interval'], $subtaskInput['delay'], $task->execution_date);
             } else {
                 $subtaskInput['execution_at'] = $task->execution_date;
             }
@@ -154,7 +151,7 @@ class TasksController extends Controller
     public function chooseProject()
     {
         return auth()->check() ? view('home.tasks.choose', [
-            'projects' => auth()->user()->getProjects()->where('is_old', false)->get(),
+            'projects' => auth()->user()->projects()->where('is_old', false)->get(),
         ]) : redirect('/login');
     }
     

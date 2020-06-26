@@ -6,11 +6,15 @@
     
 @section('content')
     <div class="container">
-        <h5  class="">Проект "{{ $project->name }}"</h5>
-        <h6  class=""><u>Мероприятие</u> "{{ $task->name }}"</h5>
+        <h5><a href="/home/projects/{{ $project->id }}">Проект "{{ $project->name }}"</a></h5>
+        <h6><u>Мероприятие</u> "{{ $task->name }}"</h5>
         <form method="POST" id="deleteForm">
             {{ csrf_field() }}
             {{ method_field('DELETE') }}
+        </form>
+        <form method="POST" id="subtasksGroupForm">
+            {{ csrf_field() }}
+            {{ method_field('POST') }}
         </form>
         
         <a href="/home/projects/{{ $project->id }}/tasks/{{ $task->id }}/edit" role="button" class="btn btn-primary mb-3">Редактировать</a>
@@ -51,6 +55,7 @@
                 <thead class="thead-light">
                     <tr>
                         <th scope="col">#</th>
+                        <th scope="col"><input id="group_subtasks_switch" type="checkbox" onclick="if (! $('#group_subtasks_switch').is(':checked')) {$('.group_subtasks').prop('checked', false);} else {$('.group_subtasks').prop('checked', true);}"></th>
                         <th scope="col">Суть</th>
                         <th scope="col">Срок исполнения</th>
                         <th scope="col">Исполнитель</th>
@@ -61,10 +66,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($task->subtasks as $subtask)
+                    @foreach($task->subtasks()->orderBy('execution_date')->get() as $subtask)
                         @can('view', $subtask)
                         <tr>
                             <th scope="row">{{ ++$subtaskCounter }}</th>
+                            <td>
+                                <input type="checkbox" class="group_subtasks" name="subtasks[]" value="{{ $subtask->id }}">
+                            </td>
                             <td>
                                 <a href="/home/subtasks/{{ $subtask->id }}">{{ $subtask->description }}</a>
                                 @if($subtask->referenceDifficulty->value == "high" || $subtask->referenceDifficulty->value == "supreme")
@@ -97,8 +105,13 @@
                         </tr>
                         @endcan
                     @endforeach
+                        <tr>
+                            <td colspan="9">
+                                <a href="/home/projects/{{ $task->project->id }}/tasks/{{ $task->id }}/subtasks/create" class="btn btn-primary" role="button">Добавить задачу</a>
+                            </td>
+                        </tr>
                 </tbody>
             </table>
         </div>
-    </div>
+    </div>    
 @endsection

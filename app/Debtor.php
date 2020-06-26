@@ -10,7 +10,7 @@ class Debtor extends Model
     
     protected $casts = [
         'residencePeriods' => 'json',
-        'property' => 'json',
+        'ownership' => 'json',
     ];
     
     protected $dates = [

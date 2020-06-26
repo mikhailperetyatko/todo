@@ -41,7 +41,6 @@
     </div>
     
     <h5 class="text-center w-100"><a role="button" class="btn btn-secondary mr-1" href="/home/schedule?from={{ $from->subWeek()->format('Y-m-d') }}&to={{ $to->subWeek()->format('Y-m-d') }}"><</a><button class="btn btn-secondary">{{ $from->addWeek()->format('d.m.Y') }} - {{ $to->addWeek()->format('d.m.Y') }}</button><a role="button" class="btn btn-secondary ml-1" href="/home/schedule?from={{ $from->addWeek()->format('Y-m-d') }}&to={{ $to->addWeek()->format('Y-m-d') }}">></a></h5>
-    <a href="/home/schedule/calendar">Отобразить задачи на месяц</a>
     <div class="accordion w-100 shadow" id="accordion">
         @foreach($dateRange as $key => $date)
         @php
@@ -66,17 +65,14 @@
                         Задач не найдено
                     @else
                         @foreach($filteredSubtasks->sortBy('execution_date') as $subtaskKey => $subtask)
-                            <div class="card m-2 {{ $subtask->referencePriority->value == 'high' ? 'border-danger shadow-lg' : ($subtask->referencePriority->value == 'middle' ? 'border-warning shadow' : ' shadow-sm') }}" >
+                            <div class="card mb-4 mt-4 {{ $subtask->referencePriority->value == 'high' ? 'border-danger shadow-lg' : ($subtask->referencePriority->value == 'middle' ? 'border-warning shadow' : ' shadow-sm') }}">
+                                <div class="card-header text-left">
+                                    <a href="/home/projects/{{ $subtask->task->project->id }}" class="text-dark">{{ $subtask->task->project->name }}</a> / 
+                                    <a href="/home/projects/{{ $subtask->task->project->id }}/tasks/{{$subtask->task->id}}" class="text-dark">{{ $subtask->task->name }}</a>
+                                </div>
                                 <div class="card-body">
-                                    <a class="m-0 text-dark" data-toggle="collapse" aria-expanded="false" href="#collapseSubtask{{ $subtask->id }}" aria-controls="collapseSubtask{{ $subtask->id }}">
-                                        @if($subtask->execution_date < $dateNow || $subtask->showable_at < $subtask->execution_date && $subtask->execution_date > parseDate($date)->endOfDay())
-                                            <b>{{ $subtask->execution_date->format('d.m.Y в H:i') }}</b> |
-                                        @else 
-                                            <b>{{ $subtask->execution_date->format('H:i') }}</b> |
-                                        @endif    
-                                        
-                                        {{ $subtask->description }}
-                                        ({{ $subtask->task->project->name }})
+                                    <p class="card-text">
+                                        <a href="/home/subtasks/{{ $subtask->id }}">{{ $subtask->description }}</a>
                                         @if($subtask->showable_at < $subtask->execution_date && $subtask->execution_date > parseDate($date)->endOfDay())
                                             <span class="badge badge-primary">Напоминание</span>
                                         @endif
@@ -86,40 +82,31 @@
                                         @if($subtask->completed && ! $subtask->finished)
                                             <span class="badge badge-success">ПРИНЯТЬ ИСПОЛНЕНИЕ</span>
                                         @endif
-                                    </a>
-                                    <div class="card collapse" id="collapseSubtask{{ $subtask->id }}">
-                                        <div class="card-header text-left">
-                                            <a href="/home/projects/{{ $subtask->task->project->id }}" class="text-dark">{{ $subtask->task->project->name }}</a> / 
-                                            <a href="/home/projects/{{ $subtask->task->project->id }}/tasks/{{$subtask->task->id}}" class="text-dark">{{ $subtask->task->name }}</a>
-                                        </div>
-                                        <div class="card-body">
-                                            <div>Исполнитель - {{ $subtask->executor->name }}</div>
-                                            <div>Контроллер - {{ $subtask->validator->name }}</div>
-                                            @if($subtask->location)
-                                                <p class="card-text">
-                                                    Место: {{ $subtask->location }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                        <div class="card-footer text-muted">
-                                            <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}">Посмотреть</a>
-                                            @if(! $subtask->completed)
-                                                <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/completing">Выполнить</a>
-                                            @elseif(! $subtask->finished)
-                                                <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/uncompleted">Отменить выполнение</a>
-                                            @endif
-                                            
-                                            @if($subtask->completed && ! $subtask->finished)
-                                                <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/finishing">Завершить</a>
-                                            @elseif($subtask->finished)
-                                                <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/unfinished">Отменить принятие</a>
-                                            @endif
-                                            @if($subtask->delayable)
-                                                <button type="button" class="btn btn-outline-secondary btn-sm">Отложить</button>
-                                            @endif
-                                            <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/edit">Редактировать</a>
-                                        </div>
-                                    </div>
+                                    </p>
+                                    @if($subtask->location)
+                                    <p class="card-text">
+                                        Место: {{ $subtask->location }}
+                                    </p>
+                                    @endif
+                                    <div class="dropdown-divider"></div>
+                                    Срок исполнения - {{ $subtask->execution_date->format('d.m.Y в H:i') }}
+                                </div>
+                                <div class="card-footer text-muted">
+                                    @if(! $subtask->completed)
+                                        <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/completing">Выполнить</a>
+                                    @elseif(! $subtask->finished)
+                                        <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/uncompleted">Отменить выполнение</a>
+                                    @endif
+                                    
+                                    @if($subtask->completed && ! $subtask->finished)
+                                        <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/finishing">Завершить</a>
+                                    @elseif($subtask->finished)
+                                        <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/unfinished">Отменить принятие</a>
+                                    @endif
+                                    @if($subtask->delayable)
+                                        <button type="button" class="btn btn-outline-secondary btn-sm">Отложить</button>
+                                    @endif
+                                    <a class="btn btn-outline-secondary btn-sm" role="button" href="/home/subtasks/{{ $subtask->id }}/edit">Редактировать</a>
                                 </div>
                             </div>
                         @endforeach

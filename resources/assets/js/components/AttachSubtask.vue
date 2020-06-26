@@ -110,7 +110,7 @@
                             </div>
                             <div class="form-group">
                                 <label :for="'delayIntervalsSelect' + key">Тип интервала</label>
-                                <select :class="'form-control' + (getError(key, 'delay_interval') ? ' is-invalid' : '')" :id="'delayIntervalsSelect' + key" :name="'subtasks[' + key + '][delay_interval]'" v-model="subtask.delay_interval">
+                                <select :class="'form-control' + (getError(key, 'delay_interval') ? ' is-invalid' : '')" :id="'delayIntervalsSelect' + key" :name="'subtasks[' + key + '][delay_interval]'" v-model="subtask.delay_interval" :required="subtask.delay != ''">
                                     <option disabled selected>Выберите тип интервала...</option>
                                     <option v-for="interval in selects.intervals" :value="interval.value">{{ interval.name }}</option>
                                 </select>

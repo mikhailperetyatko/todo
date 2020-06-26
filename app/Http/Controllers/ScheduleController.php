@@ -12,11 +12,6 @@ use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {   
         $attr = $request->validate([
@@ -65,14 +60,69 @@ class ScheduleController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function calendar(Request $request)
     {
-        //   
+        $attr = $request->validate([
+            'year' => 'integer',
+            'month' => 'integer',
+            'offset' => 'integer',
+        ]);
+                
+        $user = auth()->user();
+        
+        $year = isset($attr['year']) ? $attr['year'] : Carbon::now()->format('Y');
+        $month = isset($attr['month']) ? $attr['month'] : Carbon::now()->format('m');
+        $date = Carbon::parse('01.' . $month . '.' . $year);
+        if (isset($attr['offset'])) {
+            $date->addMonths($attr['offset']);
+            $year = $date->format('Y');
+            $month = $date->format('m');
+        }
+        
+        $from = $date;
+        $to = Carbon::parse($date->format('Y-m-d'))->endOfMonth();
+        
+        $days = auth()->user()->days()->whereYear('date', $year)->get();
+        $dateRange = [];
+        
+        $subtasks = \DB::table('subtasks')
+            ->select(\DB::raw('Count(*) as amount, DATE_FORMAT(subtasks.execution_date,"%Y-%m-%d") as group_date'))
+            ->where('subtasks.finished', 0)
+            ->where(function ($query) use ($from, $to) {
+                $query
+                    ->whereBetween('subtasks.execution_date', [$from->startOfDay()->format('Y-m-d H:i:s'), $to->endOfDay()->format('Y-m-d H:i:s')])
+                    //->orWhere('subtasks.execution_date', '<', Carbon::now()->startOfDay()->format('Y-m-d H:i:s'))
+                ;
+            })
+            ->join('tasks', 'subtasks.task_id', 'tasks.id')
+            ->join('projects', 'tasks.project_id', 'projects.id')
+            ->join('project_user', 'project_user.project_id', 'projects.id')
+            ->where('project_user.user_id', $user->id)
+            ->groupBy('group_date')
+        ;
+        
+        foreach (generateDateRange($date, $to, 'Y-m-d', false) as $day) {
+            $isWeekend = $day->dayOfWeekIso == 6 || $day->dayOfWeekIso == 7;
+            $key = $days->search(function ($item, $key) use ($day) {
+                return $item->date == $day;
+            });
+            
+            if ($key !== false) $isWeekend = $days[$key]->is_weekend;
+            
+            $dateRange[$day->month][$day->weekNumberInMonth][$day->dayOfWeekIso] = [
+                'day' => $day->day,
+                'is_holiday' => $isWeekend,
+                'date' => $day->format('Y-m-d'),
+            ];
+        }
+        
+        return view('home.schedule.calendar', [
+            'dateRange' => $dateRange,
+            'year' => $year,
+            'month' => $month,
+            'user' => $user,
+            'subtasks' => $subtasks->get(),
+        ]);
     }
 
     /**

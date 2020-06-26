@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Subtask;
 use App\Task;
+use App\Project;
 use App\File;
 use Illuminate\Http\Request;
 use App\ReferenceInterval;
@@ -34,7 +35,7 @@ class SubtasksController extends Controller
     protected function getValidateRules($isComplete = false)
     {
         $rules = [
-            'description' => 'string|max:65535',
+            'description' => 'string|min:3|max:65535',
             'delay' => 'integer|nullable',
             'showable_by' => 'integer|nullable',
             'delay_interval' => ['regex:/^(' . $this->getReference('interval')->implode('value', '|') . ')$/'],
@@ -49,6 +50,8 @@ class SubtasksController extends Controller
             'repeat' => 'in:"on"',
             'subtasks_repeat' => 'array',
             'subtasks_repeat.*' => 'integer',
+            'date_repeat' => 'date_format:"Y-m-d"|nullable',
+            'time_repeat' => 'date_format:"H:i"|nullable'
         ];
         if (! $isComplete) {
             $rules['date'] = 'date_format:"Y-m-d"|nullable';
@@ -66,9 +69,17 @@ class SubtasksController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Project $project, Task $task)
     {
-        //
+        $subtask = new Subtask;
+        $subtask->task_id = $task->id;
+        $this->authorize($subtask);
+
+        $users = $subtask->task->project->members;
+        $intervals = ReferenceInterval::all();
+        $difficulties = ReferenceDifficulty::all();
+        $priorities = ReferencePriority::all();
+        return view('home.subtasks.create', compact('subtask', 'users', 'intervals', 'difficulties', 'priorities'));
     }
 
     /**
@@ -77,9 +88,29 @@ class SubtasksController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, Project $project, Task $task)
     {
-        //
+        $subtask = new Subtask;
+        $subtask->task()->associate($task);
+        
+        $this->authorize($subtask);
+        
+        $attr = $request->validate($this->getValidateRules(true));
+        $attr['showable_by'] = $attr['showable_by'] ?? 0;
+        $attr['not_delayable'] = isset($attr['not_delayable']);
+        if (isset($attr['date']) && isset($attr['time'])) $attr['execution_at'] = $attr['date'] . ' ' . $attr['time'] . ':00';
+        $attr['showable_at'] = $attr['showable_by'];
+        $attr['score'] = $attr['score'] ?? 1;
+ 
+        // проверка прав        
+        unset($attr['date']);
+        unset($attr['time']);
+        
+        $subtask->fill($attr);
+        $subtask->save();
+        
+        flash('success');
+        return redirect('/home/projects/' . $project->id . '/tasks/' . $task->id);
     }
 
     /**
@@ -144,6 +175,21 @@ class SubtasksController extends Controller
         return view('home.subtasks.complete', compact('subtask'));
     }
     
+    protected function repeatSubtask(Subtask $subtask, string $datetime)
+    {
+        $subtaskRepeat = (new Subtask);
+        $repeatAttr = $subtask->toArray();
+        unset($repeatAttr['task']);
+        unset($repeatAttr['validator']);
+        $repeatAttr['completed'] = false;
+        $subtaskRepeat->fill($repeatAttr);
+        $subtaskRepeat->execution_at = $datetime;
+        $subtaskRepeat->executor()->associate($subtask->executor);
+        $subtaskRepeat->validator()->associate($subtask->validator);
+
+        $subtaskRepeat->save();
+    }
+    
     public function complete(Request $request, Subtask $subtask)
     {
         $this->authorize($subtask);
@@ -164,7 +210,13 @@ class SubtasksController extends Controller
         $acceptance->subtask()->associate($subtask);
         $acceptance->executor_report = $attr['executor_report'];
         $acceptance->report_date = Carbon::now()->format('Y-m-d H:i:s');
-                
+        
+        if ($attr['date_repeat'] || $attr['time_repeat']) {
+            $this->repeatSubtask($subtask, $attr['date_repeat'] . ' ' . $attr['time_repeat'] . ':00');
+            unset($attr['date_repeat']);
+            unset($attr['time_repeat']);
+        }
+        
         if (auth()->user()->id == $subtask->validator->id) {
             $acceptance->validator()->associate(auth()->user());
             $acceptance->annotation_date = Carbon::now()->format('Y-m-d H:i:s');
@@ -286,8 +338,7 @@ class SubtasksController extends Controller
     
     protected function repeatTask(Task $task, array $attr, $repeatability)
     {
-        $method = 'add' . ucfirst($task->referenceInterval->value) . 's';
-        $task->execution_date = $repeatability ? ($task->execution_date->$method(abs($task->interval_value))->format('Y-m-d H:i:s')) : ($task->execution_date = parseDate($attr['date'] . ' ' . $attr['time'] . ':00')->format('Y-m-d H:i:s'));
+        $task->execution_date = parseDate($attr['date'] . ' ' . $attr['time'] . ':00')->format('Y-m-d H:i:s');
         
         $newTask = Task::create($task->attributesToArray());
         $newTask->markers()->sync($task->markers()->pluck('id'));
@@ -298,12 +349,12 @@ class SubtasksController extends Controller
             if (in_array($subtask->id, $attr['subtasks_repeat'] ?? [])) {
                 $subtask->completed = false;
                 $subtask->finished = false;
-                $method = ($subtask->delay >= 0 ? 'add' : 'sub') . ucfirst($subtask->referenceInterval->value) . 's';
-                $subtask->execution_at = $newTask->execution_date->$method(abs($subtask->delay))->format('Y-m-d H:i:s');
+                $subtask->execution_at = getDateFromInterval($subtask->referenceInterval->value, $subtask->delay ?? 0, $newTask->execution_date)->format('Y-m-d H:i:s');
                 
                 foreach($subtask->acceptances as $acceptance) {
                     $acceptance->delete();
                 }
+                
                 $subtask->task()->associate($newTask);
                 $subtask->save();
             }

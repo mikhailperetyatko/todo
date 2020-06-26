@@ -1,6 +1,11 @@
 <?php
 Auth::routes();
 
+Route::get('/debtors/communals/accounts/{account}/relations', 'DebtorAccountController@relations')->middleware('auth')->name('debtors.communals.accounts.relations');
+Route::post('/debtors/communals/accounts/{account}/relations', 'DebtorAccountController@relationsStore')->middleware('auth')->name('debtors.communals.accounts.relationsStore');
+Route::get('/debtors/communals/accounts/{account}/edit', 'DebtorAccountController@edit')->middleware('auth')->name('debtors.communals.accounts.edit');
+Route::patch('/debtors/communals/accounts/{account}', 'DebtorAccountController@update')->middleware('auth')->name('debtors.communals.accounts.update');
+
 Route::get('/test', 'TestController@test')->middleware('auth');
 
 Route::get('/home/days', 'DayController@index')->middleware('auth');
@@ -30,6 +35,7 @@ Route::post('/home/teams/{team}/assignOwner', 'TeamsController@assignOwner');
 Route::get('/home/teams/{team}/users/{user}', 'TeamsController@userSubtasks');
 
 Route::get('/home/schedule', 'ScheduleController@index')->middleware('auth');
+Route::get('/home/schedule/calendar', 'ScheduleController@calendar')->middleware('auth');
 Route::get('/home/history', 'HistoryController@index')->middleware('auth');
 
 Route::resource('/home/teams', 'TeamsController');
@@ -39,6 +45,8 @@ Route::get('/home/projects/{project}/resume', 'ProjectsController@setResume');
 
 Route::get('/home/tasks/create', 'TasksController@chooseProject');
 Route::resource('/home/projects/{project}/tasks', 'TasksController');
+Route::get('/home/projects/{project}/tasks/{task}/subtasks/create', 'SubtasksController@create');
+Route::post('/home/projects/{project}/tasks/{task}/subtasks', 'SubtasksController@store');
 
 Route::resource('/home/projects', 'ProjectsController');
 Route::get('/home/invites/team/{inviteTeam}', 'InvitesController@joinToTeam')->middleware('auth');

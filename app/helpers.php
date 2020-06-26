@@ -112,3 +112,45 @@ if (! function_exists('toasts')) {
         }
     }    
 }
+
+if (! function_exists('getDateFromInterval')) {
+    function getDateFromInterval(string $interval, int $delay, Carbon $date)
+    {
+        $date = Carbon::parse($date->format('Y-m-d H:i:s'));
+        switch ($interval) {
+            case 'minute':
+            case 'hour':
+            case 'day':
+            case 'week':
+                $method = ($delay < 0 ? 'sub' : 'add') . ucfirst($interval) . 's';
+                return $date->$method(abs($delay));
+            case 'month':
+            case 'quarter':
+            case 'year':
+                return getDateFromCustomsInterval($interval, $delay, $date);
+        }
+    }    
+}
+
+if (! function_exists('getDateFromCustomsInterval')) {
+    function getDateFromCustomsInterval(string $interval, int $delay, Carbon $date)
+    {
+        $day = (int) $date->format('d');
+        $hours = (int) $date->format('H');
+        $minutes = (int) $date->format('i');
+        
+        if ($interval == 'quarter') $koef = 3;
+        elseif ($interval == 'year') $koef = 12;
+        else $koef = 1;
+        
+        if ($delay > 0) {
+            $date->startOfMonth()->addMonths($delay * $koef);
+        } else {
+            $date->startOfMonth()->subMonths($delay * $koef);
+        }
+        
+        $lastDay = (int) Carbon::parse($date->format('Y-m-d'))->endOfMonth()->format('d');
+  
+        return $date->addDays($day > $lastDay ? $lastDay - 1 : $day - 1)->addHours($hours)->addMinutes($minutes);
+    }    
+}

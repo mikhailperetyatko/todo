@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Debtor;
+use App\DebtorAccount;
+use App\DebtorType;
 use Illuminate\Http\Request;
 
 class DebtorController extends Controller

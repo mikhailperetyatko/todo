@@ -3,6 +3,7 @@
 @section('content')
     <div class="container">
         <h5>Добавление мероприятия</h5>
+        <h6><a href="/home/projects/{{ $project->id }}">Проект - {{ $project->name }}</a></h6>
         <form method="post" action="/home/projects/{{ $project->id }}/tasks">
             {{ csrf_field() }}
             <div class="form-group">
