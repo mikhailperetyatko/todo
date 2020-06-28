@@ -45,6 +45,11 @@ class User extends Authenticatable
         return $this->hasMany(Storage::class, 'owner_id');
     }
     
+    public function tags()
+    {
+        return $this->hasMany(Tag::class, 'owner_id');
+    }
+    
     public function days()
     {
         return $this->hasMany(Day::class, 'owner_id');

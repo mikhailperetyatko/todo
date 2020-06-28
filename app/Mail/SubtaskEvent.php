@@ -33,6 +33,7 @@ class SubtaskEvent extends Mailable
     {
         return $this
             ->from(config('app.robo_email'))
+            ->subject($this->subtask->task->name)
             ->view($this->view)
             ->with([
                 'subtask' => $this->subtask,

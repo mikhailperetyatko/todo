@@ -27,6 +27,7 @@ Vue.component('my-marker', require('./components/Marker.vue'));
 Vue.component('days', require('./components/Days.vue'));
 Vue.component('toasts', require('./components/Toasts.vue'));
 Vue.component('project-members', require('./components/ProjectMembers.vue'));
+Vue.component('tags', require('./components/Tags.vue'));
 
 Vue.component('debtor-relations', require('./components/DebtorRelations.vue'));
 Vue.component('debtor-account', require('./components/DebtorAccount.vue'));

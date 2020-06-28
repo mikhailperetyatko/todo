@@ -25,6 +25,7 @@ class AuthServiceProvider extends ServiceProvider
         \App\Submarker::class => \App\Policies\SubmarkerPolicy::class,
         \App\PreinstallerTask::class => \App\Policies\PreinstallerTaskPolicy::class,
         \App\Day::class => \App\Policies\DayPolicy::class,
+        \App\Tag::class => \App\Policies\TagPolicy::class,
     ];
 
     /**

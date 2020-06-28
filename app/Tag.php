@@ -3,31 +3,18 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use App\CacheFlushableAfterCreatedModelTrait;
 
 class Tag extends Model
 {
-    use CacheFlushableAfterCreatedModelTrait;
-    
     protected $guarded = ['id', 'created_at', 'updated_at'];
         
-    public function getRouteKeyName()
+    public function subtasks()
     {
-        return 'name';
+        return $this->belongsToMany(Subtasks::class, 'subtask_tag');
     }
     
-    public function posts()
+    public function owner()
     {
-        return $this->morphedByMany(Post::class, 'taggable');
-    }
-    
-    public function informations()
-    {
-        return $this->morphedByMany(Information::class, 'taggable');
-    }
-    
-    public static function tagsCloud()
-    {
-        return (new static)->has('posts')->orHas('informations')->get();
+        return $this->belongsTo(User::class, 'owner_id');
     }
 }

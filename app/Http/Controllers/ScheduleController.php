@@ -94,13 +94,18 @@ class ScheduleController extends Controller
                     //->orWhere('subtasks.execution_date', '<', Carbon::now()->startOfDay()->format('Y-m-d H:i:s'))
                 ;
             })
+            ->where(function ($query) use ($user){
+                $query
+                    ->where('subtasks.executor_id', $user->id)
+                    ->orWhere('subtasks.validator_id', $user->id)
+                ;
+            })
             ->join('tasks', 'subtasks.task_id', 'tasks.id')
             ->join('projects', 'tasks.project_id', 'projects.id')
             ->join('project_user', 'project_user.project_id', 'projects.id')
             ->where('project_user.user_id', $user->id)
             ->groupBy('group_date')
         ;
-        
         foreach (generateDateRange($date, $to, 'Y-m-d', false) as $day) {
             $isWeekend = $day->dayOfWeekIso == 6 || $day->dayOfWeekIso == 7;
             $key = $days->search(function ($item, $key) use ($day) {

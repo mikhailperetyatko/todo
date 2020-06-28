@@ -8,6 +8,19 @@
 
 @section('content')
     <div class="container">
+        <button class="btn btn-secondary btn-block mb-3" type="button" data-toggle="collapse" data-target="#collapseFilter" aria-expanded="false" aria-controls="collapseFilter">
+            Фильтры
+        </button>
+        <form>
+            <div class="collapse mb-3 shadow" id="collapseFilter">
+                <div class="card card-body">
+                    
+                    <input type="submit" class="btn btn-outline-secondary btn-block" type="button" value="Отфильтровать">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="container">
     <div class="text-center w-100"><a role="button" class="btn btn-secondary mr-1" href="/home/schedule/calendar?offset=-1&year={{ (int) $year }}&month={{ (int) $month }}"><</a><button class="btn btn-secondary">{{ $monthNames[(int)$month] }} {{ $year }} года</button><a role="button" class="btn btn-secondary ml-1" href="/home/schedule/calendar?offset=1&year={{ (int) $year }}&month={{ (int) $month }}">></a></div>
         @foreach ($dateRange as $monthNumber => $month)
         <div class="shadow p-1 col-lg-7">

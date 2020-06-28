@@ -18,6 +18,7 @@ Route::resource('/home/preinstaller_tasks', 'PreinstallerTaskController')->middl
 Route::get('/home/disks/yandex/attach', 'YandexDiskController@attach')->middleware('auth');
 
 Route::resource('/home/projects/{project}/markers', 'MarkerController')->middleware('auth');
+Route::resource('/home/tags', 'TagController')->middleware('auth');
 
 Route::resource('/home/storages', 'StoragesController')->middleware('auth');
 Route::get('/home/storages/{storage}/extend_token', 'StoragesController@extendToken')->middleware('auth');

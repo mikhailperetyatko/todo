@@ -20115,6 +20115,7 @@ Vue.component('my-marker', __webpack_require__(116));
 Vue.component('days', __webpack_require__(119));
 Vue.component('toasts', __webpack_require__(122));
 Vue.component('project-members', __webpack_require__(125));
+Vue.component('tags', __webpack_require__(139));
 
 Vue.component('debtor-relations', __webpack_require__(128));
 Vue.component('debtor-account', __webpack_require__(131));
@@ -69360,6 +69361,590 @@ if (false) {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 135 */,
+/* 136 */,
+/* 137 */,
+/* 138 */,
+/* 139 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(1)
+/* script */
+var __vue_script__ = __webpack_require__(140)
+/* template */
+var __vue_template__ = __webpack_require__(141)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/Tags.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-8609bf60", Component.options)
+  } else {
+    hotAPI.reload("data-v-8609bf60", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 140 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['tags', 'subtask_tags'],
+    data: function data() {
+        return {
+            subtaskTags: [],
+            tagsName: [],
+            counter: 0,
+            filteredTags: [],
+            filter: '',
+            axiosErrors: [],
+            axiosSuccesses: [],
+            buttonsInProgress: []
+        };
+    },
+    mounted: function mounted() {
+        this.filteredTags = this.tags;
+        this.subtaskTags = this.subtask_tags.map(function (tag) {
+            return tag.id;
+        });
+    },
+
+
+    methods: {
+        getFilteredTags: function getFilteredTags() {
+            var _this = this;
+
+            return this.filteredTags.filter(function (tag) {
+                return tag.name.toLowerCase().indexOf(_this.filter.toLowerCase()) > -1;
+            });
+        },
+        axiosPost: function axiosPost(tag, url, callable) {
+            var _this2 = this;
+
+            var method = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'POST';
+
+            var button = (method == 'POST' || method == 'PATCH' ? 'edit' : 'delete') + tag.id;
+            this.buttonsInProgress.push(button);
+
+            axios.post(url, {
+                name: tag.name,
+                _method: method
+            }).then(function (response) {
+                callable(response, tag);_this2.axiosSuccesses.push({});_this2.buttonsInProgress.splice(_this2.buttonsInProgress.indexOf(button));
+            }).catch(function (e) {
+                _this2.axiosErrors.push(e.response ? e.response : e.request);_this2.buttonsInProgress.splice(_this2.buttonsInProgress.indexOf(button));
+            });
+        },
+        deleteTag: function deleteTag(tag) {
+            if (typeof tag.id == 'string') this.filteredTags.splice(this.filteredTags.indexOf(tag), 1);else if (confirm('Вы уверены?')) {
+                this.axiosPost(tag, '/home/tags/' + tag.id, this.delTag, 'DELETE');
+            }
+        },
+        saveTag: function saveTag(tag) {
+            if (typeof tag.id == 'string') {
+                this.axiosPost(tag, '/home/tags', this.updateTag);
+            } else {
+                this.axiosPost(tag, '/home/tags/' + tag.id, this.updateTag, 'PATCH');
+            }
+        },
+        delTag: function delTag(response, tag) {
+            if (response.data.result) this.filteredTags.splice(this.filteredTags.indexOf(tag), 1);
+        },
+        updateTag: function updateTag(response, tag) {
+            this.filteredTags[this.filteredTags.indexOf(tag)] = response.data;
+            this.subtaskTags.push(response.data.id);
+        }
+    }
+});
+
+/***/ }),
+/* 141 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "mt-2 mb-2" }, [
+    _c(
+      "button",
+      {
+        staticClass: "btn btn-secondary ",
+        attrs: {
+          type: "button",
+          "data-toggle": "modal",
+          "data-target": "#staticBackdrop"
+        }
+      },
+      [
+        _vm._v(
+          "\n        Тэги к задаче (" +
+            _vm._s(_vm.subtaskTags.length) +
+            ")\n    "
+        )
+      ]
+    ),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        attrs: {
+          id: "staticBackdrop",
+          "data-backdrop": "static",
+          "data-keyboard": "false",
+          tabindex: "-1",
+          role: "dialog",
+          "aria-labelledby": "staticBackdropLabel",
+          "aria-hidden": "true"
+        }
+      },
+      [
+        _c("div", { staticClass: "modal-dialog modal-dialog-scrollable" }, [
+          _c("div", { staticClass: "modal-content" }, [
+            _vm._m(0),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "modal-body" },
+              [
+                _vm._l(_vm.axiosErrors, function(error) {
+                  return _c("div", [
+                    error
+                      ? _c(
+                          "div",
+                          {
+                            staticClass: "alert alert-danger",
+                            attrs: { role: "alert" }
+                          },
+                          [
+                            _vm._v(
+                              "\n                            " +
+                                _vm._s(
+                                  error.data.errors
+                                    ? error.data.errors.name.join(", ")
+                                    : error.data.message
+                                ) +
+                                "                                \n                            "
+                            ),
+                            _vm._m(1, true)
+                          ]
+                        )
+                      : _vm._e()
+                  ])
+                }),
+                _vm._v(" "),
+                _vm._l(_vm.axiosSuccesses, function(success) {
+                  return _c("div", [_vm._m(2, true)])
+                }),
+                _vm._v(" "),
+                _c("div", { staticClass: "form-group" }, [
+                  _c("label", { attrs: { for: "filteredTags" } }, [
+                    _vm._v("Фильтр тэгов")
+                  ]),
+                  _vm._v(" "),
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.filter,
+                        expression: "filter"
+                      }
+                    ],
+                    staticClass: "form-control",
+                    attrs: {
+                      type: "text",
+                      id: "filteredTags",
+                      "aria-describedby": "Фильтр тэгов"
+                    },
+                    domProps: { value: _vm.filter },
+                    on: {
+                      change: function($event) {
+                        return _vm.getFilteredTags()
+                      },
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.filter = $event.target.value
+                      }
+                    }
+                  })
+                ]),
+                _vm._v(" "),
+                _vm._l(_vm.getFilteredTags(), function(tag, key) {
+                  return _c("div", { staticClass: "mb-2" }, [
+                    _c("div", { staticClass: "input-group mb-3" }, [
+                      _c("div", { staticClass: "input-group-prepend" }, [
+                        _c("div", { staticClass: "input-group-text" }, [
+                          _c("input", {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: _vm.subtaskTags,
+                                expression: "subtaskTags"
+                              }
+                            ],
+                            attrs: {
+                              type: "checkbox",
+                              "aria-label": "Отметьте тэг",
+                              name: "tags[" + key + "]"
+                            },
+                            domProps: {
+                              value: tag.id,
+                              checked: Array.isArray(_vm.subtaskTags)
+                                ? _vm._i(_vm.subtaskTags, tag.id) > -1
+                                : _vm.subtaskTags
+                            },
+                            on: {
+                              change: function($event) {
+                                var $$a = _vm.subtaskTags,
+                                  $$el = $event.target,
+                                  $$c = $$el.checked ? true : false
+                                if (Array.isArray($$a)) {
+                                  var $$v = tag.id,
+                                    $$i = _vm._i($$a, $$v)
+                                  if ($$el.checked) {
+                                    $$i < 0 &&
+                                      (_vm.subtaskTags = $$a.concat([$$v]))
+                                  } else {
+                                    $$i > -1 &&
+                                      (_vm.subtaskTags = $$a
+                                        .slice(0, $$i)
+                                        .concat($$a.slice($$i + 1)))
+                                  }
+                                } else {
+                                  _vm.subtaskTags = $$c
+                                }
+                              }
+                            }
+                          })
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: tag.name,
+                            expression: "tag.name"
+                          }
+                        ],
+                        staticClass: "form-control",
+                        attrs: {
+                          type: "text",
+                          "aria-label": "Имя тэга",
+                          placeholder: "Имя тэга",
+                          required: ""
+                        },
+                        domProps: { value: tag.name },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(tag, "name", $event.target.value)
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "input-group-append" }, [
+                        _c(
+                          "button",
+                          {
+                            staticClass: "btn btn-secondary",
+                            attrs: {
+                              disable:
+                                _vm.buttonsInProgress.indexOf("edit" + tag.id) >
+                                -1
+                            },
+                            on: {
+                              click: function($event) {
+                                $event.preventDefault()
+                                return _vm.saveTag(tag)
+                              }
+                            }
+                          },
+                          [
+                            _vm._v(
+                              "\n                                    Сохранить\n                                    "
+                            ),
+                            _vm.buttonsInProgress.indexOf("edit" + tag.id) > -1
+                              ? _c("span", {
+                                  staticClass:
+                                    "spinner-border spinner-border-sm",
+                                  attrs: {
+                                    role: "status",
+                                    "aria-hidden": "true"
+                                  }
+                                })
+                              : _vm._e()
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "button",
+                          {
+                            staticClass: "btn btn-danger tagsHolder",
+                            attrs: {
+                              disable:
+                                _vm.buttonsInProgress.indexOf(
+                                  "delete" + tag.id
+                                ) > -1
+                            },
+                            on: {
+                              click: function($event) {
+                                $event.preventDefault()
+                                return _vm.deleteTag(tag)
+                              }
+                            }
+                          },
+                          [
+                            _vm._v(
+                              "\n                                    X\n                                    "
+                            ),
+                            _vm.buttonsInProgress.indexOf("delete" + tag.id) >
+                            -1
+                              ? _c("span", {
+                                  staticClass:
+                                    "spinner-border spinner-border-sm",
+                                  attrs: {
+                                    role: "status",
+                                    "aria-hidden": "true"
+                                  }
+                                })
+                              : _vm._e()
+                          ]
+                        )
+                      ])
+                    ])
+                  ])
+                }),
+                _vm._v(" "),
+                _c(
+                  "a",
+                  {
+                    staticClass: "btn btn-secondary btn-sm",
+                    attrs: { href: "#", role: "button" },
+                    on: {
+                      click: function($event) {
+                        _vm.filteredTags.push({
+                          id: "new_" + _vm.counter,
+                          name: ""
+                        })
+                        _vm.subtaskTags.push("new_" + _vm.counter++)
+                      }
+                    }
+                  },
+                  [_vm._v("Добавить новй тэг")]
+                )
+              ],
+              2
+            ),
+            _vm._v(" "),
+            _vm._m(3)
+          ])
+        ])
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-header" }, [
+      _c(
+        "h5",
+        { staticClass: "modal-title", attrs: { id: "staticBackdropLabel" } },
+        [_vm._v("Выбор тэгов к задаче")]
+      ),
+      _vm._v(" "),
+      _c(
+        "button",
+        {
+          staticClass: "close",
+          attrs: {
+            type: "button",
+            "data-dismiss": "modal",
+            "aria-label": "Close"
+          }
+        },
+        [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "alert",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      { staticClass: "alert alert-success", attrs: { role: "alert" } },
+      [
+        _vm._v(
+          "\n                            Операция завершена удачно\n                                "
+        ),
+        _c(
+          "button",
+          {
+            staticClass: "close",
+            attrs: {
+              type: "button",
+              "data-dismiss": "alert",
+              "aria-label": "Close"
+            }
+          },
+          [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+        )
+      ]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-footer" }, [
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-secondary",
+          attrs: { type: "button", "data-dismiss": "modal" }
+        },
+        [_vm._v("Закрыть")]
+      )
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-8609bf60", module.exports)
+  }
+}
 
 /***/ })
 /******/ ]);

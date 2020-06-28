@@ -51,7 +51,9 @@ class SubtasksController extends Controller
             'subtasks_repeat' => 'array',
             'subtasks_repeat.*' => 'integer',
             'date_repeat' => 'date_format:"Y-m-d"|nullable',
-            'time_repeat' => 'date_format:"H:i"|nullable'
+            'time_repeat' => 'date_format:"H:i"|nullable',
+            'tags' => 'array',
+            'tags.*' => 'integer',
         ];
         if (! $isComplete) {
             $rules['date'] = 'date_format:"Y-m-d"|nullable';
