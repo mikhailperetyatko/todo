@@ -33,7 +33,7 @@
                                 {{ implode(',', $errors->get('subtasks') ?? []) }}
                             </div>
                         </div>
-                        <attach-subtask :selects='@json($selects)' :old='@json(old())' :errors='@json($errors->getMessages())'></attach-subtask>
+                        <attach-subtask :selects='@json($selects)' :old='@json(old())' :errors='@json($errors->getMessages())' :tags='@json(auth()->user()->tags)'></attach-subtask>
                     </div>
                 </div>
             </div>

@@ -95,14 +95,17 @@
                           </div>
                         </div>
                     </div>
-                    <input type="hidden" :name="'subtasks[' + key + '][id]'" v-model="subtask.id">
-                    <a class="btn btn-primary btn-sm" data-toggle="collapse" role="button" :href="'#collapseExt' + key" aria-expanded="false" :aria-controls="'collapseExt' + key">
-                        Дополнительные параметры
-                    </a>
-                    <div :class="'collapse'" :id="'collapseExt' + key">
-                        <div class="card card-body">
+                    <p>Дата и время выполнения задачи</p>
+                    <nav>
+                        <div class="nav nav-pills" :id="'subtask_' + key + '_nav-tab'" role="tablist">
+                            <a class="nav-item nav-link active" :id="'subtask_' + key + 'nav-first-tab'" data-toggle="tab" :href="'#subtask_' + key + 'nav-first'" role="tab" :aria-controls="'subtask_' + key + 'nav-first'" aria-selected="true">Расчет</a>
+                            <a class="nav-item nav-link" :id="'subtask_' + key + 'nav-second-tab'" data-toggle="tab" :href="'#subtask_' + key + 'nav-second'" role="tab" :aria-controls="'subtask_' + key + 'nav-second'" aria-selected="false">Вручную</a>
+                        </div>
+                    </nav>
+                    <div class="tab-content" :id="'subtask_' + key + 'nav-tabContent'">
+                        <div class="tab-pane fade show active" :id="'subtask_' + key + 'nav-first'" role="tabpanel" :aria-labelledby="'subtask_' + key + 'nav-first-tab'">
                             <div class="form-group">
-                                <label :for="'subtaskDelay' + key">Сдвинуть срок исполнения на (дни)</label>
+                                <label :for="'subtaskDelay' + key">Сдвинуть срок исполнения на</label>
                                 <input type="text" :class="'form-control' + (getError(key, 'delay') ? ' is-invalid' : '')" :id="'subtaskDelay' + key" :name="'subtasks[' + key + '][delay]'" placeholder="Введите значение интервала" v-model="subtask.delay">
                                 <div class="invalid-feedback">
                                     {{ getError(key, 'delay') }}
@@ -118,6 +121,28 @@
                                     {{ getError(key, 'delay_interval') }}
                                 </div>
                             </div>
+                        </div>
+                        <div class="tab-pane fade" :id="'subtask_' + key + 'nav-second'" role="tabpanel" :aria-labelledby="'subtask_' + key + 'nav-second-tab'">
+                            <div class="form-group">
+                                <label>Дата</label>
+                                <input type="date" :class="'form-control' + (getError(key, 'date') ? ' is-invalid' : '')" :name="'subtasks[' + key + '][date]'" v-model="subtask.date">
+                                <div class="invalid-feedback">
+                                    {{ getError(key, 'date') }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Время</label>
+                                <input type="time" :class="'form-control' + (getError(key, 'time') ? ' is-invalid' : '')" :name="'subtasks[' + key + '][time]'" v-model="subtask.time">
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" :name="'subtasks[' + key + '][id]'" v-model="subtask.id">
+                    <tags :subtask_key="key" :tags="tags" :subtask_tags='subtask.tags' :key="subtask.counter">Подождите...</tags>
+                    <a class="btn btn-primary btn-sm" data-toggle="collapse" role="button" :href="'#collapseExt' + key" aria-expanded="false" :aria-controls="'collapseExt' + key">
+                        Дополнительные параметры
+                    </a>
+                    <div :class="'collapse'" :id="'collapseExt' + key">
+                        <div class="card card-body">
                             <div class="form-group">
                                 <label :for="'subtaskShowableBy' + key">Включить в повестку за ... (дни) до срока выполнения задачи</label>
                                 <input type="text" :class="'form-control' + (getError(key, 'showable_by') ? ' is-invalid' : '')" :id="'subtaskShowableBy' + key" :name="'subtasks[' + key + '][showable_by]'" placeholder="Введите значение интервала" v-model="subtask.showable_by">
@@ -173,19 +198,23 @@
 </template>
 <script>
 export default {
-        props: ['selects', 'old', 'errors', 'load', 'users', 'preinstaller_tasks'],
+        props: ['selects', 'old', 'errors', 'load', 'users', 'preinstaller_tasks', 'tags'],
         data() {
             return {
                 model: [],
                 filterUser: [],
                 preinstallerTaskModel: '',
+                counter: 0,
             }
         },
         mounted() {
-            
             if (this.load) {
                 for (let i in this.load.subtasks) {
                     let subtask = this.load.subtasks[i];
+                    let executionDateTime = subtask.execution_date.split(' ');
+                    subtask.date = executionDateTime[0];
+                    subtask.time = executionDateTime[1].split(':');
+                    subtask.time = subtask.time[0] + ':' + subtask.time[1];
                     subtask.delay_interval = this.selects.intervals.find(item => item.id == subtask.reference_interval_id).value;
                     subtask.difficulty = this.selects.difficulties.find(item => item.id == subtask.reference_difficulty_id).value;
                     subtask.priority = this.selects.priorities.find(item => item.id == subtask.reference_priority_id).value;
@@ -204,7 +233,6 @@ export default {
                 }
             }
             if (this.model.length == 0) this.newModelHolder();
-            console.log(this.model);
         },
         
         methods:{
@@ -242,6 +270,8 @@ export default {
                     'id': this.getValue(values['id']),
                     'delay': this.getValue(values['delay']),
                     'delay_interval': this.getValue(values['delay_interval']),
+                    'date': this.getValue(values['date']),
+                    'time': this.getValue(values['time']),
                     'difficulty': this.getValue(values['difficulty']),
                     'priority': this.getValue(values['priority']),
                     'location': this.getValue(values['location']),
@@ -250,6 +280,8 @@ export default {
                     'user_executor': this.getValue(values['user_executor']),
                     'user_validator': this.getValue(values['user_validator']),
                     'showable_by': this.getValue(values['showable_by']),
+                    'tags': this.getValue(values['tags']),
+                    'counter': this.counter++,
                 };
             },
             filteredUsers(key)
@@ -266,6 +298,14 @@ export default {
                     subtask.difficulty = this.selects.difficulties.find(item => item.id == subtask.reference_difficulty_id).value;
                     subtask.priority = this.selects.priorities.find(item => item.id == subtask.reference_priority_id).value;
                     this.model.push(this.getModelTemplate(subtask));
+                }
+                let taskRepeatabilityComponent = this.$root.$children.find(child => child.$options._componentTag == 'task-repeatability');
+                if (typeof taskRepeatabilityComponent == 'object') {
+                    let repeatabilityModel = taskRepeatabilityComponent.model;
+                    let repeatabilityPreinstaller = this.preinstaller_tasks[this.preinstallerTaskModel]
+                    repeatabilityModel.repeatability = repeatabilityPreinstaller.repeatability;
+                    repeatabilityModel.type = taskRepeatabilityComponent.$options.propsData.intervals.find(interval => interval.id == repeatabilityPreinstaller.reference_interval_id).value;
+                    repeatabilityModel.value = repeatabilityPreinstaller.interval_value;
                 }
             },
         }

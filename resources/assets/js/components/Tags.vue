@@ -1,15 +1,14 @@
 <template>
     <div class="mt-2 mb-2">
-        <button type="button" class="btn btn-secondary " data-toggle="modal" data-target="#staticBackdrop">
+        <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" :data-target="'#staticBackdrop' + vueid">
             Тэги к задаче ({{ subtaskTags.length }})
         </button>
-        
         <!-- Scrollable modal -->
-        <div class="modal fade" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal fade" :id="'staticBackdrop' + vueid" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">Выбор тэгов к задаче</h5>
+                        <h5 class="modal-title" :id="'staticBackdropLabel' + vueid">Выбор тэгов к задаче</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -33,13 +32,13 @@
                         </div>
                         <div class="form-group">
                             <label for="filteredTags">Фильтр тэгов</label>
-                            <input type="text" class="form-control" id="filteredTags" aria-describedby="Фильтр тэгов" v-model="filter" @change="getFilteredTags()">
+                            <input type="text" class="form-control" :id="'filteredTags' + vueid" aria-describedby="Фильтр тэгов" v-model="filter" @change="getFilteredTags()">
                         </div>
                         <div class="mb-2" v-for="tag, key in getFilteredTags()">
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">
-                                        <input type="checkbox" aria-label="Отметьте тэг" :name="'tags[' + key + ']'" v-model="subtaskTags" :value="tag.id">
+                                        <input v-if="typeof tag.id == 'number'" type="checkbox" aria-label="Отметьте тэг" :name="typeof subtask_key == 'number' ? ('subtasks[' + subtask_key + '][tags][]') : 'tags[]'" v-model="subtaskTags" :value="tag.id">
                                     </div>
                                 </div>
                                 <input type="text" class="form-control" aria-label="Имя тэга" placeholder="Имя тэга" v-model="tag.name" required>
@@ -68,7 +67,7 @@
 
 <script>
     export default {
-        props: ['tags', 'subtask_tags'],
+        props: ['tags', 'subtask_tags', 'subtask_key'],
         data() {
             return {
                 subtaskTags: [],
@@ -79,15 +78,17 @@
                 axiosErrors: [],
                 axiosSuccesses: [],
                 buttonsInProgress: [],
+                vueid: this._uid,
             }
         },
         mounted() {
             this.filteredTags = this.tags;
-            this.subtaskTags = this.subtask_tags.map(function(tag){
-                return tag.id;
-            });
+            
+            for (let i in this.subtask_tags) {
+                let tagToAttach = this.tags.find(elem => elem.id == this.subtask_tags[i].id);
+                if (tagToAttach != undefined) this.subtaskTags.push(tagToAttach.id);
+            }
         },
-        
         methods:{
             getFilteredTags()
             {
@@ -126,13 +127,19 @@
             
             delTag(response, tag)
             {
-                if (response.data.result) this.filteredTags.splice(this.filteredTags.indexOf(tag), 1);
+                if (response.data.result) {
+                    this.filteredTags.splice(this.filteredTags.indexOf(tag), 1);
+                    this.subtaskTags.splice(this.subtaskTags.indexOf(tag.id), 1);
+                }
+                
             },
             
             updateTag(response, tag)
             {
+                this.subtaskTags.splice(this.subtaskTags.indexOf(tag.id), 1);
                 this.filteredTags[this.filteredTags.indexOf(tag)] = response.data;
                 this.subtaskTags.push(response.data.id);
+                
             },
         }
     }

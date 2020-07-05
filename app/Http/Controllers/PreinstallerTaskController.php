@@ -44,6 +44,7 @@ class PreinstallerTaskController extends Controller
             'subtasks.*.score' => 'integer|nullable|min:0',
             'subtasks.*.location' => 'string|nullable',
             'subtasks.*.not_delayable' => 'in:"on"',
+            'subtasks.*.tags.*' => 'integer',
             'subtasks' => 'required|array',
         ];
     }
@@ -106,6 +107,7 @@ class PreinstallerTaskController extends Controller
                 'reference_priority_id' => ReferencePriority::where('value', $subtaskInput['priority'] ?? 'low')->firstOrFail()->id,
                 'score' => $subtaskInput['score'] ?? 1,
                 'not_delayable' => isset($subtaskInput['not_delayable']),
+                'tags' => array_map(function($id){return ['id' => $id];}, $subtaskInput['tags']),
             ];
         }
         $task->subtasks = $subtasks;

@@ -169,11 +169,6 @@ class Subtask extends Model
         return $this->belongsToMany(Tag::class, 'subtask_tag');
     }
     
-    public function setTagsAttribute(array $tags)
-    {
-        $this->tags()->sync($tags);
-    }
-    
     public function isUserHasPermission(User $user, string $permission) : bool
     {
         if (! Subtask::where('id', $this->id)->exists()) return true;

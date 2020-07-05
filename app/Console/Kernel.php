@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Carbon\Carbon;
 use App\Jobs\RefreshToken;
+use App\Jobs\DumpMysqlDatabase;
 use App\Storage;
 
 class Kernel extends ConsoleKernel
@@ -16,7 +17,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        Commands\BackupDatabase::class,
     ];
 
     /**
@@ -35,6 +36,11 @@ class Kernel extends ConsoleKernel
                     \Queue::push(new RefreshToken($storage));
                 }
         })->monthlyOn(1, '00:00');
+        
+        $schedule
+            ->call(function () {
+                \Queue::push(new DumpMysqlDatabase());
+        })->dailyAt('20:00');
     }
 
     /**

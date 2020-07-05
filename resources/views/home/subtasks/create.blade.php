@@ -50,6 +50,7 @@
                     {{ implode(',', $errors->get('user_validator') ?? []) }}
                 </div>
             </div>
+            <tags :subtask_key="false" :tags='@json(auth()->user()->tags)'>Подождите...</tags>
             <a class="btn btn-primary mb-3" data-toggle="collapse" href="#collapseExt" role="button" aria-expanded="false" aria-controls="collapseExt">
                 Дополнительные свойства
             </a>

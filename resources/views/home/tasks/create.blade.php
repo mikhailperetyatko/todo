@@ -38,7 +38,7 @@
                                 {{ implode(',', $errors->get('subtasks') ?? []) }}
                             </div>
                         </div>
-                        <attach-subtask :preinstaller_tasks='@json($preinstallerTasks)' :selects='@json($selects)' :old='@json(old())' :errors='@json($errors->getMessages())' :users='@json($project->members)'></attach-subtask>
+                        <attach-subtask :preinstaller_tasks='@json($preinstallerTasks)' :selects='@json($selects)' :old='@json(old())' :errors='@json($errors->getMessages())' :users='@json($project->members)' :tags='@json(auth()->user()->tags)'></attach-subtask>
                     </div>
                 </div>
                 <div class="card">

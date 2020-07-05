@@ -65,6 +65,115 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+/* globals __VUE_SSR_CONTEXT__ */
+
+// IMPORTANT: Do NOT use ES2015 features in this file.
+// This module is a runtime utility for cleaner component module output and will
+// be included in the final webpack user bundle.
+
+module.exports = function normalizeComponent (
+  rawScriptExports,
+  compiledTemplate,
+  functionalTemplate,
+  injectStyles,
+  scopeId,
+  moduleIdentifier /* server only */
+) {
+  var esModule
+  var scriptExports = rawScriptExports = rawScriptExports || {}
+
+  // ES6 modules interop
+  var type = typeof rawScriptExports.default
+  if (type === 'object' || type === 'function') {
+    esModule = rawScriptExports
+    scriptExports = rawScriptExports.default
+  }
+
+  // Vue.extend constructor export interop
+  var options = typeof scriptExports === 'function'
+    ? scriptExports.options
+    : scriptExports
+
+  // render functions
+  if (compiledTemplate) {
+    options.render = compiledTemplate.render
+    options.staticRenderFns = compiledTemplate.staticRenderFns
+    options._compiled = true
+  }
+
+  // functional template
+  if (functionalTemplate) {
+    options.functional = true
+  }
+
+  // scopedId
+  if (scopeId) {
+    options._scopeId = scopeId
+  }
+
+  var hook
+  if (moduleIdentifier) { // server build
+    hook = function (context) {
+      // 2.3 injection
+      context =
+        context || // cached call
+        (this.$vnode && this.$vnode.ssrContext) || // stateful
+        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
+      // 2.2 with runInNewContext: true
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__
+      }
+      // inject component styles
+      if (injectStyles) {
+        injectStyles.call(this, context)
+      }
+      // register component module identifier for async chunk inferrence
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier)
+      }
+    }
+    // used by ssr in case component is cached and beforeCreate
+    // never gets called
+    options._ssrRegister = hook
+  } else if (injectStyles) {
+    hook = injectStyles
+  }
+
+  if (hook) {
+    var functional = options.functional
+    var existing = functional
+      ? options.render
+      : options.beforeCreate
+
+    if (!functional) {
+      // inject component registration as beforeCreate hook
+      options.beforeCreate = existing
+        ? [].concat(existing, hook)
+        : [hook]
+    } else {
+      // for template-only hot-reload because in that case the render fn doesn't
+      // go through the normalizer
+      options._injectStyles = hook
+      // register for functioal component in vue file
+      options.render = function renderWithStyleInjection (h, context) {
+        hook.call(context)
+        return existing(h, context)
+      }
+    }
+  }
+
+  return {
+    esModule: esModule,
+    exports: scriptExports,
+    options: options
+  }
+}
+
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -402,115 +511,6 @@ module.exports = {
   extend: extend,
   trim: trim
 };
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-/* globals __VUE_SSR_CONTEXT__ */
-
-// IMPORTANT: Do NOT use ES2015 features in this file.
-// This module is a runtime utility for cleaner component module output and will
-// be included in the final webpack user bundle.
-
-module.exports = function normalizeComponent (
-  rawScriptExports,
-  compiledTemplate,
-  functionalTemplate,
-  injectStyles,
-  scopeId,
-  moduleIdentifier /* server only */
-) {
-  var esModule
-  var scriptExports = rawScriptExports = rawScriptExports || {}
-
-  // ES6 modules interop
-  var type = typeof rawScriptExports.default
-  if (type === 'object' || type === 'function') {
-    esModule = rawScriptExports
-    scriptExports = rawScriptExports.default
-  }
-
-  // Vue.extend constructor export interop
-  var options = typeof scriptExports === 'function'
-    ? scriptExports.options
-    : scriptExports
-
-  // render functions
-  if (compiledTemplate) {
-    options.render = compiledTemplate.render
-    options.staticRenderFns = compiledTemplate.staticRenderFns
-    options._compiled = true
-  }
-
-  // functional template
-  if (functionalTemplate) {
-    options.functional = true
-  }
-
-  // scopedId
-  if (scopeId) {
-    options._scopeId = scopeId
-  }
-
-  var hook
-  if (moduleIdentifier) { // server build
-    hook = function (context) {
-      // 2.3 injection
-      context =
-        context || // cached call
-        (this.$vnode && this.$vnode.ssrContext) || // stateful
-        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
-      // 2.2 with runInNewContext: true
-      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-        context = __VUE_SSR_CONTEXT__
-      }
-      // inject component styles
-      if (injectStyles) {
-        injectStyles.call(this, context)
-      }
-      // register component module identifier for async chunk inferrence
-      if (context && context._registeredComponents) {
-        context._registeredComponents.add(moduleIdentifier)
-      }
-    }
-    // used by ssr in case component is cached and beforeCreate
-    // never gets called
-    options._ssrRegister = hook
-  } else if (injectStyles) {
-    hook = injectStyles
-  }
-
-  if (hook) {
-    var functional = options.functional
-    var existing = functional
-      ? options.render
-      : options.beforeCreate
-
-    if (!functional) {
-      // inject component registration as beforeCreate hook
-      options.beforeCreate = existing
-        ? [].concat(existing, hook)
-        : [hook]
-    } else {
-      // for template-only hot-reload because in that case the render fn doesn't
-      // go through the normalizer
-      options._injectStyles = hook
-      // register for functioal component in vue file
-      options.render = function renderWithStyleInjection (h, context) {
-        hook.call(context)
-        return existing(h, context)
-      }
-    }
-  }
-
-  return {
-    esModule: esModule,
-    exports: scriptExports,
-    options: options
-  }
-}
 
 
 /***/ }),
@@ -17790,7 +17790,7 @@ module.exports = function bind(fn, thisArg) {
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 
 function encode(val) {
   return encodeURIComponent(val).
@@ -17880,7 +17880,7 @@ module.exports = function isCancel(value) {
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 var normalizeHeaderName = __webpack_require__(50);
 
 var DEFAULT_CONTENT_TYPE = {
@@ -17986,7 +17986,7 @@ module.exports = defaults;
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 var settle = __webpack_require__(51);
 var buildURL = __webpack_require__(17);
 var parseHeaders = __webpack_require__(53);
@@ -18192,7 +18192,7 @@ module.exports = function createError(message, config, code, request, response) 
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 
 /**
  * Config-specific merge-function which creates a new config-object
@@ -20079,7 +20079,7 @@ module.exports = function(obj, fn){
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(38);
-module.exports = __webpack_require__(134);
+module.exports = __webpack_require__(137);
 
 
 /***/ }),
@@ -20115,10 +20115,10 @@ Vue.component('my-marker', __webpack_require__(116));
 Vue.component('days', __webpack_require__(119));
 Vue.component('toasts', __webpack_require__(122));
 Vue.component('project-members', __webpack_require__(125));
-Vue.component('tags', __webpack_require__(139));
+Vue.component('tags', __webpack_require__(128));
 
-Vue.component('debtor-relations', __webpack_require__(128));
-Vue.component('debtor-account', __webpack_require__(131));
+Vue.component('debtor-relations', __webpack_require__(131));
+Vue.component('debtor-account', __webpack_require__(134));
 
 var app = new Vue({
   el: '#app'
@@ -41875,7 +41875,7 @@ module.exports = __webpack_require__(44);
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 var bind = __webpack_require__(16);
 var Axios = __webpack_require__(46);
 var mergeConfig = __webpack_require__(22);
@@ -41952,7 +41952,7 @@ module.exports = function isBuffer (obj) {
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 var buildURL = __webpack_require__(17);
 var InterceptorManager = __webpack_require__(47);
 var dispatchRequest = __webpack_require__(48);
@@ -42045,7 +42045,7 @@ module.exports = Axios;
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 
 function InterceptorManager() {
   this.handlers = [];
@@ -42104,7 +42104,7 @@ module.exports = InterceptorManager;
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 var transformData = __webpack_require__(49);
 var isCancel = __webpack_require__(18);
 var defaults = __webpack_require__(19);
@@ -42197,7 +42197,7 @@ module.exports = function dispatchRequest(config) {
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 
 /**
  * Transform the data for a request or a response
@@ -42224,7 +42224,7 @@ module.exports = function transformData(data, headers, fns) {
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 
 module.exports = function normalizeHeaderName(headers, normalizedName) {
   utils.forEach(headers, function processHeader(value, name) {
@@ -42324,7 +42324,7 @@ module.exports = function enhanceError(error, config, code, request, response) {
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 
 // Headers whose duplicates are ignored by node
 // c.f. https://nodejs.org/api/http.html#http_message_headers
@@ -42384,7 +42384,7 @@ module.exports = function parseHeaders(headers) {
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 
 module.exports = (
   utils.isStandardBrowserEnv() ?
@@ -42459,7 +42459,7 @@ module.exports = (
 "use strict";
 
 
-var utils = __webpack_require__(0);
+var utils = __webpack_require__(1);
 
 module.exports = (
   utils.isStandardBrowserEnv() ?
@@ -60750,7 +60750,7 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(96)
 /* template */
@@ -60951,7 +60951,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(99)
 /* template */
@@ -61519,7 +61519,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(102)
 /* template */
@@ -61646,8 +61646,8 @@ var render = function() {
           {
             name: "model",
             rawName: "v-model",
-            value: _vm.model["repeatability"],
-            expression: "model['repeatability']"
+            value: _vm.model.repeatability,
+            expression: "model.repeatability"
           }
         ],
         class:
@@ -61661,13 +61661,13 @@ var render = function() {
           name: "repeatability"
         },
         domProps: {
-          checked: Array.isArray(_vm.model["repeatability"])
-            ? _vm._i(_vm.model["repeatability"], null) > -1
-            : _vm.model["repeatability"]
+          checked: Array.isArray(_vm.model.repeatability)
+            ? _vm._i(_vm.model.repeatability, null) > -1
+            : _vm.model.repeatability
         },
         on: {
           change: function($event) {
-            var $$a = _vm.model["repeatability"],
+            var $$a = _vm.model.repeatability,
               $$el = $event.target,
               $$c = $$el.checked ? true : false
             if (Array.isArray($$a)) {
@@ -61726,8 +61726,8 @@ var render = function() {
                     {
                       name: "model",
                       rawName: "v-model",
-                      value: _vm.model["value"],
-                      expression: "model['value']"
+                      value: _vm.model.value,
+                      expression: "model.value"
                     }
                   ],
                   class:
@@ -61740,7 +61740,7 @@ var render = function() {
                     placeholder: "Введите значение интервала",
                     required: _vm.model["repeatability"]
                   },
-                  domProps: { value: _vm.model["value"] },
+                  domProps: { value: _vm.model.value },
                   on: {
                     input: function($event) {
                       if ($event.target.composing) {
@@ -61772,8 +61772,8 @@ var render = function() {
                       {
                         name: "model",
                         rawName: "v-model",
-                        value: _vm.model["type"],
-                        expression: "model['type']"
+                        value: _vm.model.type,
+                        expression: "model.type"
                       }
                     ],
                     class:
@@ -61849,7 +61849,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(105)
 /* template */
@@ -61897,6 +61897,33 @@ module.exports = Component.exports
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -62072,12 +62099,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-    props: ['selects', 'old', 'errors', 'load', 'users', 'preinstaller_tasks'],
+    props: ['selects', 'old', 'errors', 'load', 'users', 'preinstaller_tasks', 'tags'],
     data: function data() {
         return {
             model: [],
             filterUser: [],
-            preinstallerTaskModel: ''
+            preinstallerTaskModel: '',
+            counter: 0
         };
     },
     mounted: function mounted() {
@@ -62086,6 +62114,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         if (this.load) {
             var _loop = function _loop(i) {
                 var subtask = _this.load.subtasks[i];
+                var executionDateTime = subtask.execution_date.split(' ');
+                subtask.date = executionDateTime[0];
+                subtask.time = executionDateTime[1].split(':');
+                subtask.time = subtask.time[0] + ':' + subtask.time[1];
                 subtask.delay_interval = _this.selects.intervals.find(function (item) {
                     return item.id == subtask.reference_interval_id;
                 }).value;
@@ -62114,7 +62146,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             }
         }
         if (this.model.length == 0) this.newModelHolder();
-        console.log(this.model);
     },
 
 
@@ -62147,6 +62178,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 'id': this.getValue(values['id']),
                 'delay': this.getValue(values['delay']),
                 'delay_interval': this.getValue(values['delay_interval']),
+                'date': this.getValue(values['date']),
+                'time': this.getValue(values['time']),
                 'difficulty': this.getValue(values['difficulty']),
                 'priority': this.getValue(values['priority']),
                 'location': this.getValue(values['location']),
@@ -62154,7 +62187,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 'not_delayable': this.getValue(values['not_delayable']),
                 'user_executor': this.getValue(values['user_executor']),
                 'user_validator': this.getValue(values['user_validator']),
-                'showable_by': this.getValue(values['showable_by'])
+                'showable_by': this.getValue(values['showable_by']),
+                'tags': this.getValue(values['tags']),
+                'counter': this.counter++
             };
         },
         filteredUsers: function filteredUsers(key) {
@@ -62186,6 +62221,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
             for (var i in this.preinstaller_tasks[this.preinstallerTaskModel].subtasks) {
                 _loop2(i);
+            }
+            var taskRepeatabilityComponent = this.$root.$children.find(function (child) {
+                return child.$options._componentTag == 'task-repeatability';
+            });
+            if ((typeof taskRepeatabilityComponent === 'undefined' ? 'undefined' : _typeof(taskRepeatabilityComponent)) == 'object') {
+                var repeatabilityModel = taskRepeatabilityComponent.model;
+                var repeatabilityPreinstaller = this.preinstaller_tasks[this.preinstallerTaskModel];
+                repeatabilityModel.repeatability = repeatabilityPreinstaller.repeatability;
+                repeatabilityModel.type = taskRepeatabilityComponent.$options.propsData.intervals.find(function (interval) {
+                    return interval.id == repeatabilityPreinstaller.reference_interval_id;
+                }).value;
+                repeatabilityModel.value = repeatabilityPreinstaller.interval_value;
             }
         }
     }
@@ -62818,6 +62865,277 @@ var render = function() {
                   ])
                 : _vm._e(),
               _vm._v(" "),
+              _c("p", [_vm._v("Дата и время выполнения задачи")]),
+              _vm._v(" "),
+              _c("nav", [
+                _c(
+                  "div",
+                  {
+                    staticClass: "nav nav-pills",
+                    attrs: {
+                      id: "subtask_" + key + "_nav-tab",
+                      role: "tablist"
+                    }
+                  },
+                  [
+                    _c(
+                      "a",
+                      {
+                        staticClass: "nav-item nav-link active",
+                        attrs: {
+                          id: "subtask_" + key + "nav-first-tab",
+                          "data-toggle": "tab",
+                          href: "#subtask_" + key + "nav-first",
+                          role: "tab",
+                          "aria-controls": "subtask_" + key + "nav-first",
+                          "aria-selected": "true"
+                        }
+                      },
+                      [_vm._v("Расчет")]
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "a",
+                      {
+                        staticClass: "nav-item nav-link",
+                        attrs: {
+                          id: "subtask_" + key + "nav-second-tab",
+                          "data-toggle": "tab",
+                          href: "#subtask_" + key + "nav-second",
+                          role: "tab",
+                          "aria-controls": "subtask_" + key + "nav-second",
+                          "aria-selected": "false"
+                        }
+                      },
+                      [_vm._v("Вручную")]
+                    )
+                  ]
+                )
+              ]),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass: "tab-content",
+                  attrs: { id: "subtask_" + key + "nav-tabContent" }
+                },
+                [
+                  _c(
+                    "div",
+                    {
+                      staticClass: "tab-pane fade show active",
+                      attrs: {
+                        id: "subtask_" + key + "nav-first",
+                        role: "tabpanel",
+                        "aria-labelledby": "subtask_" + key + "nav-first-tab"
+                      }
+                    },
+                    [
+                      _c("div", { staticClass: "form-group" }, [
+                        _c("label", { attrs: { for: "subtaskDelay" + key } }, [
+                          _vm._v("Сдвинуть срок исполнения на")
+                        ]),
+                        _vm._v(" "),
+                        _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: subtask.delay,
+                              expression: "subtask.delay"
+                            }
+                          ],
+                          class:
+                            "form-control" +
+                            (_vm.getError(key, "delay") ? " is-invalid" : ""),
+                          attrs: {
+                            type: "text",
+                            id: "subtaskDelay" + key,
+                            name: "subtasks[" + key + "][delay]",
+                            placeholder: "Введите значение интервала"
+                          },
+                          domProps: { value: subtask.delay },
+                          on: {
+                            input: function($event) {
+                              if ($event.target.composing) {
+                                return
+                              }
+                              _vm.$set(subtask, "delay", $event.target.value)
+                            }
+                          }
+                        }),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "invalid-feedback" }, [
+                          _vm._v(
+                            "\n                                " +
+                              _vm._s(_vm.getError(key, "delay")) +
+                              "\n                            "
+                          )
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "form-group" }, [
+                        _c(
+                          "label",
+                          { attrs: { for: "delayIntervalsSelect" + key } },
+                          [_vm._v("Тип интервала")]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "select",
+                          {
+                            directives: [
+                              {
+                                name: "model",
+                                rawName: "v-model",
+                                value: subtask.delay_interval,
+                                expression: "subtask.delay_interval"
+                              }
+                            ],
+                            class:
+                              "form-control" +
+                              (_vm.getError(key, "delay_interval")
+                                ? " is-invalid"
+                                : ""),
+                            attrs: {
+                              id: "delayIntervalsSelect" + key,
+                              name: "subtasks[" + key + "][delay_interval]",
+                              required: subtask.delay != ""
+                            },
+                            on: {
+                              change: function($event) {
+                                var $$selectedVal = Array.prototype.filter
+                                  .call($event.target.options, function(o) {
+                                    return o.selected
+                                  })
+                                  .map(function(o) {
+                                    var val = "_value" in o ? o._value : o.value
+                                    return val
+                                  })
+                                _vm.$set(
+                                  subtask,
+                                  "delay_interval",
+                                  $event.target.multiple
+                                    ? $$selectedVal
+                                    : $$selectedVal[0]
+                                )
+                              }
+                            }
+                          },
+                          [
+                            _c(
+                              "option",
+                              { attrs: { disabled: "", selected: "" } },
+                              [_vm._v("Выберите тип интервала...")]
+                            ),
+                            _vm._v(" "),
+                            _vm._l(_vm.selects.intervals, function(interval) {
+                              return _c(
+                                "option",
+                                { domProps: { value: interval.value } },
+                                [_vm._v(_vm._s(interval.name))]
+                              )
+                            })
+                          ],
+                          2
+                        ),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "invalid-feedback" }, [
+                          _vm._v(
+                            "\n                                " +
+                              _vm._s(_vm.getError(key, "delay_interval")) +
+                              "\n                            "
+                          )
+                        ])
+                      ])
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      staticClass: "tab-pane fade",
+                      attrs: {
+                        id: "subtask_" + key + "nav-second",
+                        role: "tabpanel",
+                        "aria-labelledby": "subtask_" + key + "nav-second-tab"
+                      }
+                    },
+                    [
+                      _c("div", { staticClass: "form-group" }, [
+                        _c("label", [_vm._v("Дата")]),
+                        _vm._v(" "),
+                        _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: subtask.date,
+                              expression: "subtask.date"
+                            }
+                          ],
+                          class:
+                            "form-control" +
+                            (_vm.getError(key, "date") ? " is-invalid" : ""),
+                          attrs: {
+                            type: "date",
+                            name: "subtasks[" + key + "][date]"
+                          },
+                          domProps: { value: subtask.date },
+                          on: {
+                            input: function($event) {
+                              if ($event.target.composing) {
+                                return
+                              }
+                              _vm.$set(subtask, "date", $event.target.value)
+                            }
+                          }
+                        }),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "invalid-feedback" }, [
+                          _vm._v(
+                            "\n                                " +
+                              _vm._s(_vm.getError(key, "date")) +
+                              "\n                            "
+                          )
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "form-group" }, [
+                        _c("label", [_vm._v("Время")]),
+                        _vm._v(" "),
+                        _c("input", {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: subtask.time,
+                              expression: "subtask.time"
+                            }
+                          ],
+                          class:
+                            "form-control" +
+                            (_vm.getError(key, "time") ? " is-invalid" : ""),
+                          attrs: {
+                            type: "time",
+                            name: "subtasks[" + key + "][time]"
+                          },
+                          domProps: { value: subtask.time },
+                          on: {
+                            input: function($event) {
+                              if ($event.target.composing) {
+                                return
+                              }
+                              _vm.$set(subtask, "time", $event.target.value)
+                            }
+                          }
+                        })
+                      ])
+                    ]
+                  )
+                ]
+              ),
+              _vm._v(" "),
               _c("input", {
                 directives: [
                   {
@@ -62838,6 +63156,19 @@ var render = function() {
                   }
                 }
               }),
+              _vm._v(" "),
+              _c(
+                "tags",
+                {
+                  key: subtask.counter,
+                  attrs: {
+                    subtask_key: key,
+                    tags: _vm.tags,
+                    subtask_tags: subtask.tags
+                  }
+                },
+                [_vm._v("Подождите...")]
+              ),
               _vm._v(" "),
               _c(
                 "a",
@@ -62863,124 +63194,6 @@ var render = function() {
                 { class: "collapse", attrs: { id: "collapseExt" + key } },
                 [
                   _c("div", { staticClass: "card card-body" }, [
-                    _c("div", { staticClass: "form-group" }, [
-                      _c("label", { attrs: { for: "subtaskDelay" + key } }, [
-                        _vm._v("Сдвинуть срок исполнения на (дни)")
-                      ]),
-                      _vm._v(" "),
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: subtask.delay,
-                            expression: "subtask.delay"
-                          }
-                        ],
-                        class:
-                          "form-control" +
-                          (_vm.getError(key, "delay") ? " is-invalid" : ""),
-                        attrs: {
-                          type: "text",
-                          id: "subtaskDelay" + key,
-                          name: "subtasks[" + key + "][delay]",
-                          placeholder: "Введите значение интервала"
-                        },
-                        domProps: { value: subtask.delay },
-                        on: {
-                          input: function($event) {
-                            if ($event.target.composing) {
-                              return
-                            }
-                            _vm.$set(subtask, "delay", $event.target.value)
-                          }
-                        }
-                      }),
-                      _vm._v(" "),
-                      _c("div", { staticClass: "invalid-feedback" }, [
-                        _vm._v(
-                          "\n                                " +
-                            _vm._s(_vm.getError(key, "delay")) +
-                            "\n                            "
-                        )
-                      ])
-                    ]),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "form-group" }, [
-                      _c(
-                        "label",
-                        { attrs: { for: "delayIntervalsSelect" + key } },
-                        [_vm._v("Тип интервала")]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "select",
-                        {
-                          directives: [
-                            {
-                              name: "model",
-                              rawName: "v-model",
-                              value: subtask.delay_interval,
-                              expression: "subtask.delay_interval"
-                            }
-                          ],
-                          class:
-                            "form-control" +
-                            (_vm.getError(key, "delay_interval")
-                              ? " is-invalid"
-                              : ""),
-                          attrs: {
-                            id: "delayIntervalsSelect" + key,
-                            name: "subtasks[" + key + "][delay_interval]",
-                            required: subtask.delay != ""
-                          },
-                          on: {
-                            change: function($event) {
-                              var $$selectedVal = Array.prototype.filter
-                                .call($event.target.options, function(o) {
-                                  return o.selected
-                                })
-                                .map(function(o) {
-                                  var val = "_value" in o ? o._value : o.value
-                                  return val
-                                })
-                              _vm.$set(
-                                subtask,
-                                "delay_interval",
-                                $event.target.multiple
-                                  ? $$selectedVal
-                                  : $$selectedVal[0]
-                              )
-                            }
-                          }
-                        },
-                        [
-                          _c(
-                            "option",
-                            { attrs: { disabled: "", selected: "" } },
-                            [_vm._v("Выберите тип интервала...")]
-                          ),
-                          _vm._v(" "),
-                          _vm._l(_vm.selects.intervals, function(interval) {
-                            return _c(
-                              "option",
-                              { domProps: { value: interval.value } },
-                              [_vm._v(_vm._s(interval.name))]
-                            )
-                          })
-                        ],
-                        2
-                      ),
-                      _vm._v(" "),
-                      _c("div", { staticClass: "invalid-feedback" }, [
-                        _vm._v(
-                          "\n                                " +
-                            _vm._s(_vm.getError(key, "delay_interval")) +
-                            "\n                            "
-                        )
-                      ])
-                    ]),
-                    _vm._v(" "),
                     _c("div", { staticClass: "form-group" }, [
                       _c(
                         "label",
@@ -63333,7 +63546,8 @@ var render = function() {
                   ])
                 ]
               )
-            ]
+            ],
+            1
           )
         ])
       }),
@@ -63435,7 +63649,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(108)
 /* template */
@@ -64079,7 +64293,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(111)
 /* template */
@@ -64324,7 +64538,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(114)
 /* template */
@@ -65199,7 +65413,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(117)
 /* template */
@@ -66124,7 +66338,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(120)
 /* template */
@@ -66431,7 +66645,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(123)
 /* template */
@@ -66619,7 +66833,7 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(126)
 /* template */
@@ -66893,11 +67107,614 @@ if (false) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
 var __vue_script__ = __webpack_require__(129)
 /* template */
 var __vue_template__ = __webpack_require__(130)
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __vue_script__,
+  __vue_template__,
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "resources/assets/js/components/Tags.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-8609bf60", Component.options)
+  } else {
+    hotAPI.reload("data-v-8609bf60", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+module.exports = Component.exports
+
+
+/***/ }),
+/* 129 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    props: ['tags', 'subtask_tags', 'subtask_key'],
+    data: function data() {
+        return {
+            subtaskTags: [],
+            tagsName: [],
+            counter: 0,
+            filteredTags: [],
+            filter: '',
+            axiosErrors: [],
+            axiosSuccesses: [],
+            buttonsInProgress: [],
+            vueid: this._uid
+        };
+    },
+    mounted: function mounted() {
+        var _this = this;
+
+        this.filteredTags = this.tags;
+
+        var _loop = function _loop(i) {
+            var tagToAttach = _this.tags.find(function (elem) {
+                return elem.id == _this.subtask_tags[i].id;
+            });
+            if (tagToAttach != undefined) _this.subtaskTags.push(tagToAttach.id);
+        };
+
+        for (var i in this.subtask_tags) {
+            _loop(i);
+        }
+    },
+
+    methods: {
+        getFilteredTags: function getFilteredTags() {
+            var _this2 = this;
+
+            return this.filteredTags.filter(function (tag) {
+                return tag.name.toLowerCase().indexOf(_this2.filter.toLowerCase()) > -1;
+            });
+        },
+        axiosPost: function axiosPost(tag, url, callable) {
+            var _this3 = this;
+
+            var method = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'POST';
+
+            var button = (method == 'POST' || method == 'PATCH' ? 'edit' : 'delete') + tag.id;
+            this.buttonsInProgress.push(button);
+
+            axios.post(url, {
+                name: tag.name,
+                _method: method
+            }).then(function (response) {
+                callable(response, tag);_this3.axiosSuccesses.push({});_this3.buttonsInProgress.splice(_this3.buttonsInProgress.indexOf(button));
+            }).catch(function (e) {
+                _this3.axiosErrors.push(e.response ? e.response : e.request);_this3.buttonsInProgress.splice(_this3.buttonsInProgress.indexOf(button));
+            });
+        },
+        deleteTag: function deleteTag(tag) {
+            if (typeof tag.id == 'string') this.filteredTags.splice(this.filteredTags.indexOf(tag), 1);else if (confirm('Вы уверены?')) {
+                this.axiosPost(tag, '/home/tags/' + tag.id, this.delTag, 'DELETE');
+            }
+        },
+        saveTag: function saveTag(tag) {
+            if (typeof tag.id == 'string') {
+                this.axiosPost(tag, '/home/tags', this.updateTag);
+            } else {
+                this.axiosPost(tag, '/home/tags/' + tag.id, this.updateTag, 'PATCH');
+            }
+        },
+        delTag: function delTag(response, tag) {
+            if (response.data.result) {
+                this.filteredTags.splice(this.filteredTags.indexOf(tag), 1);
+                this.subtaskTags.splice(this.subtaskTags.indexOf(tag.id), 1);
+            }
+        },
+        updateTag: function updateTag(response, tag) {
+            this.subtaskTags.splice(this.subtaskTags.indexOf(tag.id), 1);
+            this.filteredTags[this.filteredTags.indexOf(tag)] = response.data;
+            this.subtaskTags.push(response.data.id);
+        }
+    }
+});
+
+/***/ }),
+/* 130 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "mt-2 mb-2" }, [
+    _c(
+      "button",
+      {
+        staticClass: "btn btn-secondary btn-sm",
+        attrs: {
+          type: "button",
+          "data-toggle": "modal",
+          "data-target": "#staticBackdrop" + _vm.vueid
+        }
+      },
+      [
+        _vm._v(
+          "\n        Тэги к задаче (" +
+            _vm._s(_vm.subtaskTags.length) +
+            ")\n    "
+        )
+      ]
+    ),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        attrs: {
+          id: "staticBackdrop" + _vm.vueid,
+          "data-backdrop": "static",
+          "data-keyboard": "false",
+          tabindex: "-1",
+          role: "dialog",
+          "aria-labelledby": "staticBackdropLabel",
+          "aria-hidden": "true"
+        }
+      },
+      [
+        _c("div", { staticClass: "modal-dialog modal-dialog-scrollable" }, [
+          _c("div", { staticClass: "modal-content" }, [
+            _c("div", { staticClass: "modal-header" }, [
+              _c(
+                "h5",
+                {
+                  staticClass: "modal-title",
+                  attrs: { id: "staticBackdropLabel" + _vm.vueid }
+                },
+                [_vm._v("Выбор тэгов к задаче")]
+              ),
+              _vm._v(" "),
+              _vm._m(0)
+            ]),
+            _vm._v(" "),
+            _c(
+              "div",
+              { staticClass: "modal-body" },
+              [
+                _vm._l(_vm.axiosErrors, function(error) {
+                  return _c("div", [
+                    error
+                      ? _c(
+                          "div",
+                          {
+                            staticClass: "alert alert-danger",
+                            attrs: { role: "alert" }
+                          },
+                          [
+                            _vm._v(
+                              "\n                            " +
+                                _vm._s(
+                                  error.data.errors
+                                    ? error.data.errors.name.join(", ")
+                                    : error.data.message
+                                ) +
+                                "                                \n                            "
+                            ),
+                            _vm._m(1, true)
+                          ]
+                        )
+                      : _vm._e()
+                  ])
+                }),
+                _vm._v(" "),
+                _vm._l(_vm.axiosSuccesses, function(success) {
+                  return _c("div", [_vm._m(2, true)])
+                }),
+                _vm._v(" "),
+                _c("div", { staticClass: "form-group" }, [
+                  _c("label", { attrs: { for: "filteredTags" } }, [
+                    _vm._v("Фильтр тэгов")
+                  ]),
+                  _vm._v(" "),
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.filter,
+                        expression: "filter"
+                      }
+                    ],
+                    staticClass: "form-control",
+                    attrs: {
+                      type: "text",
+                      id: "filteredTags" + _vm.vueid,
+                      "aria-describedby": "Фильтр тэгов"
+                    },
+                    domProps: { value: _vm.filter },
+                    on: {
+                      change: function($event) {
+                        return _vm.getFilteredTags()
+                      },
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.filter = $event.target.value
+                      }
+                    }
+                  })
+                ]),
+                _vm._v(" "),
+                _vm._l(_vm.getFilteredTags(), function(tag, key) {
+                  return _c("div", { staticClass: "mb-2" }, [
+                    _c("div", { staticClass: "input-group mb-3" }, [
+                      _c("div", { staticClass: "input-group-prepend" }, [
+                        _c("div", { staticClass: "input-group-text" }, [
+                          typeof tag.id == "number"
+                            ? _c("input", {
+                                directives: [
+                                  {
+                                    name: "model",
+                                    rawName: "v-model",
+                                    value: _vm.subtaskTags,
+                                    expression: "subtaskTags"
+                                  }
+                                ],
+                                attrs: {
+                                  type: "checkbox",
+                                  "aria-label": "Отметьте тэг",
+                                  name:
+                                    typeof _vm.subtask_key == "number"
+                                      ? "subtasks[" +
+                                        _vm.subtask_key +
+                                        "][tags][]"
+                                      : "tags[]"
+                                },
+                                domProps: {
+                                  value: tag.id,
+                                  checked: Array.isArray(_vm.subtaskTags)
+                                    ? _vm._i(_vm.subtaskTags, tag.id) > -1
+                                    : _vm.subtaskTags
+                                },
+                                on: {
+                                  change: function($event) {
+                                    var $$a = _vm.subtaskTags,
+                                      $$el = $event.target,
+                                      $$c = $$el.checked ? true : false
+                                    if (Array.isArray($$a)) {
+                                      var $$v = tag.id,
+                                        $$i = _vm._i($$a, $$v)
+                                      if ($$el.checked) {
+                                        $$i < 0 &&
+                                          (_vm.subtaskTags = $$a.concat([$$v]))
+                                      } else {
+                                        $$i > -1 &&
+                                          (_vm.subtaskTags = $$a
+                                            .slice(0, $$i)
+                                            .concat($$a.slice($$i + 1)))
+                                      }
+                                    } else {
+                                      _vm.subtaskTags = $$c
+                                    }
+                                  }
+                                }
+                              })
+                            : _vm._e()
+                        ])
+                      ]),
+                      _vm._v(" "),
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: tag.name,
+                            expression: "tag.name"
+                          }
+                        ],
+                        staticClass: "form-control",
+                        attrs: {
+                          type: "text",
+                          "aria-label": "Имя тэга",
+                          placeholder: "Имя тэга",
+                          required: ""
+                        },
+                        domProps: { value: tag.name },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(tag, "name", $event.target.value)
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "input-group-append" }, [
+                        _c(
+                          "button",
+                          {
+                            staticClass: "btn btn-secondary",
+                            attrs: {
+                              disable:
+                                _vm.buttonsInProgress.indexOf("edit" + tag.id) >
+                                -1
+                            },
+                            on: {
+                              click: function($event) {
+                                $event.preventDefault()
+                                return _vm.saveTag(tag)
+                              }
+                            }
+                          },
+                          [
+                            _vm._v(
+                              "\n                                    Сохранить\n                                    "
+                            ),
+                            _vm.buttonsInProgress.indexOf("edit" + tag.id) > -1
+                              ? _c("span", {
+                                  staticClass:
+                                    "spinner-border spinner-border-sm",
+                                  attrs: {
+                                    role: "status",
+                                    "aria-hidden": "true"
+                                  }
+                                })
+                              : _vm._e()
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "button",
+                          {
+                            staticClass: "btn btn-danger tagsHolder",
+                            attrs: {
+                              disable:
+                                _vm.buttonsInProgress.indexOf(
+                                  "delete" + tag.id
+                                ) > -1
+                            },
+                            on: {
+                              click: function($event) {
+                                $event.preventDefault()
+                                return _vm.deleteTag(tag)
+                              }
+                            }
+                          },
+                          [
+                            _vm._v(
+                              "\n                                    X\n                                    "
+                            ),
+                            _vm.buttonsInProgress.indexOf("delete" + tag.id) >
+                            -1
+                              ? _c("span", {
+                                  staticClass:
+                                    "spinner-border spinner-border-sm",
+                                  attrs: {
+                                    role: "status",
+                                    "aria-hidden": "true"
+                                  }
+                                })
+                              : _vm._e()
+                          ]
+                        )
+                      ])
+                    ])
+                  ])
+                }),
+                _vm._v(" "),
+                _c(
+                  "a",
+                  {
+                    staticClass: "btn btn-secondary btn-sm",
+                    attrs: { href: "#", role: "button" },
+                    on: {
+                      click: function($event) {
+                        _vm.filteredTags.push({
+                          id: "new_" + _vm.counter,
+                          name: ""
+                        })
+                        _vm.subtaskTags.push("new_" + _vm.counter++)
+                      }
+                    }
+                  },
+                  [_vm._v("Добавить новй тэг")]
+                )
+              ],
+              2
+            ),
+            _vm._v(" "),
+            _vm._m(3)
+          ])
+        ])
+      ]
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "modal",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "button",
+      {
+        staticClass: "close",
+        attrs: {
+          type: "button",
+          "data-dismiss": "alert",
+          "aria-label": "Close"
+        }
+      },
+      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      { staticClass: "alert alert-success", attrs: { role: "alert" } },
+      [
+        _vm._v(
+          "\n                            Операция завершена удачно\n                                "
+        ),
+        _c(
+          "button",
+          {
+            staticClass: "close",
+            attrs: {
+              type: "button",
+              "data-dismiss": "alert",
+              "aria-label": "Close"
+            }
+          },
+          [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
+        )
+      ]
+    )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "modal-footer" }, [
+      _c(
+        "button",
+        {
+          staticClass: "btn btn-secondary",
+          attrs: { type: "button", "data-dismiss": "modal" }
+        },
+        [_vm._v("Закрыть")]
+      )
+    ])
+  }
+]
+render._withStripped = true
+module.exports = { render: render, staticRenderFns: staticRenderFns }
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-8609bf60", module.exports)
+  }
+}
+
+/***/ }),
+/* 131 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var disposed = false
+var normalizeComponent = __webpack_require__(0)
+/* script */
+var __vue_script__ = __webpack_require__(132)
+/* template */
+var __vue_template__ = __webpack_require__(133)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -66936,7 +67753,7 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 129 */
+/* 132 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -67414,7 +68231,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 130 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -68149,15 +68966,15 @@ if (false) {
 }
 
 /***/ }),
-/* 131 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var disposed = false
-var normalizeComponent = __webpack_require__(1)
+var normalizeComponent = __webpack_require__(0)
 /* script */
-var __vue_script__ = __webpack_require__(132)
+var __vue_script__ = __webpack_require__(135)
 /* template */
-var __vue_template__ = __webpack_require__(133)
+var __vue_template__ = __webpack_require__(136)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
@@ -68196,7 +69013,7 @@ module.exports = Component.exports
 
 
 /***/ }),
-/* 132 */
+/* 135 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -68477,7 +69294,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 133 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var render = function() {
@@ -69357,594 +70174,10 @@ if (false) {
 }
 
 /***/ }),
-/* 134 */
+/* 137 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 135 */,
-/* 136 */,
-/* 137 */,
-/* 138 */,
-/* 139 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var disposed = false
-var normalizeComponent = __webpack_require__(1)
-/* script */
-var __vue_script__ = __webpack_require__(140)
-/* template */
-var __vue_template__ = __webpack_require__(141)
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = null
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __vue_script__,
-  __vue_template__,
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "resources/assets/js/components/Tags.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-8609bf60", Component.options)
-  } else {
-    hotAPI.reload("data-v-8609bf60", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-module.exports = Component.exports
-
-
-/***/ }),
-/* 140 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["default"] = ({
-    props: ['tags', 'subtask_tags'],
-    data: function data() {
-        return {
-            subtaskTags: [],
-            tagsName: [],
-            counter: 0,
-            filteredTags: [],
-            filter: '',
-            axiosErrors: [],
-            axiosSuccesses: [],
-            buttonsInProgress: []
-        };
-    },
-    mounted: function mounted() {
-        this.filteredTags = this.tags;
-        this.subtaskTags = this.subtask_tags.map(function (tag) {
-            return tag.id;
-        });
-    },
-
-
-    methods: {
-        getFilteredTags: function getFilteredTags() {
-            var _this = this;
-
-            return this.filteredTags.filter(function (tag) {
-                return tag.name.toLowerCase().indexOf(_this.filter.toLowerCase()) > -1;
-            });
-        },
-        axiosPost: function axiosPost(tag, url, callable) {
-            var _this2 = this;
-
-            var method = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'POST';
-
-            var button = (method == 'POST' || method == 'PATCH' ? 'edit' : 'delete') + tag.id;
-            this.buttonsInProgress.push(button);
-
-            axios.post(url, {
-                name: tag.name,
-                _method: method
-            }).then(function (response) {
-                callable(response, tag);_this2.axiosSuccesses.push({});_this2.buttonsInProgress.splice(_this2.buttonsInProgress.indexOf(button));
-            }).catch(function (e) {
-                _this2.axiosErrors.push(e.response ? e.response : e.request);_this2.buttonsInProgress.splice(_this2.buttonsInProgress.indexOf(button));
-            });
-        },
-        deleteTag: function deleteTag(tag) {
-            if (typeof tag.id == 'string') this.filteredTags.splice(this.filteredTags.indexOf(tag), 1);else if (confirm('Вы уверены?')) {
-                this.axiosPost(tag, '/home/tags/' + tag.id, this.delTag, 'DELETE');
-            }
-        },
-        saveTag: function saveTag(tag) {
-            if (typeof tag.id == 'string') {
-                this.axiosPost(tag, '/home/tags', this.updateTag);
-            } else {
-                this.axiosPost(tag, '/home/tags/' + tag.id, this.updateTag, 'PATCH');
-            }
-        },
-        delTag: function delTag(response, tag) {
-            if (response.data.result) this.filteredTags.splice(this.filteredTags.indexOf(tag), 1);
-        },
-        updateTag: function updateTag(response, tag) {
-            this.filteredTags[this.filteredTags.indexOf(tag)] = response.data;
-            this.subtaskTags.push(response.data.id);
-        }
-    }
-});
-
-/***/ }),
-/* 141 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "mt-2 mb-2" }, [
-    _c(
-      "button",
-      {
-        staticClass: "btn btn-secondary ",
-        attrs: {
-          type: "button",
-          "data-toggle": "modal",
-          "data-target": "#staticBackdrop"
-        }
-      },
-      [
-        _vm._v(
-          "\n        Тэги к задаче (" +
-            _vm._s(_vm.subtaskTags.length) +
-            ")\n    "
-        )
-      ]
-    ),
-    _vm._v(" "),
-    _c(
-      "div",
-      {
-        staticClass: "modal fade",
-        attrs: {
-          id: "staticBackdrop",
-          "data-backdrop": "static",
-          "data-keyboard": "false",
-          tabindex: "-1",
-          role: "dialog",
-          "aria-labelledby": "staticBackdropLabel",
-          "aria-hidden": "true"
-        }
-      },
-      [
-        _c("div", { staticClass: "modal-dialog modal-dialog-scrollable" }, [
-          _c("div", { staticClass: "modal-content" }, [
-            _vm._m(0),
-            _vm._v(" "),
-            _c(
-              "div",
-              { staticClass: "modal-body" },
-              [
-                _vm._l(_vm.axiosErrors, function(error) {
-                  return _c("div", [
-                    error
-                      ? _c(
-                          "div",
-                          {
-                            staticClass: "alert alert-danger",
-                            attrs: { role: "alert" }
-                          },
-                          [
-                            _vm._v(
-                              "\n                            " +
-                                _vm._s(
-                                  error.data.errors
-                                    ? error.data.errors.name.join(", ")
-                                    : error.data.message
-                                ) +
-                                "                                \n                            "
-                            ),
-                            _vm._m(1, true)
-                          ]
-                        )
-                      : _vm._e()
-                  ])
-                }),
-                _vm._v(" "),
-                _vm._l(_vm.axiosSuccesses, function(success) {
-                  return _c("div", [_vm._m(2, true)])
-                }),
-                _vm._v(" "),
-                _c("div", { staticClass: "form-group" }, [
-                  _c("label", { attrs: { for: "filteredTags" } }, [
-                    _vm._v("Фильтр тэгов")
-                  ]),
-                  _vm._v(" "),
-                  _c("input", {
-                    directives: [
-                      {
-                        name: "model",
-                        rawName: "v-model",
-                        value: _vm.filter,
-                        expression: "filter"
-                      }
-                    ],
-                    staticClass: "form-control",
-                    attrs: {
-                      type: "text",
-                      id: "filteredTags",
-                      "aria-describedby": "Фильтр тэгов"
-                    },
-                    domProps: { value: _vm.filter },
-                    on: {
-                      change: function($event) {
-                        return _vm.getFilteredTags()
-                      },
-                      input: function($event) {
-                        if ($event.target.composing) {
-                          return
-                        }
-                        _vm.filter = $event.target.value
-                      }
-                    }
-                  })
-                ]),
-                _vm._v(" "),
-                _vm._l(_vm.getFilteredTags(), function(tag, key) {
-                  return _c("div", { staticClass: "mb-2" }, [
-                    _c("div", { staticClass: "input-group mb-3" }, [
-                      _c("div", { staticClass: "input-group-prepend" }, [
-                        _c("div", { staticClass: "input-group-text" }, [
-                          _c("input", {
-                            directives: [
-                              {
-                                name: "model",
-                                rawName: "v-model",
-                                value: _vm.subtaskTags,
-                                expression: "subtaskTags"
-                              }
-                            ],
-                            attrs: {
-                              type: "checkbox",
-                              "aria-label": "Отметьте тэг",
-                              name: "tags[" + key + "]"
-                            },
-                            domProps: {
-                              value: tag.id,
-                              checked: Array.isArray(_vm.subtaskTags)
-                                ? _vm._i(_vm.subtaskTags, tag.id) > -1
-                                : _vm.subtaskTags
-                            },
-                            on: {
-                              change: function($event) {
-                                var $$a = _vm.subtaskTags,
-                                  $$el = $event.target,
-                                  $$c = $$el.checked ? true : false
-                                if (Array.isArray($$a)) {
-                                  var $$v = tag.id,
-                                    $$i = _vm._i($$a, $$v)
-                                  if ($$el.checked) {
-                                    $$i < 0 &&
-                                      (_vm.subtaskTags = $$a.concat([$$v]))
-                                  } else {
-                                    $$i > -1 &&
-                                      (_vm.subtaskTags = $$a
-                                        .slice(0, $$i)
-                                        .concat($$a.slice($$i + 1)))
-                                  }
-                                } else {
-                                  _vm.subtaskTags = $$c
-                                }
-                              }
-                            }
-                          })
-                        ])
-                      ]),
-                      _vm._v(" "),
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: tag.name,
-                            expression: "tag.name"
-                          }
-                        ],
-                        staticClass: "form-control",
-                        attrs: {
-                          type: "text",
-                          "aria-label": "Имя тэга",
-                          placeholder: "Имя тэга",
-                          required: ""
-                        },
-                        domProps: { value: tag.name },
-                        on: {
-                          input: function($event) {
-                            if ($event.target.composing) {
-                              return
-                            }
-                            _vm.$set(tag, "name", $event.target.value)
-                          }
-                        }
-                      }),
-                      _vm._v(" "),
-                      _c("div", { staticClass: "input-group-append" }, [
-                        _c(
-                          "button",
-                          {
-                            staticClass: "btn btn-secondary",
-                            attrs: {
-                              disable:
-                                _vm.buttonsInProgress.indexOf("edit" + tag.id) >
-                                -1
-                            },
-                            on: {
-                              click: function($event) {
-                                $event.preventDefault()
-                                return _vm.saveTag(tag)
-                              }
-                            }
-                          },
-                          [
-                            _vm._v(
-                              "\n                                    Сохранить\n                                    "
-                            ),
-                            _vm.buttonsInProgress.indexOf("edit" + tag.id) > -1
-                              ? _c("span", {
-                                  staticClass:
-                                    "spinner-border spinner-border-sm",
-                                  attrs: {
-                                    role: "status",
-                                    "aria-hidden": "true"
-                                  }
-                                })
-                              : _vm._e()
-                          ]
-                        ),
-                        _vm._v(" "),
-                        _c(
-                          "button",
-                          {
-                            staticClass: "btn btn-danger tagsHolder",
-                            attrs: {
-                              disable:
-                                _vm.buttonsInProgress.indexOf(
-                                  "delete" + tag.id
-                                ) > -1
-                            },
-                            on: {
-                              click: function($event) {
-                                $event.preventDefault()
-                                return _vm.deleteTag(tag)
-                              }
-                            }
-                          },
-                          [
-                            _vm._v(
-                              "\n                                    X\n                                    "
-                            ),
-                            _vm.buttonsInProgress.indexOf("delete" + tag.id) >
-                            -1
-                              ? _c("span", {
-                                  staticClass:
-                                    "spinner-border spinner-border-sm",
-                                  attrs: {
-                                    role: "status",
-                                    "aria-hidden": "true"
-                                  }
-                                })
-                              : _vm._e()
-                          ]
-                        )
-                      ])
-                    ])
-                  ])
-                }),
-                _vm._v(" "),
-                _c(
-                  "a",
-                  {
-                    staticClass: "btn btn-secondary btn-sm",
-                    attrs: { href: "#", role: "button" },
-                    on: {
-                      click: function($event) {
-                        _vm.filteredTags.push({
-                          id: "new_" + _vm.counter,
-                          name: ""
-                        })
-                        _vm.subtaskTags.push("new_" + _vm.counter++)
-                      }
-                    }
-                  },
-                  [_vm._v("Добавить новй тэг")]
-                )
-              ],
-              2
-            ),
-            _vm._v(" "),
-            _vm._m(3)
-          ])
-        ])
-      ]
-    )
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "modal-header" }, [
-      _c(
-        "h5",
-        { staticClass: "modal-title", attrs: { id: "staticBackdropLabel" } },
-        [_vm._v("Выбор тэгов к задаче")]
-      ),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
-          staticClass: "close",
-          attrs: {
-            type: "button",
-            "data-dismiss": "modal",
-            "aria-label": "Close"
-          }
-        },
-        [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "button",
-      {
-        staticClass: "close",
-        attrs: {
-          type: "button",
-          "data-dismiss": "alert",
-          "aria-label": "Close"
-        }
-      },
-      [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
-    )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "alert alert-success", attrs: { role: "alert" } },
-      [
-        _vm._v(
-          "\n                            Операция завершена удачно\n                                "
-        ),
-        _c(
-          "button",
-          {
-            staticClass: "close",
-            attrs: {
-              type: "button",
-              "data-dismiss": "alert",
-              "aria-label": "Close"
-            }
-          },
-          [_c("span", { attrs: { "aria-hidden": "true" } }, [_vm._v("×")])]
-        )
-      ]
-    )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "modal-footer" }, [
-      _c(
-        "button",
-        {
-          staticClass: "btn btn-secondary",
-          attrs: { type: "button", "data-dismiss": "modal" }
-        },
-        [_vm._v("Закрыть")]
-      )
-    ])
-  }
-]
-render._withStripped = true
-module.exports = { render: render, staticRenderFns: staticRenderFns }
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-8609bf60", module.exports)
-  }
-}
 
 /***/ })
 /******/ ]);

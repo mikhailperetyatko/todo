@@ -48,12 +48,8 @@ class SubtasksController extends Controller
             'user_validator' => 'integer|nullable',
             'executor_report' => 'string|max:65535|nullable',
             'repeat' => 'in:"on"',
-            'subtasks_repeat' => 'array',
-            'subtasks_repeat.*' => 'integer',
             'date_repeat' => 'date_format:"Y-m-d"|nullable',
             'time_repeat' => 'date_format:"H:i"|nullable',
-            'tags' => 'array',
-            'tags.*' => 'integer',
         ];
         if (! $isComplete) {
             $rules['date'] = 'date_format:"Y-m-d"|nullable';
@@ -110,6 +106,7 @@ class SubtasksController extends Controller
         
         $subtask->fill($attr);
         $subtask->save();
+        $this->syncTags($subtask, $request);
         
         flash('success');
         return redirect('/home/projects/' . $project->id . '/tasks/' . $task->id);
@@ -166,9 +163,20 @@ class SubtasksController extends Controller
         
         $subtask->update($attr);
         
+        $this->syncTags($subtask, $request);
+        
         flash('success');
         return redirect('/home/subtasks/' . $subtask->id);
         
+    }
+    
+    protected function syncTags(Subtask $subtask, Request $request)
+    {
+        $attr = $request->validate([
+            'tags.*' => 'integer',
+        ]);
+        
+        $subtask->tags()->sync($attr['tags'] ?? []);
     }
     
     public function completing(Subtask $subtask)
@@ -232,7 +240,7 @@ class SubtasksController extends Controller
         $subtask->save();
         
         flash('success');
-        $this->needRepeat($subtask, $attr);
+        $this->needRepeat($subtask, $request);
         
         return redirect('/home/schedule');
     }
@@ -248,8 +256,7 @@ class SubtasksController extends Controller
         $subtask->update([
             'completed' => false,
         ]);
-        $subtask->acceptance()->last()->delete();
-        
+        if ($subtask->acceptance) $subtask->acceptance()->last()->delete();
         flash('success');
         return redirect('/home/schedule');
     }
@@ -270,16 +277,9 @@ class SubtasksController extends Controller
             return back();
         }
         
-        $dateAndTimeRequired = ! $subtask->task->repeatability && $request->input('repeat');
-        
         $attr = $request->validate([
             'validator_annotation' => 'string|max:65535|' . ($request->input('decision') == 'refuse' ? 'required' : 'nullable'),
             'decision' => ['regex:/^(refuse|accept)$/', 'required'],
-            'date' => $dateAndTimeRequired ? 'date_format:"Y-m-d"|required' : '',
-            'time' => $dateAndTimeRequired ? 'date_format:"H:i"|required' : '',
-            'subtasks_repeat' => 'array',
-            'subtasks_repeat.*' => 'integer',
-            'repeat' => 'in:"on"',
         ]);
         
         $files = $request->validate(['files.*' => 'integer|nullable']);
@@ -303,7 +303,7 @@ class SubtasksController extends Controller
         
         flash('success');
         
-        if ($subtask->finished) $this->needRepeat($subtask, $attr);
+        if ($subtask->finished) $this->needRepeat($subtask, $request);
                 
         return redirect('/home/schedule');
     }
@@ -325,8 +325,19 @@ class SubtasksController extends Controller
         return redirect('/home/schedule');
     }
     
-    protected function needRepeat(Subtask $subtask, array $attr)
+    protected function needRepeat(Subtask $subtask, Request $request)
     {
+        $dateAndTimeRequired = ! $subtask->task->repeatability && $request->input('repeat');
+        
+        $attr = $request->validate([
+            'date' => $dateAndTimeRequired ? 'date_format:"Y-m-d"|required' : '',
+            'time' => $dateAndTimeRequired ? 'date_format:"H:i"|required' : '',
+            'subtasks_repeat' => 'array|nullable',
+            'subtasks_repeat.*.id' => 'integer',
+            'subtasks_repeat.*.date' => 'date_format:"Y-m-d"|nullable',
+            'subtasks_repeat.*.time' => 'date_format:"H:i"|nullable',
+            'repeat' => 'in:"on"',
+        ]);
         if (! $subtask->task->subtasks()->where('finished', 0)->count()) {
             if (isset($attr['repeat']) && $attr['repeat']) {
                 $task = $this->repeatTask($subtask->task, $attr, $subtask->task->repeatability);
@@ -348,11 +359,15 @@ class SubtasksController extends Controller
         $subtasks = $task->subtasks;
         
         foreach($subtasks as $subtask) {
-            if (in_array($subtask->id, $attr['subtasks_repeat'] ?? [])) {
+            if (isset($attr['subtasks_repeat']) && in_array($subtask->id, array_column($attr['subtasks_repeat'], 'id'))) {
                 $subtask->completed = false;
                 $subtask->finished = false;
-                $subtask->execution_at = getDateFromInterval($subtask->referenceInterval->value, $subtask->delay ?? 0, $newTask->execution_date)->format('Y-m-d H:i:s');
-                
+                //$subtask->execution_at = getDateFromInterval($subtask->referenceInterval->value, $subtask->delay ?? 0, $newTask->execution_date)->format('Y-m-d H:i:s');
+                $index = array_search($subtask->id, array_column($attr['subtasks_repeat'], 'id'));
+                if ($index !== false) {
+                    $subtaskInput = $attr['subtasks_repeat'][$index];
+                    $subtask->execution_at = Carbon::parse($subtaskInput['date'] . ' ' . $subtaskInput['time'])->format('Y-m-d H:i:s');
+                }
                 foreach($subtask->acceptances as $acceptance) {
                     $acceptance->delete();
                 }

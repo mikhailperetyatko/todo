@@ -53,6 +53,12 @@ return [
             'root' => storage_path('app') . '/reports',
             'dirname' => 'reports',
         ],
+        
+        'mysqlBackup' => [
+            'driver' => 'local',
+            'root' => storage_path('backups/mysql'),
+            'dirname' => 'mysql',
+        ],
 
         'public' => [
             'driver' => 'local',

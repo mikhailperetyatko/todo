@@ -28,7 +28,7 @@
                             <p class="card-text">Напомнить за: {{ $subtask['showable_by'] }} дн.</p>
                             <p class="card-text">Сдвинуть задачу на: {{ $subtask['delay'] }} ({{ $interval->where('id', $subtask['reference_interval_id'])->first()->name }})</p>
                             <p class="card-text">Сложность: {{ $difficulty->where('id', $subtask['reference_difficulty_id'])->first()->name }}</p>
-                            <p class="card-text">Приоритет: {{ $priority->where('id', $subtask['reference_priority_id'])->first()->name }}</p>
+                            <p class="card-text">Приоритет: {{ $priority->where('id', $subtask['reference_priority_id'])->first()->name ?? ''}}</p>
                             <p class="card-text">Количество очков: {{ $subtask['score'] }}</p>
                             <p class="card-text">Возможно отсрочить: {{ $subtask['not_delayable'] ? 'Да' : 'Нет' }}</p>
                       </div>

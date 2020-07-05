@@ -8,7 +8,6 @@
     
     $date = $date[0];
 @endphp
-
 @section('content')
     <div class="container">
         <h5>Редактирование мероприятия</h5>
@@ -48,7 +47,7 @@
                                 {{ implode(',', $errors->get('subtasks') ?? []) }}
                             </div>
                         </div>
-                        <attach-subtask :preinstaller_tasks='@json($preinstallerTasks)' :selects='@json($selects)' :old='@json(old())' :load='@json($task)' :errors='@json($errors->getMessages())' :users='@json($project->members)'></attach-subtask>
+                        <attach-subtask :preinstaller_tasks='@json($preinstallerTasks)' :selects='@json($selects)' :old='@json(old())' :load='@json($task)' :errors='@json($errors->getMessages())' :users='@json($project->members)' :tags='@json(auth()->user()->tags)'></attach-subtask>
                     </div>
                 </div>
                 <div class="card">

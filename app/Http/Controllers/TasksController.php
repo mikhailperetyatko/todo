@@ -10,6 +10,7 @@ use App\ReferenceInterval;
 use App\ReferenceDifficulty;
 use App\ReferencePriority;
 use App\PreinstallerTask;
+use Carbon\Carbon;
 
 use Illuminate\Http\Request;
 
@@ -47,11 +48,14 @@ class TasksController extends Controller
             'interval' => ['regex:/^(' . $this->getReference('interval')->implode('value', '|') . ')$/'],
             'subtasks.*.description' => 'string|max:65535',
             'subtasks.*.delay' => 'integer|nullable',
+            'subtasks.*.date' => 'date_format:"Y-m-d"|nullable',
+            'subtasks.*.time' => 'date_format:"H:i"|nullable',
             'subtasks.*.showable_by' => 'integer|nullable',
             'subtasks.*.delay_interval' => ['regex:/^(' . $this->getReference('interval')->implode('value', '|') . ')$/'],
             'subtasks.*.difficulty' => ['regex:/^(' . $this->getReference('difficulty')->implode('value', '|') . ')$/'],
             'subtasks.*.priority' => ['regex:/^(' . $this->getReference('priority')->implode('value', '|') . ')$/'],
             'subtasks.*.score' => 'integer|nullable|min:0',
+            'subtasks.*.tags.*' => 'integer',
             'subtasks.*.location' => 'string|nullable',
             'subtasks.*.not_delayable' => 'in:"on"',
             'subtasks.*.id' => 'integer|nullable',
@@ -64,7 +68,6 @@ class TasksController extends Controller
     protected function assign(Request $request, Project $project, Task $task = null)
     {
         $user = auth()->user();
-        
         $attr = $request->validate($this->getValidateRules());
         
         if (!$task) {
@@ -107,6 +110,15 @@ class TasksController extends Controller
             } else {
                 $subtaskInput['execution_at'] = $task->execution_date;
             }
+            
+            if (isset($subtaskInput['date']) || isset($subtaskInput['time'])) {
+                $subtaskInput['execution_at'] = Carbon::parse(($subtaskInput['date'] ?? $subtaskInput['execution_at']->format('Y-m-d')) . ' ' . ($subtaskInput['time'] ?? $subtaskInput['execution_at']->format('H:i')) . ':00');
+                if (! isset($subtaskInput['delay']) || ! $subtaskInput['delay']) {
+                    $subtaskInput['delay'] = Carbon::parse($task->execution_date->format('Y-m-d'))->diffInDays(Carbon::parse($subtaskInput['execution_at']->format('Y-m-d')), false);
+                    $subtaskInput['reference_interval_id'] = $this->getReference('interval')->where('value', 'day')->first()->id;
+                }
+            }
+            
             $subtaskInput['showable_by'] = $subtaskInput['showable_by'] ?? 0;
             $subtaskInput['showable_at'] = $subtaskInput['showable_by'] ?? 0;
             $subtaskInput['user_executor'] = $subtaskInput['user_executor'] ?? $task->owner->id;
@@ -114,8 +126,14 @@ class TasksController extends Controller
             $subtaskInput['score'] = $subtaskInput['score'] ?? 1;
             $subtaskInput['not_delayable'] = isset($subtaskInput['not_delayable']);
             
+            $subtaskTags = $subtaskInput['tags'] ?? [];
+            unset($subtaskInput['tags']);
+            unset($subtaskInput['date']);
+            unset($subtaskInput['time']);
+            
             $subtask->fill($subtaskInput);
             $subtask->save();
+            $subtask->tags()->sync($subtaskTags);
             
             if (isset($subtaskInput['id'])) $subtasks->splice($subtasks->search($subtask->id), 1);
         }

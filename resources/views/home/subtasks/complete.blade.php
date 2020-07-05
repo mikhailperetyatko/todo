@@ -1,6 +1,6 @@
 @extends('layout.without_sidebar')
 @section('content')
-    @if(! $subtask->completed)
+    @if($subtask)
         <div class="container">
             <h5>Отчет об выполнении задачи</h5>
             @include('home.subtasks.history')
