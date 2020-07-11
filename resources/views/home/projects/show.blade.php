@@ -1,6 +1,7 @@
 @php
     $counter = 0;
-    $tasksCounter = 0
+    $tasksCounter = 0;
+    $subtasksCounter = 0;
     
 @endphp
 @extends('layout.without_sidebar')
@@ -72,11 +73,19 @@
                             </td>
                             <td>
                                 @can('view', $task)
-                                    <a href="/home/projects/{{ $project->id }}/tasks/{{ $task->id }}">{{ $task->subtasks()->count() }} шт.</a>
+                                    @php
+                                        $subtasksAmount = $task->subtasks()->count();
+                                        $subtasksCounter += $subtasksAmount;
+                                    @endphp
+                                    <a href="/home/projects/{{ $project->id }}/tasks/{{ $task->id }}">{{ $subtasksAmount }} шт.</a>
                                 @endcan
                             </td>
                         </tr>
                     @endforeach
+                    <tr>
+                        <td colspan="3">Итого</td>
+                        <td>{{ $subtasksCounter }} шт.</td>    
+                    </tr>
                 </tbody>
             </table>
         </div>

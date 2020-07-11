@@ -28,6 +28,10 @@
                     {{ implode(',', $errors->get('time') ?? []) }}
                 </div>
             </div>
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="customSwitchStrictDate" name="strict_date">
+                <label class="custom-control-label" for="customSwitchStrictDate">Не переносить дату в связи с выходными</label>
+            </div>
             <div class="form-group">
                 <label for="formControlSelectExecutor">Выбор исполнителя</label>
                 <select class="form-control {{ $errors->get('user_executor') ? 'is-invalid' : '' }}" id="formControlSelectExecutor" name="user_executor" {{ policy($subtask)->delegation(auth()->user(), $subtask) ? '' : 'disabled'}}>

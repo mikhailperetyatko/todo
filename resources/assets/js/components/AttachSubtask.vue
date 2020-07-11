@@ -11,7 +11,7 @@
             <div class="card" v-for="subtask, key in model">
                 <div class="card-header p-1" :id="'heading' + key">
                     <h6 class="mb-0 pl-2">
-                        <a href="#" data-toggle="collapse" :data-target="'#collapse' + key" :aria-controls="'collapse' + key" aria-expanded="false">
+                        <a href="#" data-toggle="collapse" :data-target="'#collapse' + key" :aria-controls="'collapse' + key" aria-expanded="false" @click="focused(key)">
                             {{ key + 1 }}) {{ subtask.description ? subtask.description : 'Новая задача' }}
                             <span class="badge badge-warning" v-if="!subtask.description">!</span>
                         </a>
@@ -21,7 +21,7 @@
                 <div :id="'collapse' + key" class="collapse p-2" :aria-labelledby="'heading' + key" data-parent="#accordion">
                     <div class="form-group">
                         <label :for="'subtaskDescription' + key">Описание задачи</label>
-                        <textarea :class="'form-control' + (getError(key, 'description') ? ' is-invalid' : '')" :id="'subtaskDescription' + key" rows="3" :name="'subtasks[' + key + '][description]'" required v-model="subtask.description"></textarea>
+                        <textarea :class="'form-control' + (getError(key, 'description') ? ' is-invalid' : '')" :id="'subtaskDescription' + key" rows="3" :name="'subtasks[' + key + '][description]'" required v-model="subtask.description" ref="model"></textarea>
                         <div class="invalid-feedback">
                         {{ getError(key, 'description') }}
                         </div>
@@ -96,10 +96,11 @@
                         </div>
                     </div>
                     <p>Дата и время выполнения задачи</p>
+                    <input type="hidden" :name="'subtasks[' + key + '][nav]'" v-model="subtask.nav">
                     <nav>
                         <div class="nav nav-pills" :id="'subtask_' + key + '_nav-tab'" role="tablist">
-                            <a class="nav-item nav-link active" :id="'subtask_' + key + 'nav-first-tab'" data-toggle="tab" :href="'#subtask_' + key + 'nav-first'" role="tab" :aria-controls="'subtask_' + key + 'nav-first'" aria-selected="true">Расчет</a>
-                            <a class="nav-item nav-link" :id="'subtask_' + key + 'nav-second-tab'" data-toggle="tab" :href="'#subtask_' + key + 'nav-second'" role="tab" :aria-controls="'subtask_' + key + 'nav-second'" aria-selected="false">Вручную</a>
+                            <a class="nav-item nav-link active" :id="'subtask_' + key + 'nav-first-tab'" data-toggle="tab" :href="'#subtask_' + key + 'nav-first'" role="tab" :aria-controls="'subtask_' + key + 'nav-first'" aria-selected="true" @click="subtask.nav = 'delay'">Расчет</a>
+                            <a class="nav-item nav-link" :id="'subtask_' + key + 'nav-second-tab'" data-toggle="tab" :href="'#subtask_' + key + 'nav-second'" role="tab" :aria-controls="'subtask_' + key + 'nav-second'" aria-selected="false" @click="subtask.nav = 'datetime'">Вручную</a>
                         </div>
                     </nav>
                     <div class="tab-content" :id="'subtask_' + key + 'nav-tabContent'">
@@ -205,6 +206,8 @@ export default {
                 filterUser: [],
                 preinstallerTaskModel: '',
                 counter: 0,
+                subtasksNav: [],
+                
             }
         },
         mounted() {
@@ -282,12 +285,15 @@ export default {
                     'showable_by': this.getValue(values['showable_by']),
                     'tags': this.getValue(values['tags']),
                     'counter': this.counter++,
+                    'nav': 'delay',
                 };
             },
+            
             filteredUsers(key)
             {
                 return this.filterUser[key] == undefined ? this.users : this.users.filter(user => user.name.toLowerCase().indexOf(this.filterUser[key].toLowerCase()) > -1);
             },
+            
             preinstall()
             {
                 if (! confirm('Вы уверены?')) return null;
@@ -307,6 +313,14 @@ export default {
                     repeatabilityModel.type = taskRepeatabilityComponent.$options.propsData.intervals.find(interval => interval.id == repeatabilityPreinstaller.reference_interval_id).value;
                     repeatabilityModel.value = repeatabilityPreinstaller.interval_value;
                 }
+            },
+            
+            focused(key)
+            {
+                let id = this.$refs.model[key].id;
+                $('#' + id).ready(function() {
+                    $('#' + id).focus();
+                });
             },
         }
     }

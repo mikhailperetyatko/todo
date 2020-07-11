@@ -32,6 +32,10 @@
                                 {{ implode(',', $errors->get('time') ?? []) }}
                             </div>
                         </div>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="customSwitchStrictDate" name="strict_date">
+                            <label class="custom-control-label" for="customSwitchStrictDate">Не переносить дату в связи с выходными</label>
+                        </div>
                     </div>
                 </div>
                 @if(auth()->user()->id == $subtask->validator->id)

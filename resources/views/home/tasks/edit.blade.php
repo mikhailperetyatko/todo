@@ -36,6 +36,10 @@
                     {{ implode(',', $errors->get('time') ?? []) }}
                 </div>
             </div>
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="customSwitchStrictDate" name="strict_date">
+                <label class="custom-control-label" for="customSwitchStrictDate">Не переносить дату в связи с выходными</label>
+            </div>
             <div>
                 <task-repeatability :intervals='@json($selects['intervals'])' :old='@json(old())' :load='@json($task)' :errors='@json($errors->getMessages())'></task-repeatability>
                 <div class="card">

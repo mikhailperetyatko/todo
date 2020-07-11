@@ -61732,11 +61732,11 @@ var render = function() {
                   ],
                   class:
                     "form-control" +
-                    (_vm.errors["intervalValue"] ? " is-invalid" : ""),
+                    (_vm.errors["interval_value"] ? " is-invalid" : ""),
                   attrs: {
                     type: "text",
                     id: "inputIntervalValue",
-                    name: "intervalValue",
+                    name: "interval_value",
                     placeholder: "Введите значение интервала",
                     required: _vm.model["repeatability"]
                   },
@@ -61754,7 +61754,7 @@ var render = function() {
                 _c("div", { staticClass: "invalid-feedback" }, [
                   _vm._v(
                     "\n                    " +
-                      _vm._s(_vm.errors["intervalValue"]) +
+                      _vm._s(_vm.errors["interval_value"]) +
                       "\n                "
                   )
                 ])
@@ -62097,6 +62097,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 //
 //
 //
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     props: ['selects', 'old', 'errors', 'load', 'users', 'preinstaller_tasks', 'tags'],
@@ -62105,7 +62106,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             model: [],
             filterUser: [],
             preinstallerTaskModel: '',
-            counter: 0
+            counter: 0,
+            subtasksNav: []
+
         };
     },
     mounted: function mounted() {
@@ -62189,7 +62192,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                 'user_validator': this.getValue(values['user_validator']),
                 'showable_by': this.getValue(values['showable_by']),
                 'tags': this.getValue(values['tags']),
-                'counter': this.counter++
+                'counter': this.counter++,
+                'nav': 'delay'
             };
         },
         filteredUsers: function filteredUsers(key) {
@@ -62234,6 +62238,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                 }).value;
                 repeatabilityModel.value = repeatabilityPreinstaller.interval_value;
             }
+        },
+        focused: function focused(key) {
+            var id = this.$refs.model[key].id;
+            $('#' + id).ready(function () {
+                $('#' + id).focus();
+            });
         }
     }
 });
@@ -62322,6 +62332,11 @@ var render = function() {
                       "data-target": "#collapse" + key,
                       "aria-controls": "collapse" + key,
                       "aria-expanded": "false"
+                    },
+                    on: {
+                      click: function($event) {
+                        return _vm.focused(key)
+                      }
                     }
                   },
                   [
@@ -62386,6 +62401,8 @@ var render = function() {
                       expression: "subtask.description"
                     }
                   ],
+                  ref: "model",
+                  refInFor: true,
                   class:
                     "form-control" +
                     (_vm.getError(key, "description") ? " is-invalid" : ""),
@@ -62867,6 +62884,27 @@ var render = function() {
               _vm._v(" "),
               _c("p", [_vm._v("Дата и время выполнения задачи")]),
               _vm._v(" "),
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: subtask.nav,
+                    expression: "subtask.nav"
+                  }
+                ],
+                attrs: { type: "hidden", name: "subtasks[" + key + "][nav]" },
+                domProps: { value: subtask.nav },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.$set(subtask, "nav", $event.target.value)
+                  }
+                }
+              }),
+              _vm._v(" "),
               _c("nav", [
                 _c(
                   "div",
@@ -62889,6 +62927,11 @@ var render = function() {
                           role: "tab",
                           "aria-controls": "subtask_" + key + "nav-first",
                           "aria-selected": "true"
+                        },
+                        on: {
+                          click: function($event) {
+                            subtask.nav = "delay"
+                          }
                         }
                       },
                       [_vm._v("Расчет")]
@@ -62905,6 +62948,11 @@ var render = function() {
                           role: "tab",
                           "aria-controls": "subtask_" + key + "nav-second",
                           "aria-selected": "false"
+                        },
+                        on: {
+                          click: function($event) {
+                            subtask.nav = "datetime"
+                          }
                         }
                       },
                       [_vm._v("Вручную")]

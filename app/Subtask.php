@@ -15,15 +15,23 @@ use App\Jobs\DeleteFile;
 
 class Subtask extends Model
 {   
-    protected $guarded = ['id', 'created_at', 'updated_at', 'executor_id', 'validator_id'];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'executor_id', 'validator_id', 'date', 'time', 'tags', 'nav', 'task', 'validator', 'date_repeat', 'time_repeat'];
+    
     protected $casts = [
         'delayable' => 'boolean',
     ];
+    
     protected $dates = [
         'created_at',
         'updated_at',
         'execution_date',
         'showable_date'
+    ];
+    
+    protected $attributes = [
+        'showable_by' => 0,
+        'not_delayable' => false,
+        'score' => 1,
     ];
     
     protected static function createdAndUpdatedEvents(Subtask $subtask, Carbon $delay = null)
@@ -79,44 +87,69 @@ class Subtask extends Model
     
     public function setShowableAtAttribute($value)
     {
-        $this->showable_date = getFirstWorkDay(parseDate($this->execution_date)->subDays(abs($value)))->format('Y-m-d');
+        $date = parseDate($this->execution_date)->subDays(abs($value));
+        $this->showable_date = $this->strict_date || ($this->task && $this->task->strict_date) ? $date : getFirstWorkDay($date);
+    }
+    
+    public function setDateTimeAttribute(Carbon $value)
+    {
+        $this->execution_at = $value;
     }
     
     public function setDelayIntervalAttribute($value)
     {
-        $this->referenceInterval()->associate(ReferenceInterval::where('value', $value)->firstOrFail());
+        $this->referenceInterval()->associate(ReferenceInterval::where('value', $value ?? 'day')->firstOrFail());
+        if ($this->isDirty('delay')) {
+            $this->execution_at = getDateFromInterval($this->referenceInterval->value, $this->delay ?? 0, $this->task->execution_date);
+        }
     }
     
     public function setDifficultyAttribute($value)
     {
-        $this->referenceDifficulty()->associate(ReferenceDifficulty::where('value', $value)->firstOrFail());
+        $this->referenceDifficulty()->associate(ReferenceDifficulty::where('value', $value ?? 'low')->firstOrFail());
     }
     
     public function setPriorityAttribute($value)
     {
-        $this->referencePriority()->associate(ReferencePriority::where('value', $value)->firstOrFail());
+        $this->referencePriority()->associate(ReferencePriority::where('value', $value ?? 'low')->firstOrFail());
     }
     
     public function setUserExecutorAttribute($value)
     {
         if (policy($this)->delegation(auth()->user(), $this)) {
-            $this->executor()->associate($this->task->project->members()->where('id', $value)->firstOrFail());
+            $this->executor()->associate($this->task->project->members()->where('id', $value ?? $this->task->owner->id)->firstOrFail());
         }
     }
     
     public function setUserValidatorAttribute($value)
     {
         if (policy($this)->delegation(auth()->user(), $this)) {
-            $this->validator()->associate($this->task->project->members()->where('id', $value)->firstOrFail());
+            $this->validator()->associate($this->task->project->members()->where('id', $value ?? $this->task->owner->id)->firstOrFail());
         }
     }
     
-    public function setExecutionAtAttribute($value)
+    public function setExecutionAtAttribute(Carbon $value)
     {
         if (policy($this)->delay(auth()->user(), $this)) {
-            $this->execution_date = getFirstWorkDay(parseDate($value))->format('Y-m-d H:i:s');
+            $this->execution_date = $this->strict_date || $this->task->strict_date ? $value : getFirstWorkDay($value);
             $this->setShowableAtAttribute($this->showable_by);
         }
+    }
+    
+    public function setScoreAttribute($value)
+    {
+        if ($value) $this->score = $value;
+    }
+    
+    public function setShowableByAttribute($value)
+    {
+        if ($value) $this->showable_by = $value;
+        $this->showable_at = $value;
+    }
+    
+    public function setStrictDateAttribute($value)
+    {
+        $this->strict_date = $value;
     }
         
     public function task()

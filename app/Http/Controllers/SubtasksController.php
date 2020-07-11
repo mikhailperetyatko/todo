@@ -50,6 +50,7 @@ class SubtasksController extends Controller
             'repeat' => 'in:"on"',
             'date_repeat' => 'date_format:"Y-m-d"|nullable',
             'time_repeat' => 'date_format:"H:i"|nullable',
+            'strict_date' => 'in:"on"',
         ];
         if (! $isComplete) {
             $rules['date'] = 'date_format:"Y-m-d"|nullable';
@@ -96,13 +97,11 @@ class SubtasksController extends Controller
         $attr = $request->validate($this->getValidateRules(true));
         $attr['showable_by'] = $attr['showable_by'] ?? 0;
         $attr['not_delayable'] = isset($attr['not_delayable']);
-        if (isset($attr['date']) && isset($attr['time'])) $attr['execution_at'] = $attr['date'] . ' ' . $attr['time'] . ':00';
+        if (isset($attr['date']) && isset($attr['time'])) $attr['execution_at'] = Carbon::parse($attr['date'] . ' ' . $attr['time']);
         $attr['showable_at'] = $attr['showable_by'];
         $attr['score'] = $attr['score'] ?? 1;
  
         // проверка прав        
-        unset($attr['date']);
-        unset($attr['time']);
         
         $subtask->fill($attr);
         $subtask->save();
@@ -154,13 +153,10 @@ class SubtasksController extends Controller
         
         $attr = $request->validate($this->getValidateRules());
         $attr['not_delayable'] = isset($attr['not_delayable']);
-        if (isset($attr['date']) && isset($attr['time'])) $attr['execution_at'] = $attr['date'] . ' ' . $attr['time'] . ':00';
+        if (isset($attr['date']) && isset($attr['time'])) $attr['execution_at'] = Carbon::parse($attr['date'] . ' ' . $attr['time']);
         $attr['showable_at'] = $attr['showable_by'];
  
-        // проверка прав        
-        unset($attr['date']);
-        unset($attr['time']);
-        
+        // проверка прав                
         $subtask->update($attr);
         
         $this->syncTags($subtask, $request);
@@ -185,15 +181,15 @@ class SubtasksController extends Controller
         return view('home.subtasks.complete', compact('subtask'));
     }
     
-    protected function repeatSubtask(Subtask $subtask, string $datetime)
+    protected function repeatSubtask(Subtask $subtask, string $datetime, bool $strict_date)
     {
         $subtaskRepeat = (new Subtask);
         $repeatAttr = $subtask->toArray();
-        unset($repeatAttr['task']);
-        unset($repeatAttr['validator']);
         $repeatAttr['completed'] = false;
+        $subtaskRepeat->task()->associate($subtask->task);
         $subtaskRepeat->fill($repeatAttr);
-        $subtaskRepeat->execution_at = $datetime;
+        $subtaskRepeat->strict_date = $strict_date;
+        $subtaskRepeat->execution_at = Carbon::parse($datetime);
         $subtaskRepeat->executor()->associate($subtask->executor);
         $subtaskRepeat->validator()->associate($subtask->validator);
 
@@ -222,9 +218,7 @@ class SubtasksController extends Controller
         $acceptance->report_date = Carbon::now()->format('Y-m-d H:i:s');
         
         if ($attr['date_repeat'] || $attr['time_repeat']) {
-            $this->repeatSubtask($subtask, $attr['date_repeat'] . ' ' . $attr['time_repeat'] . ':00');
-            unset($attr['date_repeat']);
-            unset($attr['time_repeat']);
+            $this->repeatSubtask($subtask, $attr['date_repeat'] . ' ' . $attr['time_repeat'], isset($attr['strict_date']));
         }
         
         if (auth()->user()->id == $subtask->validator->id) {
@@ -337,6 +331,7 @@ class SubtasksController extends Controller
             'subtasks_repeat.*.date' => 'date_format:"Y-m-d"|nullable',
             'subtasks_repeat.*.time' => 'date_format:"H:i"|nullable',
             'repeat' => 'in:"on"',
+            'repeat_strict_date' => 'in:"on"',
         ]);
         if (! $subtask->task->subtasks()->where('finished', 0)->count()) {
             if (isset($attr['repeat']) && $attr['repeat']) {
@@ -351,28 +346,32 @@ class SubtasksController extends Controller
     
     protected function repeatTask(Task $task, array $attr, $repeatability)
     {
-        $task->execution_date = parseDate($attr['date'] . ' ' . $attr['time'] . ':00')->format('Y-m-d H:i:s');
-        
+        $task->strict_date = isset($attr['repeat_strict_date']);
+        $task->date_time = parseDate($attr['date'] . ' ' . $attr['time']);
         $newTask = Task::create($task->attributesToArray());
+        $newTask->strict_date = $task->strict_date;
         $newTask->markers()->sync($task->markers()->pluck('id'));
         
         $subtasks = $task->subtasks;
         
         foreach($subtasks as $subtask) {
             if (isset($attr['subtasks_repeat']) && in_array($subtask->id, array_column($attr['subtasks_repeat'], 'id'))) {
+                $subtask->task()->associate($newTask);
                 $subtask->completed = false;
                 $subtask->finished = false;
-                //$subtask->execution_at = getDateFromInterval($subtask->referenceInterval->value, $subtask->delay ?? 0, $newTask->execution_date)->format('Y-m-d H:i:s');
                 $index = array_search($subtask->id, array_column($attr['subtasks_repeat'], 'id'));
                 if ($index !== false) {
                     $subtaskInput = $attr['subtasks_repeat'][$index];
-                    $subtask->execution_at = Carbon::parse($subtaskInput['date'] . ' ' . $subtaskInput['time'])->format('Y-m-d H:i:s');
+                    if (isset($subtaskInput['time']) || $subtaskInput['date']) {
+                        $subtask->execution_at = Carbon::parse(($subtaskInput['date'] ?? $newTask->execution_date->format('Y-m-d')) . ' ' . ($subtaskInput['time'] ?? $newTask->execution_date->format('H:i')));
+                    } else {
+                        $subtask->execution_at = getDateFromInterval($subtask->referenceInterval->value, $subtask->delay ?? 0, $newTask->execution_date);
+                    }
                 }
                 foreach($subtask->acceptances as $acceptance) {
                     $acceptance->delete();
                 }
                 
-                $subtask->task()->associate($newTask);
                 $subtask->save();
             }
         }

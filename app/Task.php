@@ -3,17 +3,28 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+use App\ReferenceInterval;
+use App\Project;
 
 class Task extends Model
 {
-    protected $guarded = ['id', 'created_at', 'updated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'date', 'time', 'marker_id'];
     
     protected $dates = [
         'created_at',
         'updated_at',
         'execution_date',
     ];
-        
+    
+    protected $attributes = [
+        'repeatability' => false,
+    ];
+    
+    protected $casts = [
+        'repeatability' => 'boolean',
+    ];
+    
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');
@@ -51,5 +62,33 @@ class Task extends Model
             $subtask->deleteWithFiles();
         }
         $this->delete();
+    }
+        
+    public function setIntervalAttribute($value)
+    {
+        if ($this->repeatability) $this->referenceInterval()->associate(ReferenceInterval::where('value', $value)->firstOrFail());
+    }
+    
+    public function setDateTimeAttribute(Carbon $value)
+    {
+        $this->execution_date = $this->strict_date ? $value : getFirstWorkDay($value);
+    }
+    
+    public function setStrictDateAttribute($value)
+    {
+        $this->strict_date = $value;
+    }
+    
+    public function setSubtasksAttribute($subtasks)
+    {
+        $this->score = 0;
+        foreach ($subtasks as $subtask) {
+            $this->score += $subtask['score'] ?? 1;
+        }
+    }
+    
+    public function setRepeatabilityAttribute($value)
+    {
+        $this->attributes['repeatability'] = (bool) $value;
     }
 }

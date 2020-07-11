@@ -11,9 +11,9 @@
             <div class="card card-body">
                 <div class="form-group">
                     <label for="inputIntervalValue">Повторять каждые</label>
-                    <input type="text" :class="'form-control' + (errors['intervalValue'] ? ' is-invalid' : '')" id="inputIntervalValue" name="intervalValue" placeholder="Введите значение интервала" :required="model['repeatability']" v-model="model.value">
+                    <input type="text" :class="'form-control' + (errors['interval_value'] ? ' is-invalid' : '')" id="inputIntervalValue" name="interval_value" placeholder="Введите значение интервала" :required="model['repeatability']" v-model="model.value">
                     <div class="invalid-feedback">
-                        {{ errors['intervalValue'] }}
+                        {{ errors['interval_value'] }}
                     </div>
                 </div>
                 <div class="form-group">

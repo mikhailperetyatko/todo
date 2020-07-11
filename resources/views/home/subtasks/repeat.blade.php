@@ -25,6 +25,10 @@
                     {{ implode(',', $errors->get('time') ?? []) }}
                 </div>
             </div>
+            <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="customSwitchRepeatStrictDate" name="repeat_strict_date">
+                <label class="custom-control-label" for="customSwitchRepeatStrictDate">Не переносить дату в связи с выходными</label>
+            </div>
             <a class="btn btn-primary" data-toggle="collapse" href="#collapseRepeat" role="button" aria-expanded="false" aria-controls="collapseRepeat">
                 Выбрать задачи, которые будут повторно назначены
             </a>
@@ -38,14 +42,14 @@
                             </div>
                             <div class="form-group">
                                 <label>Дата выполнения задачи</label>
-                                <input type="date" class="form-control {{ $errors->get('subtasks.' . $key . 'date') ? 'is-invalid' : '' }}" name="subtasks_repeat[{{ $key }}][date]" placeholder="Дата" value="{{ old('subtasks.' . $key . 'date') ?? getDateFromInterval($value->referenceInterval->value, $value->delay ?? 0, $nextDate)->format('Y-m-d') }}">
+                                <input type="date" class="form-control {{ $errors->get('subtasks.' . $key . 'date') ? 'is-invalid' : '' }}" name="subtasks_repeat[{{ $key }}][date]" placeholder="Дата" value="{{ old('subtasks.' . $key . 'date') ?? '' }}">
                                 <div class="invalid-feedback">
                                     {{ implode(',', $errors->get('subtasks.' . $key . 'date') ?? []) }}
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label>Время выполнения задачи</label>
-                                <input type="time" class="form-control {{ $errors->get('subtasks.' . $key . 'time') ? 'is-invalid' : '' }}" name="subtasks_repeat[{{ $key }}][time]" placeholder="Время" value="{{ old('subtasks.' . $key . 'time') ?? getDateFromInterval($value->referenceInterval->value, $value->delay ?? 0, $nextDate)->format('H:i') }}">
+                                <input type="time" class="form-control {{ $errors->get('subtasks.' . $key . 'time') ? 'is-invalid' : '' }}" name="subtasks_repeat[{{ $key }}][time]" placeholder="Время" value="{{ old('subtasks.' . $key . 'time') ?? '' }}">
                                 <div class="invalid-feedback">
                                     {{ implode(',', $errors->get('subtasks.' . $key . 'time') ?? []) }}
                                 </div>

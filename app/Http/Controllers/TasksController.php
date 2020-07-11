@@ -42,12 +42,14 @@ class TasksController extends Controller
             'name' => 'required|min:3|max:255',
             'date' => 'date_format:"Y-m-d"|required',
             'time' => 'date_format:"H:i"|required',
-            'intervalValue' => 'integer|min:0',
+            'strict_date' => 'in:"on"',
+            'interval_value' => 'integer|min:0',
             'repeatability' => 'in:"on"',
             'marker_id' => 'integer|nullable',
             'interval' => ['regex:/^(' . $this->getReference('interval')->implode('value', '|') . ')$/'],
             'subtasks.*.description' => 'string|max:65535',
             'subtasks.*.delay' => 'integer|nullable',
+            'subtasks.*.nav' => ['regex:/^(datetime|delay)$/'],
             'subtasks.*.date' => 'date_format:"Y-m-d"|nullable',
             'subtasks.*.time' => 'date_format:"H:i"|nullable',
             'subtasks.*.showable_by' => 'integer|nullable',
@@ -69,29 +71,16 @@ class TasksController extends Controller
     {
         $user = auth()->user();
         $attr = $request->validate($this->getValidateRules());
-        
         if (!$task) {
             $task = new Task;
             $task->owner()->associate($user);
         }
         
-        $task->name = $attr['name'];
-        $task->execution_date = getFirstWorkDay(parseDate($attr['date'] . ' ' . $attr['time'] . ':00'));
-        $task->repeatability = isset($attr['repeatability']);
-        
-        if (isset($attr['repeatability'])) {
-            $task->interval_value = $attr['intervalValue'];
-            $task->referenceInterval()->associate($this->getReference('interval')->where('value', $attr['interval'])->first());
-        }
+        $attr['date_time'] = parseDate($attr['date'] . ' ' . $attr['time']);
+        $task->fill($attr);
         $task->project()->associate($project);
-        
-        $task->score = 0;
-        
-        foreach ($attr['subtasks'] as $subtaskInput) {
-            $task->score += $subtaskInput['score'] ?? 1;
-        }
-        
         $task->save();
+
         $task->markers()->sync(Marker::where(function($query) use ($project){
             $query
                 ->where('team_id', $project->team->id)
@@ -104,37 +93,20 @@ class TasksController extends Controller
         foreach ($attr['subtasks'] as $subtaskInput) {
             $subtask = isset($subtaskInput['id']) ? Subtask::findOrFail($subtaskInput['id']) : new Subtask;
             $subtask->task()->associate($task);
-            
-            if (isset($subtaskInput['delay'])) {
-                $subtaskInput['execution_at'] = getDateFromInterval($subtaskInput['delay_interval'], $subtaskInput['delay'], $task->execution_date);
-            } else {
-                $subtaskInput['execution_at'] = $task->execution_date;
-            }
-            
-            if (isset($subtaskInput['date']) || isset($subtaskInput['time'])) {
-                $subtaskInput['execution_at'] = Carbon::parse(($subtaskInput['date'] ?? $subtaskInput['execution_at']->format('Y-m-d')) . ' ' . ($subtaskInput['time'] ?? $subtaskInput['execution_at']->format('H:i')) . ':00');
-                if (! isset($subtaskInput['delay']) || ! $subtaskInput['delay']) {
-                    $subtaskInput['delay'] = Carbon::parse($task->execution_date->format('Y-m-d'))->diffInDays(Carbon::parse($subtaskInput['execution_at']->format('Y-m-d')), false);
-                    $subtaskInput['reference_interval_id'] = $this->getReference('interval')->where('value', 'day')->first()->id;
+            if ($subtaskInput['nav'] == 'datetime') {
+                $subtaskInput['date_time'] = isset($subtaskInput['date']) || isset($subtaskInput['time'])
+                    ? Carbon::parse(($subtaskInput['date'] ?? $task->execution_date->format('Y-m-d')) . ' ' . ($subtaskInput['time'] ?? $task->execution_date->format('H:i')))
+                    : $task->execution_date
+                ;
+                if ($subtaskInput['delay'] === null) {
+                    $subtaskInput['delay'] = Carbon::parse($task->execution_date)->diffInDays(Carbon::parse($subtaskInput['date_time']->format('Y-m-d')), false);
+                    $subtaskInput['delay_interval'] = 'day';
                 }
-            }
-            
-            $subtaskInput['showable_by'] = $subtaskInput['showable_by'] ?? 0;
-            $subtaskInput['showable_at'] = $subtaskInput['showable_by'] ?? 0;
-            $subtaskInput['user_executor'] = $subtaskInput['user_executor'] ?? $task->owner->id;
-            $subtaskInput['user_validator'] = $subtaskInput['user_validator'] ?? $task->owner->id;
-            $subtaskInput['score'] = $subtaskInput['score'] ?? 1;
-            $subtaskInput['not_delayable'] = isset($subtaskInput['not_delayable']);
-            
-            $subtaskTags = $subtaskInput['tags'] ?? [];
-            unset($subtaskInput['tags']);
-            unset($subtaskInput['date']);
-            unset($subtaskInput['time']);
-            
+            } elseif($subtaskInput['nav'] == 'delay' && ! isset($subtaskInput['delay'])) $subtaskInput['date_time'] = $task->execution_date;
             $subtask->fill($subtaskInput);
-            $subtask->save();
-            $subtask->tags()->sync($subtaskTags);
             
+            $subtask->save();
+            $subtask->tags()->sync($user->tags()->whereIn('id', $subtaskInput['tags'] ?? [])->get());
             if (isset($subtaskInput['id'])) $subtasks->splice($subtasks->search($subtask->id), 1);
         }
         

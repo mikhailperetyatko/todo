@@ -5,44 +5,52 @@
     $highCounter = 0;
     $middleCounter = 0;
     $lowCounter = 0;
+    //dump($projects);
 @endphp
 @section('content')
     <div class="container">
         <h5>Сведения о задачах члена команды</h5>
-        @foreach($projects as $subtasks)
+        @foreach($projects as $projectName => $tasks)
             <div class="card shadow">
                 <div class="card-header">
-                    Проект "{{ $subtasks[0]->projectName }}"
+                    Проект "{{ $projectName }}"
                 </div>
                 <div class="card-body">
                     <ul>
-                        @foreach($subtasks as $subtask)
-                            <li>
-                                {{ $subtask->description }}. Срок выполнения - {{ $subtask->execution_date->format('d.m.Y в H:i') }}
-                                @if($subtask->validator->id == $user->id && $subtask->validator->id != $subtask->executor->id)
-                                    <span class="badge badge-info">Контроллер</span>
-                                @endif
-                                @php
-                                    switch($subtask->referenceDifficulty->value) {
-                                        case 'supreme':
-                                            $supremeCounter++;
-                                            break;
-                                        case 'high':
-                                            $highCounter++;
-                                            break;
-                                        case 'middle':
-                                            $middleCounter++;
-                                            break;
-                                        case 'low':
-                                            $lowCounter++;
-                                            break;
-                                    }
-                                    $subtasksCounter++;
-                                @endphp
-                            </li>
+                        @foreach($tasks as $taskName => $subtasks)
+                        <li>
+                            <h6>{{ $taskName }}</h6>
+                            <ol>
+                                @foreach($subtasks->sortBy('execution_date') as $subtask)
+                                    <li>
+                                        {{ $subtask->description }}. Срок выполнения - {{ $subtask->execution_date->format('d.m.Y в H:i') }}
+                                        @if($subtask->validator->id == $user->id && $subtask->validator->id != $subtask->executor->id)
+                                            <span class="badge badge-info">Контроллер</span>
+                                        @endif
+                                        @php
+                                            switch($subtask->referenceDifficulty->value) {
+                                                case 'supreme':
+                                                    $supremeCounter++;
+                                                    break;
+                                                case 'high':
+                                                    $highCounter++;
+                                                    break;
+                                                case 'middle':
+                                                    $middleCounter++;
+                                                    break;
+                                                case 'low':
+                                                    $lowCounter++;
+                                                    break;
+                                            }
+                                            $subtasksCounter++;
+                                        @endphp
+                                    </li>
+                                @endforeach
+                            </ol>
+                        </li>
                         @endforeach
                     </ul>
-                    <h6>Всего задач - {{ $subtasks->count() }} шт.</h6>
+                    
                 </div>
             </div>
         @endforeach

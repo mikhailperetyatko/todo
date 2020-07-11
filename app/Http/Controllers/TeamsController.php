@@ -50,7 +50,7 @@ class TeamsController extends Controller
                 ::join('tasks', 'tasks.id', '=', 'subtasks.task_id')
                 ->join('projects', 'projects.id', '=', 'tasks.project_id')
                 ->join('teams', 'teams.id', '=', 'projects.team_id')
-                ->select('subtasks.*', 'projects.id as projectId', 'projects.name as projectName')
+                ->select('subtasks.*', 'projects.name as projectName', 'tasks.name as taskName')
                 ->where(function($query) use($user, $team){
                     $query
                         ->where(function($query) use($user){
@@ -64,7 +64,7 @@ class TeamsController extends Controller
                             ['completed', false]
                         ])
                     ;
-                })->get()->groupBy('projectId')
+                })->get()->groupBy(['projectName', 'taskName'])
             ,
         ]);
     }
