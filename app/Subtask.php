@@ -15,7 +15,7 @@ use App\Jobs\DeleteFile;
 
 class Subtask extends Model
 {   
-    protected $guarded = ['id', 'created_at', 'updated_at', 'executor_id', 'validator_id', 'date', 'time', 'tags', 'nav', 'task', 'validator', 'date_repeat', 'time_repeat'];
+    protected $guarded = ['id', 'created_at', 'updated_at', 'executor_id', 'validator_id', 'date', 'time', 'tags', 'task', 'validator', 'date_repeat', 'time_repeat'];
     
     protected $casts = [
         'delayable' => 'boolean',
@@ -99,7 +99,7 @@ class Subtask extends Model
     public function setDelayIntervalAttribute($value)
     {
         $this->referenceInterval()->associate(ReferenceInterval::where('value', $value ?? 'day')->firstOrFail());
-        if ($this->isDirty('delay')) {
+        if ($this->isDirty('delay') && $this->nav == 'delay') {
             $this->execution_at = getDateFromInterval($this->referenceInterval->value, $this->delay ?? 0, $this->task->execution_date);
         }
     }
@@ -107,6 +107,11 @@ class Subtask extends Model
     public function setDifficultyAttribute($value)
     {
         $this->referenceDifficulty()->associate(ReferenceDifficulty::where('value', $value ?? 'low')->firstOrFail());
+    }
+    
+    public function setNavAttribute($value)
+    {
+        $this->nav = $value;
     }
     
     public function setPriorityAttribute($value)
@@ -150,6 +155,11 @@ class Subtask extends Model
     public function setStrictDateAttribute($value)
     {
         $this->strict_date = $value;
+    }
+    
+    public function setNotDelayableAttribute($value)
+    {
+        $this->not_delayable = (bool) $value;
     }
         
     public function task()

@@ -1,4 +1,5 @@
 <?php
+
 Auth::routes();
 
 Route::get('/debtors/communals/accounts/{account}/relations', 'DebtorAccountController@relations')->middleware('auth')->name('debtors.communals.accounts.relations');
@@ -7,6 +8,24 @@ Route::get('/debtors/communals/accounts/{account}/edit', 'DebtorAccountControlle
 Route::patch('/debtors/communals/accounts/{account}', 'DebtorAccountController@update')->middleware('auth')->name('debtors.communals.accounts.update');
 
 Route::get('/test', 'TestController@test')->middleware('auth');
+Route::get('/test/suz', 'TestController@suz')->middleware('auth');
+Route::get('/test/suv', 'TestController@suv')->middleware('auth');
+Route::get('/test/suv2', 'TestController@suv2')->middleware('auth');
+Route::get('/test/sum', 'TestController@sum')->middleware('auth');
+Route::get('/test2', 'TestController@test2')->middleware('auth');
+Route::get('/test5', 'TestController@test3')->middleware('auth');
+Route::get('/test4', 'TestController@test4')->middleware('auth');
+Route::get('/ps5', function(){
+    dd((new \App\Services\PS5\Eldorado())->getStatus());
+})->middleware('auth');
+Route::get('/test3', function(){
+    $mets = new \App\Services\Mets('mihanya@list.ru', 'iVGFJC1DVc');
+    var_dump($mets->auth()->getParticipationAmount('250705937', '1'));
+    //$state = json_decode(\Redis::get('mets_state_250705937_1'), true, JSON_UNESCAPED_UNICODE);
+    //var_dump(\Carbon\Carbon::parse($state[0]['start'])->diffInMinutes(\Carbon\Carbon::now(), true));
+})->middleware('auth');
+Route::get('/ddu', 'TestController@ddu')->middleware('auth');
+//Route::get('/fastclaim/payments', 'TestController@fastclaimPayment');
 
 Route::get('/home/days', 'DayController@index')->middleware('auth');
 Route::post('/home/days', 'DayController@store')->middleware('auth');

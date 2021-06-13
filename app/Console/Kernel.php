@@ -7,6 +7,8 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Carbon\Carbon;
 use App\Jobs\RefreshToken;
 use App\Jobs\DumpMysqlDatabase;
+use App\Jobs\GetParticipationAmount;
+use App\Services\Mets;
 use App\Storage;
 
 class Kernel extends ConsoleKernel

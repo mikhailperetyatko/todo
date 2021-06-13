@@ -34,6 +34,21 @@
                         <label for="inputDateFrom">Конец периода</label>
                         <input type="date" aria-label="Конец период" placeholder="По дату" class="form-control" name="to" value="{{ $to->format('Y-m-d') }}">
                     </div>
+                    <a class="btn btn-secondary btn-sm mb-2" data-toggle="collapse" href="#collapseProjects" role="button" aria-expanded="false" aria-controls="collapseProjects">
+                        Выбрать проекты
+                    </a>
+                    <div class="collapse" id="collapseProjects">
+                        <div class="card card-body">
+                            @foreach($projects as $key => $project)
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="customSwitchProject{{ $key }}" name="projects[]" value="{{ $project->id }}" {{ in_array($project->id, $checkedProjects) ? ' checked' : ''}}>
+                                    <label class="custom-control-label" for="customSwitchProject{{ $key }}">
+                                        {{ $project->name }}
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                     <input type="submit" class="btn btn-outline-secondary btn-block" type="button" value="Отфильтровать">
                 </div>
             </div>

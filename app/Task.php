@@ -79,6 +79,11 @@ class Task extends Model
         $this->strict_date = $value;
     }
     
+    public function setNotDelayableAttribute($value)
+    {
+        $this->not_delayable = (bool) $value;
+    }
+    
     public function setSubtasksAttribute($subtasks)
     {
         $this->score = 0;

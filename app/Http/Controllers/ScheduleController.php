@@ -16,7 +16,9 @@ class ScheduleController extends Controller
     {   
         $attr = $request->validate([
             'from' => 'date',
-            'to' => 'date'
+            'to' => 'date',
+            'projects' => 'array|nullable',
+            'projetcs.*' => 'integer',
         ]);
         
         $user = auth()->user();
@@ -46,6 +48,7 @@ class ScheduleController extends Controller
         ;
         if ($request->input('executor')) $subtasks->where('executor_id', $user->id);
         if ($request->input('validator')) $subtasks->where('validator_id', $user->id);
+        if (! empty($attr['projects'])) $subtasks->whereIn('tasks.project_id', $attr['projects']);
         
         return view('home.schedule.index', [
             'subtasks' => $subtasks->get(),
@@ -57,6 +60,8 @@ class ScheduleController extends Controller
             'onlyValidator' => $request->input('validator'),
             'showableNotNeed' => $request->input('showable_not_need'),
             'overdueNotNeed' => $request->input('overdue_not_need'),
+            'projects' => $user->projects,
+            'checkedProjects' => $attr['projects'] ?? [],
         ]);
     }
 

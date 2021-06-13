@@ -51,7 +51,7 @@
                                             @if($element instanceof \Illuminate\Support\Collection)
                                                 <h6>{{ $element[0]->task_name }} от {{ $element[0]->task_execution_date->format('d.m.Y') }}</h6>
                                                 @foreach($element as $submarker => $subtask)
-                                                    <p class="card-text">{{ $subtask->description }}</p>
+                                                    <p class="card-text">{{ $subtask->description }} ({{ $subtask->execution_date->format('d.m.Y в H:i') }})</p>
                                                 @endforeach
                                             @else
                                                 <p class="card-text">{{ $element->description }}</p>

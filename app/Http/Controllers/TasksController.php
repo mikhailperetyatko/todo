@@ -104,7 +104,6 @@ class TasksController extends Controller
                 }
             } elseif($subtaskInput['nav'] == 'delay' && ! isset($subtaskInput['delay'])) $subtaskInput['date_time'] = $task->execution_date;
             $subtask->fill($subtaskInput);
-            
             $subtask->save();
             $subtask->tags()->sync($user->tags()->whereIn('id', $subtaskInput['tags'] ?? [])->get());
             if (isset($subtaskInput['id'])) $subtasks->splice($subtasks->search($subtask->id), 1);
